@@ -1,0 +1,9 @@
+name: TEMPLATE-docs
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - sphinx
+  - sphinx_rtd_theme
+
+  # TODO: add any dependencies needed to import the project modules
