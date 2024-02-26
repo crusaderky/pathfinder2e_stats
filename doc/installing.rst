@@ -4,18 +4,18 @@ Installation
 Required dependencies
 ---------------------
 
-TODO add more requirements
-
 - Python 3.8 or later
+- xarray
+- numba
 
 Installing with conda
 ---------------------
 .. code-block:: bash
 
-    conda install TEMPLATE
+    conda install pathfinder2e_stats
 
 Installing with pip
 -------------------
 .. code-block:: bash
 
-    pip install TEMPLATE
+    pip install pathfinder2e_stats

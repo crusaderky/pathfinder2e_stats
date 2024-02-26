@@ -1,10 +1,10 @@
 import importlib.metadata
 
 # Import implementation modules
-from TEMPLATE.helloworld import hello
+from pathfinder2e_stats.helloworld import hello
 
 try:
-    __version__ = importlib.metadata.version("TEMPLATE")
+    __version__ = importlib.metadata.version("pathfinder2e_stats")
 except importlib.metadata.PackageNotFoundError:  # pragma: nocover
     # Local copy, not installed with pip
     __version__ = "999"

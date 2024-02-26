@@ -29,19 +29,19 @@ Time required: about an hour.
       git commit -a -m 'Revert to dev version'
       git push origin main
     You're done pushing to main!
-10. Issue the release on GitHub. Open https://github.com/TODO/TEMPLATE/releases;
+10. Issue the release on GitHub. Open https://github.com/crusaderky/pathfinder2e_stats/releases;
     the new release should have automatically appeared. Otherwise, click on
     "Draft a new release" and paste in the latest from whats-new.rst.
 11. Download the .tar.gz package for the release
 12. Use twine to register and upload the release on pypi. Be careful, you can't
     take this back!
-      twine upload TEMPLATE-*.tar.gz
+      twine upload pathfinder2e_stats-*.tar.gz
     You will need to be listed as a package owner at
-    https://pypi.python.org/pypi/TEMPLATE for this to work.
-13. Update the docs. Login to https://readthedocs.org/projects/TEMPLATE/versions/
+    https://pypi.python.org/pypi/pathfinder2e_stats for this to work.
+13. Update the docs. Login to https://readthedocs.org/projects/pathfinder2e_stats/versions/
     and switch your new release tag (at the bottom) from "Inactive" to "Active".
     It should now build automatically.
-14. Update conda-forge. Clone https://github.com/conda-forge/TEMPLATE-feedstock
+14. Update conda-forge. Clone https://github.com/conda-forge/pathfinder2e_stats-feedstock
     and update the version number and sha256 in meta.yaml. (On OS X, you can
-    calculate sha256 with `shasum -a 256 TEMPLATE-0.X.Y.tar.gz`). Submit a pull
+    calculate sha256 with `shasum -a 256 pathfinder2e_stats-0.X.Y.tar.gz`). Submit a pull
     request (and merge it, once CI passes).

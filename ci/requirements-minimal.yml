@@ -1,12 +1,12 @@
-name: TEMPLATE
+name: pathfinder2e_stats
 channels:
   - conda-forge
 dependencies:
+  - python=3.9
   - pytest
   - pytest-cov
   - packaging
-
-  # TODO: add your own dependencies =minimum supported version
-  # - dep1=1.0
-  # - pip:
-  #   - dep2==1.0
+  - xarray=2023.1.0
+  - numpy=1.24
+  - pandas=1.5
+  - numba=0.57

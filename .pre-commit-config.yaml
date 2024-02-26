@@ -21,13 +21,5 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          # TODO uncomment or add your own
-          # Type stubs
-          # - types-docutils
-          # - types-requests
-          # - types-PyYAML
-          # - types-psutil
-          # Libraries exclusively imported under `if TYPE_CHECKING:`
-          - typing_extensions
-          # Typed libraries
-          # - numpy
+          - xarray
+          - numba

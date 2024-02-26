@@ -8,21 +8,21 @@ Install
 
 .. code-block:: bash
 
-     git clone git@github.com:TODO/TEMPLATE.git
-     cd TEMPLATE
+     git clone git@github.com:crusaderky/pathfinder2e_stats.git
+     cd pathfinder2e_stats
 
 2. Install anaconda or miniconda (OS-dependent)
 3. .. code-block:: bash
 
-     conda env create -n TEMPLATE-3.10 --file ci/requirements-latest.yml python=3.10
-     conda activate TEMPLATE-3.10
+     conda env create -n pathfinder2e_stats-3.10 --file ci/requirements-latest.yml python=3.10
+     conda activate pathfinder2e_stats-3.10
 
 To keep a fork in sync with the upstream source:
 
 .. code-block:: bash
 
-   cd TEMPLATE
-   git remote add upstream git@github.com:TODO/TEMPLATE.git
+   cd pathfinder2e_stats
+   git remote add upstream git@github.com:crusaderky/pathfinder2e_stats.git
    git remote -v
    git fetch -a upstream
    git checkout main
@@ -36,12 +36,12 @@ Test using ``py.test``:
 
 .. code-block:: bash
 
-   py.test TEMPLATE
+   py.test pathfinder2e_stats
 
 Code Formatting
 ---------------
 
-TEMPLATE uses several code linters (ruff, black, mypy), which are enforced by CI.
+pathfinder2e_stats uses several code linters (ruff, black, mypy), which are enforced by CI.
 Developers should run them locally before they submit a PR, through the single command
 
 .. code-block:: bash
@@ -57,6 +57,6 @@ run automatically when you make a git commit. This can be done by running:
 
    pre-commit install
 
-from the root of the TEMPLATE repository. Now the code linters will be run each time
+from the root of the pathfinder2e_stats repository. Now the code linters will be run each time
 you commit changes. You can skip these checks with ``git commit --no-verify`` or with
 the short version ``git commit -n``.

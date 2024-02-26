@@ -4,7 +4,7 @@ include *.md
 include *.py
 recursive-include ci *
 recursive-include doc *
-recursive-include TEMPLATE *
+recursive-include pathfinder2e_stats *
 prune doc/_build
 global-exclude __pycache__
 global-exclude *.pyc

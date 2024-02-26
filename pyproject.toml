@@ -1,14 +1,14 @@
 [project]
-name = "TEMPLATE"
-authors = [{name = "TODO", email = "TODO@TODO.com"}]
+name = "pathfinder2e_stats"
+authors = [{name = "Guido Imperiale", email = "crusaderky@gmail.com"}]
 license = {text = "Apache"}
-description = "TODO"
-keywords = ["TODO", "TODO"]
+description = "Statistical tools for Pathfinder 2nd edition"
+keywords = ["pathfinder", "statistics"]
 classifiers = [
-    # TODO update choosing from https://pypi.org/pypi?%3Aaction=list_classifiers
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
+    "Topic :: Games/Entertainment :: Board Games",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
@@ -17,27 +17,24 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
-    # TODO your project dependencies here
-    # numpy >= 1.23
-    # pandas >= 2.0
+    "xarray>=2023.1.0",
+    "numpy>=1.24",
+    "pandas>=1.5",
+    "numba>=0.57"
 ]
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/TODO/TEMPLATE"
+Homepage = "https://github.com/cusaderky/pathfinder2e_stats"
 
 [project.readme]
-text = "TODO"
-content-type = "text/x-rst"
-
-[project.optional-dependencies]
-# TODO optional pip dependencies
-# some_label = ["dependency1", "dependency2"]
+text = "Statistical tools for Pathfinder 2nd Edition"
+content-type = "text/plain"
 
 [tool.setuptools]
-packages = ["TEMPLATE"]
+packages = ["pathfinder2e_stats"]
 zip-safe = false # https://mypy.readthedocs.io/en/latest/installed_packages.html
 include-package-data = true
 
@@ -47,7 +44,7 @@ include-package-data = true
 fallback_version = "9999"
 
 [tool.setuptools.package-data]
-TEMPLATE = [
+pathfinder2e_stats = [
     "py.typed",
     "tests/data/*",
 ]
@@ -63,7 +60,7 @@ build-backend = "setuptools.build_meta"
 addopts = "--strict-markers --strict-config -v -r sxfE --color=yes"
 xfail_strict = true
 python_files = ["test_*.py"]
-testpaths = ["TEMPLATE/tests"]
+testpaths = ["pathfinder2e_stats/tests"]
 filterwarnings = ["error"]
 
 [tool.coverage.report]
@@ -86,7 +83,6 @@ target-version = "py38"
 ignore = [
   "E402",  # module level import not at top of file
   "SIM108",  # use ternary operator instead of if-else block
-  "N999",  # Invalid module name: 'TEMPLATE'  TODO remove this line
 ]
 select = [
   "F",    # Pyflakes
@@ -104,7 +100,7 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["TEMPLATE"]
+known-first-party = ["pathfinder2e_stats"]
 
 [tool.mypy]
 allow_incomplete_defs = false

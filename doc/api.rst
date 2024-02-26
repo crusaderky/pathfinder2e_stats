@@ -3,4 +3,4 @@ API Reference
 
 TODO replace with your own public objects
 
-.. autofunction:: TEMPLATE.hello
+.. autofunction:: pathfinder2e_stats.hello

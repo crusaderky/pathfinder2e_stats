@@ -1,12 +1,9 @@
-name: TEMPLATE
+name: pathfinder2e_stats
 channels:
   - conda-forge
 dependencies:
   - pytest
   - pytest-cov
   - packaging
-
-  # TODO: add your own dependencies (no version)
-  # - dep1
-  # - pip:
-  #   - dep2
+  - xarray
+  - numba
