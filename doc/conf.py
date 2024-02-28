@@ -218,7 +218,13 @@ latex_elements: dict[str, str] = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ("index", "pathfinder2e_stats.tex", "pathfinder2e_stats Documentation", "pathfinder2e_stats Developers", "manual")
+    (
+        "index",
+        "pathfinder2e_stats.tex",
+        "pathfinder2e_stats Documentation",
+        "pathfinder2e_stats Developers",
+        "manual",
+    )
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -247,7 +253,13 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ("index", "pathfinder2e_stats", "pathfinder2e_stats Documentation", ["pathfinder2e_stats Developers"], 1)
+    (
+        "index",
+        "pathfinder2e_stats",
+        "pathfinder2e_stats Documentation",
+        ["pathfinder2e_stats Developers"],
+        1,
+    )
 ]
 
 # If true, show URL addresses after external links.
@@ -287,8 +299,8 @@ texinfo_documents = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
-    "pandas": ('https://pandas.pydata.org/pandas-docs/stable/', None),
-    "numpy": ('https://docs.scipy.org/doc/numpy/', None),
-    "numba": ('https://numba.pydata.org/numba-doc/latest/', None),
-    "xarray": ('https://xarray.pydata.org/en/stable/', None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "numpy": ("https://docs.scipy.org/doc/numpy/", None),
+    "numba": ("https://numba.pydata.org/numba-doc/latest/", None),
+    "xarray": ("https://xarray.pydata.org/en/stable/", None),
 }

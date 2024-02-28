@@ -61,7 +61,10 @@ addopts = "--strict-markers --strict-config -v -r sxfE --color=yes"
 xfail_strict = true
 python_files = ["test_*.py"]
 testpaths = ["pathfinder2e_stats/tests"]
-filterwarnings = ["error"]
+filterwarnings = [
+    "error",
+    "ignore:datetime.datetime.utcfromtimestamp:DeprecationWarning",
+]
 
 [tool.coverage.report]
 show_missing = true
