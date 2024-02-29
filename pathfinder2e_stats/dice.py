@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Hashable
+from collections.abc import Hashable, Mapping
 from typing import cast, overload
 
 import numpy as np
@@ -15,7 +15,7 @@ _pattern = re.compile(r"([0-9]+)?d([0-9]+)([+-][0-9]+)?$")
 
 
 @overload
-def roll(s: str, /, *, dims: dict[Hashable, int] | None = None) -> DataArray:
+def roll(s: str, /, *, dims: Mapping[Hashable, int] | None = None) -> DataArray:
     ...
 
 
@@ -26,7 +26,7 @@ def roll(
     bonus: int = 0,
     /,
     *,
-    dims: dict[Hashable, int] | None = None,
+    dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
     ...
 
@@ -37,7 +37,7 @@ def roll(
     bonus: int = 0,
     /,
     *,
-    dims: dict[Hashable, int] | None = None,
+    dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
     if isinstance(count_or_s, str):
         if faces is not None or bonus != 0:
@@ -70,14 +70,14 @@ def d20(
     *,
     fortune: bool = False,
     misfortune: bool = False,
-    dims: dict[Hashable, int] | None = None,
+    dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
-    dims = dims.copy() if dims else {}
     if fortune and misfortune:
         raise ValueError("Can't have both fortune and misfortune on a roll")
     if fortune or misfortune:
-        dims["__fortune"] = 2
+        dims = dict(dims) if dims else {}
+        dims["fortune"] = 2
         raw = roll(1, 20, dims=dims)
-        return raw.max("__fortune") if fortune else raw.min("__fortune")
+        return raw.max("fortune") if fortune else raw.min("fortune")
     else:
         return roll(1, 20, dims=dims)
