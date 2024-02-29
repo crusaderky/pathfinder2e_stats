@@ -29,8 +29,7 @@ def test_roll():
     assert r.max() == 100
 
     r = roll(2, 6, 10)
-    assert r.min() == 12
-    assert r.max() == 22
+    assert np.unique(r).tolist() == list(range(12, 23))
     assert 16 < r.mean() < 18
 
 
@@ -42,8 +41,7 @@ def test_roll_dims():
 
 def test_roll_floor():
     r = roll(2, 6, -10)
-    assert r.min() == 0
-    assert r.max() == 2
+    assert np.unique(r).tolist() == [0, 1, 2]
 
     r = roll(2, 6, -12)
     assert (r == 0).all()
@@ -83,16 +81,14 @@ def test_d20():
     r = d20()
     assert r.dims == ("roll",)
     assert r.shape == (1000,)
-    assert r.min() == 1
-    assert r.max() == 20
+    assert np.unique(r).tolist() == list(range(1, 21))
 
 
 def test_d20_dims():
     r = d20(dims={"x": 2})
     assert r.dims == ("roll", "x")
     assert r.shape == (1000, 2)
-    assert r.min() == 1
-    assert r.max() == 20
+    assert np.unique(r).tolist() == list(range(1, 21))
 
 
 def test_d20_fortune():
@@ -100,8 +96,7 @@ def test_d20_fortune():
     r2 = d20(fortune=True)
     r3 = d20(misfortune=True)
     for r in r1, r2, r3:
-        assert r.min() == 1
-        assert r.max() == 20
+        assert np.unique(r).tolist() == list(range(1, 21))
 
     assert 450 < (r1 > 10).sum() < 550
     assert 700 < (r2 > 10).sum() < 800
