@@ -87,6 +87,7 @@ ignore = [
   "E402",  # module level import not at top of file
   "SIM108",  # use ternary operator instead of if-else block
   "N803",  # Argument name should be lowercase
+  "N806",  # Variable should be lowercase
 ]
 select = [
   "F",    # Pyflakes

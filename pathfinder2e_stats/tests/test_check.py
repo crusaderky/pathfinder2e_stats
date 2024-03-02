@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from xarray import DataArray
 from xarray.testing import assert_equal
 
 from pathfinder2e_stats import DoS, check, map_outcomes
@@ -229,3 +230,29 @@ def test_heropoint(hp, attr, lt):
 
         ds_roll1 = ds.sel(roll=ds.use_hero_point)
         assert_equal(ds_roll1.outcome >= 1, ds_roll1.natural[:, 1] >= 15)
+
+
+def test_check_array_input():
+    bonus = DataArray([3, 5], dims=["PC"], coords={"PC": ["Alice", "Bob"]})
+    DC = DataArray(
+        [15, 16, 17],
+        dims=["monster"],
+        coords={"monster": ["Bugbear", "Skeleton", "Goblin"]},
+    )
+    ds = check(bonus, DC=DC)
+
+    assert ds.sizes == {"roll": 1000, "PC": 2, "monster": 3}
+    assert_equal(ds.PC, bonus.PC)
+    assert_equal(ds.monster, DC.monster)
+    assert_equal(ds.bonus, bonus)
+    assert_equal(ds.DC, DC)
+    assert ds.natural.dims == ("roll",)
+    assert ds.outcome.dims == ("roll", "PC", "monster")
+    assert (
+        ds.sel(PC="Alice", monster="Goblin").outcome.mean()
+        < ds.sel(PC="Alice", monster="Bugbear").outcome.mean()
+    )
+    assert (
+        ds.sel(PC="Alice", monster="Goblin").outcome.mean()
+        < ds.sel(PC="Bob", monster="Goblin").outcome.mean()
+    )
