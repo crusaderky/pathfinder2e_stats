@@ -75,6 +75,10 @@ def test_roll_bad_params():
         roll("2d")
     with pytest.raises(ValueError, match="Could not parse dice roll"):
         roll("+5")
+    with pytest.raises(TypeError, match="single string"):
+        roll("d20", 20)
+    with pytest.raises(TypeError, match="single string"):
+        roll("d20+5", None, 5)
 
 
 def test_d20():
