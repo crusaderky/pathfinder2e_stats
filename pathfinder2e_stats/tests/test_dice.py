@@ -65,7 +65,7 @@ def test_roll_str(s, count, faces, bonus):
 
 
 def test_roll_bad_params():
-    with pytest.raises(TypeError, match="required positional argument: 'count_or_s'"):
+    with pytest.raises(TypeError, match="required positional argument: 'dice_or_s'"):
         roll()
     with pytest.raises(TypeError, match="required positional argument: 'faces'"):
         roll(1)

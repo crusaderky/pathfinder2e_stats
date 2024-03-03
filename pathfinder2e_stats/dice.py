@@ -21,7 +21,7 @@ def roll(s: str, /, *, dims: Mapping[Hashable, int] | None = None) -> DataArray:
 
 @overload
 def roll(
-    count: int,
+    dice: int,
     faces: int,
     bonus: int = 0,
     /,
@@ -32,27 +32,27 @@ def roll(
 
 
 def roll(
-    count_or_s: int | str,
+    dice_or_s: int | str,
     faces: int | None = None,
     bonus: int = 0,
     /,
     *,
     dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
-    if isinstance(count_or_s, str):
+    if isinstance(dice_or_s, str):
         if faces is not None or bonus != 0:
             raise TypeError(
                 "dice() accepts either a single string compact parameter or "
                 "disaggregated numerical ones"
             )
-        m = _pattern.match(count_or_s.strip())
+        m = _pattern.match(dice_or_s.strip())
         if not m:
-            raise ValueError(f"Could not parse dice roll: {count_or_s!r}")
-        count = int(m.group(1)) if m.group(1) else 1
+            raise ValueError(f"Could not parse dice roll: {dice_or_s!r}")
+        dice = int(m.group(1)) if m.group(1) else 1
         faces = int(m.group(2))
         bonus = int(m.group(3)) if m.group(3) else 0
     else:
-        count = count_or_s
+        dice = dice_or_s
         if faces is None:
             raise TypeError("roll() missing 1 required positional argument: 'faces'")
 
@@ -60,7 +60,7 @@ def roll(
         dims = {}
 
     raw = DataArray(
-        np.random.randint(1, faces + 1, size=(base.size, count, *dims.values())),
+        np.random.randint(1, faces + 1, size=(base.size, dice, *dims.values())),
         dims=("roll", "count", *dims),
     )
     return cast(DataArray, np.maximum(0, raw.sum("count") + bonus))
