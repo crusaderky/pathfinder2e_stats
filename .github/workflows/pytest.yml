@@ -18,31 +18,31 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12']
         requirements: [latest]
         include:
           # Test on macos and windows (first and last version of python only)
           - os: macos-14
-            python-version: '3.9'
+            python-version: '3.10'
             requirements: latest
           - os: macos-14
             python-version: '3.12'
             requirements: latest
           - os: windows-latest
-            python-version: '3.9'
+            python-version: '3.10'
             requirements: latest
           - os: windows-latest
             python-version: '3.12'
             requirements: latest
           # Test on minimal requirements
           - os: ubuntu-latest
-            python-version: '3.9'
+            python-version: '3.10'
             requirements: minimal
           - os: macos-14
-            python-version: '3.9'
+            python-version: '3.10'
             requirements: minimal
           - os: windows-latest
-            python-version: '3.9'
+            python-version: '3.10'
             requirements: minimal
 
     steps:
