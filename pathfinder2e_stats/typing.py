@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import UserDict
+from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from enum import IntEnum
@@ -118,7 +118,7 @@ class Damage:
         kwargs2.update(kwargs)
         return Damage(**kwargs2)
 
-    def expand(self) -> DamageSpec:
+    def expand(self) -> ExpandedDamage:
         base = self.copy(deadly=False, fatal=False, multiplier=1)
         out = {}
 
@@ -142,13 +142,38 @@ class Damage:
             out[DoS.failure] = out.pop(DoS.success)
             out[DoS.success] = [base.copy(magnitude=0.5)]
 
-        return DamageSpec(out, rule=self.rule)
+        return ExpandedDamage(out, rule=self.rule)
 
-    def __add__(self, other: AnyDamageSpec) -> DamageSpec:
+    def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
+        return DamageList([self]) + other
+
+
+class DamageList(UserList[Damage]):
+    @property
+    def rule(self) -> Literal["attack", "basic_save"]:
+        return self[0].rule
+
+    def __str__(self) -> str:
+        return " plus ".join(str(el) for el in self)
+
+    def expand(self) -> ExpandedDamage:
+        return ExpandedDamage.sum(self)
+
+    def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:  # type: ignore[override]
+        if isinstance(other, Damage):
+            other = [other]
+
+        if isinstance(other, (list, DamageList)):
+            out = [self, *other]
+            out = Damage.simplify(out)
+            return DamageList(out)
+
         return self.expand() + other
 
+    __iadd__ = __add__  # type: ignore[assignment]
 
-class DamageSpec(UserDict[DoS, list[Damage]]):
+
+class ExpandedDamage(UserDict[DoS, list[Damage]]):
     rule: Literal["attack", "basic_save"] = "attack"
 
     def __init__(
@@ -158,29 +183,42 @@ class DamageSpec(UserDict[DoS, list[Damage]]):
         *,
         rule: Literal["attack", "basic_save"] = "attack",
     ):
-        self.rule = rule
         if isinstance(data, Damage):
             self.data = data.expand().data
+            rule = data.rule
+        elif not isinstance(data, Mapping):
+            data = DamageList(data)
+            self.data = data.expand().data
+            rule = data.rule
         else:
             data = data or {}
             self.data = {
                 k if isinstance(k, DoS) else DoS(k): list(v) for k, v in data.items()
             }
+        self.rule = rule
 
-    def __add__(self, other: AnyDamageSpec) -> DamageSpec:
-        other = DamageSpec(other)
-        return DamageSpec(
-            {
-                k: Damage.simplify(self[k] + other[k])
-                for k in self.keys() | other.keys()
-            },
-            rule=self.rule if self.rule == other.rule else "basic_save",
-        )
+    def __add__(self, other: AnyDamageSpec) -> ExpandedDamage:
+        return ExpandedDamage.sum([self, other])
+
+    @staticmethod
+    def sum(items: Iterable[AnyDamageSpec]) -> ExpandedDamage:
+        out: dict[DoS, list[Damage]] = {}
+        rule = None
+        for item in items:
+            item = ExpandedDamage(item)
+            if rule is None:
+                rule = item.rule
+            for k, v in item.data.items():
+                out.setdefault(k, []).extend(v)
+
+        out = {k: Damage.simplify(v) for k, v in out.items()}
+        return ExpandedDamage(out, rule=rule or "attack")
 
 
 AnyDamageSpec: TypeAlias = (
     Damage
-    | DamageSpec
+    | Iterable[Damage]
+    | ExpandedDamage
     | Mapping[int, Collection[Damage]]
     | Mapping[DoS, Collection[Damage]]
 )
