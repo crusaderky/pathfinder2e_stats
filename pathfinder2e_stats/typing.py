@@ -119,7 +119,7 @@ class Damage:
         return Damage(**kwargs2)
 
     def expand(self) -> ExpandedDamage:
-        base = self.copy(deadly=False, fatal=False, multiplier=1)
+        base = self.copy(deadly=0, fatal=0, multiplier=1, rule="attack")
         out = {}
 
         if self.splash:
@@ -131,7 +131,13 @@ class Damage:
                 base.copy(dice=1, faces=self.fatal, bonus=0),
             ]
         else:
-            out[DoS.critical_success] = [base.copy(multiplier=1 if self.splash else 2)]
+            if self.splash:
+                crit = base
+            elif self.dice == 0:
+                crit = base.copy(bonus=base.bonus * 2)
+            else:
+                crit = base.copy(multiplier=2)
+            out[DoS.critical_success] = [crit]
         if self.deadly:
             out[DoS.critical_success].append(
                 base.copy(dice=max(1, self.dice - 1), faces=self.deadly, bonus=0)
@@ -140,9 +146,12 @@ class Damage:
         if self.rule == "basic_save":
             out[DoS.critical_failure] = out.pop(DoS.critical_success)
             out[DoS.failure] = out.pop(DoS.success)
-            out[DoS.success] = [base.copy(magnitude=0.5)]
+            if self.dice == 0 and self.bonus > 1:
+                out[DoS.success] = [base.copy(bonus = self.bonus // 2)]
+            elif self.dice > 0:
+                out[DoS.success] = [base.copy(multiplier=0.5)]
 
-        return ExpandedDamage(out, rule=self.rule)
+        return ExpandedDamage(out)
 
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
         return DamageList([self]) + other
@@ -159,43 +168,35 @@ class DamageList(UserList[Damage]):
     def expand(self) -> ExpandedDamage:
         return ExpandedDamage.sum(self)
 
+    def simplify(self) -> DamageList:
+        return DamageList(Damage.simplify(self))
+
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:  # type: ignore[override]
         if isinstance(other, Damage):
             other = [other]
-
-        if isinstance(other, (list, DamageList)):
-            out = [self, *other]
-            out = Damage.simplify(out)
-            return DamageList(out)
-
+        if not isinstance(other, Mapping):
+            return DamageList(Damage.simplify((*self, *other)))
         return self.expand() + other
 
     __iadd__ = __add__  # type: ignore[assignment]
 
 
 class ExpandedDamage(UserDict[DoS, list[Damage]]):
-    rule: Literal["attack", "basic_save"] = "attack"
-
     def __init__(
         self,
         data: AnyDamageSpec | None = None,
         /,
-        *,
-        rule: Literal["attack", "basic_save"] = "attack",
     ):
         if isinstance(data, Damage):
-            self.data = data.expand().data
-            rule = data.rule
+            data = data.expand().data
         elif not isinstance(data, Mapping):
-            data = DamageList(data)
-            self.data = data.expand().data
-            rule = data.rule
+            data = DamageList(data).expand().data
         else:
             data = data or {}
-            self.data = {
+            data = {
                 k if isinstance(k, DoS) else DoS(k): list(v) for k, v in data.items()
             }
-        self.rule = rule
+        self.data = dict(sorted(data.items()))
 
     def __add__(self, other: AnyDamageSpec) -> ExpandedDamage:
         return ExpandedDamage.sum([self, other])
@@ -203,16 +204,13 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     @staticmethod
     def sum(items: Iterable[AnyDamageSpec]) -> ExpandedDamage:
         out: dict[DoS, list[Damage]] = {}
-        rule = None
         for item in items:
             item = ExpandedDamage(item)
-            if rule is None:
-                rule = item.rule
             for k, v in item.data.items():
                 out.setdefault(k, []).extend(v)
 
         out = {k: Damage.simplify(v) for k, v in out.items()}
-        return ExpandedDamage(out, rule=rule or "attack")
+        return ExpandedDamage(out)
 
 
 AnyDamageSpec: TypeAlias = (

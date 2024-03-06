@@ -81,3 +81,95 @@ def test_damage_type_simplify():
         Damage("fire", 1, 4, persistent=True),
         Damage("fire", 0, 0, 1, splash=True),
     ]
+
+
+@pytest.mark.parametrize("persistent", [False, True])
+def test_expand_attack(persistent):
+    assert Damage("slashing", 1, 6, 4, persistent=persistent).expand() == {
+        1: [Damage("slashing", 1, 6, 4, persistent=persistent)],
+        2: [Damage("slashing", 1, 6, 4, 2, persistent=persistent)],
+    }
+
+
+@pytest.mark.parametrize("persistent", [False, True])
+def test_expand_basic_save(persistent):
+    assert Damage(
+        "fire", 1, 6, 2, rule="basic_save", persistent=persistent
+    ).expand() == {
+        -1: [Damage("fire", 1, 6, 2, 2, persistent=persistent)],
+        0: [Damage("fire", 1, 6, 2, persistent=persistent)],
+        1: [Damage("fire", 1, 6, 2, 0.5, persistent=persistent)],
+    }
+
+
+def test_expand_bonus_only():
+    assert Damage("fire", 0, 0, 1).expand() == {
+        1: [Damage("fire", 0, 0, 1)],
+        2: [Damage("fire", 0, 0, 2)],
+    }
+    assert Damage("fire", 0, 0, 1, rule="basic_save").expand() == {
+        -1: [Damage("fire", 0, 0, 2)],
+        0: [Damage("fire", 0, 0, 1)],
+    }
+    assert Damage("fire", 0, 0, 5, rule="basic_save").expand() == {
+        -1: [Damage("fire", 0, 0, 10)],
+        0: [Damage("fire", 0, 0, 5)],
+        1: [Damage("fire", 0, 0, 2)],
+    }
+
+
+def test_expand_splash():
+    d = Damage("fire", 1, 6, 2, splash=True)
+    assert d.expand() == {0: [d], 1: [d], 2: [d]}
+
+
+@pytest.mark.parametrize("dice,deadly_dice", [(1, 1), (2, 1), (3, 2), (4, 3)])
+def test_expand_deadly(dice, deadly_dice):
+    assert Damage("slashing", dice, 6, 4, deadly=8).expand() == {
+        1: [Damage("slashing", dice, 6, 4)],
+        2: [Damage("slashing", dice, 6, 4, 2), Damage("slashing", deadly_dice, 8)],
+    }
+
+
+def test_expand_fatal():
+    assert Damage("slashing", 2, 8, 4, fatal=12).expand() == {
+        1: [Damage("slashing", 2, 8, 4)],
+        2: [Damage("slashing", 2, 12, 4, 2), Damage("slashing", 1, 12)],
+    }
+
+
+def test_expand_deadly_fatal():
+    """Probably possible through some features"""
+    assert Damage("slashing", 2, 8, 4, deadly=8, fatal=12).expand() == {
+        1: [Damage("slashing", 2, 8, 4)],
+        2: [
+            Damage("slashing", 2, 12, 4, 2),
+            Damage("slashing", 1, 12),
+            Damage("slashing", 1, 8),
+        ],
+    }
+
+
+def test_damage_add():
+    assert Damage("slashing", 1, 6, 2) + Damage("slashing", 0, 0, 3) == [
+        Damage("slashing", 1, 6, 5)
+    ]
+    assert Damage("slashing", 1, 6, 2) + Damage("fire", 1, 6) == [
+        Damage("slashing", 1, 6, 2), Damage("fire", 1, 6)
+    ]
+
+
+def test_damage_add_and_expand():
+    splash = Damage("fire", 0, 0, 1, splash=True)
+    assert (Damage("slashing", 1, 6, deadly=8) + splash).expand() == {
+        0: [splash],
+        1: [Damage("slashing", 1, 6), splash],
+        2: [Damage("slashing", 1, 6, 0, 2), Damage("slashing", 1, 8), splash],
+    }
+
+
+def test_damage_add_basic_save():
+    assert (
+        Damage("fire", 2, 6, rule="basic_save")
+        + Damage("fire", 0, 0, 1, rule="basic_save")
+    ) == [Damage("fire", 2, 6, 1, rule="basic_save")]
