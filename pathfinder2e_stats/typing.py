@@ -187,12 +187,13 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         data: AnyDamageSpec | None = None,
         /,
     ):
-        if isinstance(data, Damage):
+        if data is None:
+            data = {}
+        elif isinstance(data, Damage):
             data = data.expand().data
         elif not isinstance(data, Mapping):
             data = ExpandedDamage.sum(data).data
         else:
-            data = data or {}
             data = {
                 k if isinstance(k, DoS) else DoS(k): list(v) for k, v in data.items()
             }

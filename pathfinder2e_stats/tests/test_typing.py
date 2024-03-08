@@ -182,6 +182,9 @@ def test_damage_list_basic_save():
 
 
 def test_expanded_damage_init():
+    e = ExpandedDamage()
+    assert e == {}
+
     e = ExpandedDamage({1: [Damage("fire", 1, 6)]})
     assert all(isinstance(k, DoS) for k in e)
     assert e == {1: [Damage("fire", 1, 6)]}
