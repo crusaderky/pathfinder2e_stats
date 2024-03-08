@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from textwrap import dedent
+
 import pytest
 
 from pathfinder2e_stats import Damage, DoS, ExpandedDamage
@@ -241,3 +243,13 @@ def test_expanded_damage_sum():
             {0: [Damage("fire", 0, 0, 1)]},
         ]
     ) == {0: [Damage("fire", 1, 6, 1)]}
+
+
+def test_expanded_damage_str():
+    d = (Damage("fire", 1, 6) + Damage("fire", 0, 0, 1, splash=True)).expand()
+    expect = """
+    **Failure:** 1 fire splash
+    **Success:** 1d6 fire plus 1 fire splash
+    **Critical success:** (1d6)x2 fire plus 1 fire splash
+    """
+    assert str(d) == dedent(expect).strip()

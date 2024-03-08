@@ -206,11 +206,18 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         out: dict[DoS, list[Damage]] = {}
         for item in items:
             item = ExpandedDamage(item)
-            for k, v in item.data.items():
+            for k, v in item.items():
                 out.setdefault(k, []).extend(v)
 
         out = {k: Damage.simplify(v) for k, v in out.items()}
         return ExpandedDamage(out)
+
+    def __str__(self) -> str:
+        out = []
+        for k, v in self.items():
+            name = k.name.replace("_", " ").capitalize()
+            out.append(f"**{name}:** {DamageList(v)}")
+        return "\n".join(out)
 
 
 AnyDamageSpec: TypeAlias = (
