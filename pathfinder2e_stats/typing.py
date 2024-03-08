@@ -147,7 +147,7 @@ class Damage:
             out[DoS.critical_failure] = out.pop(DoS.critical_success)
             out[DoS.failure] = out.pop(DoS.success)
             if self.dice == 0 and self.bonus > 1:
-                out[DoS.success] = [base.copy(bonus = self.bonus // 2)]
+                out[DoS.success] = [base.copy(bonus=self.bonus // 2)]
             elif self.dice > 0:
                 out[DoS.success] = [base.copy(multiplier=0.5)]
 
@@ -175,7 +175,7 @@ class DamageList(UserList[Damage]):
         if isinstance(other, Damage):
             other = [other]
         if not isinstance(other, Mapping):
-            return DamageList(Damage.simplify((*self, *other)))
+            return DamageList([*self, *other]).simplify()
         return self.expand() + other
 
     __iadd__ = __add__  # type: ignore[assignment]

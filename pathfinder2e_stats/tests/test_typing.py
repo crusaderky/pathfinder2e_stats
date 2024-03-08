@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from pathfinder2e_stats import Damage
+from pathfinder2e_stats import Damage, DoS, ExpandedDamage
 
 
 def test_damage_type_validation():
@@ -150,16 +150,19 @@ def test_expand_deadly_fatal():
     }
 
 
-def test_damage_add():
-    assert Damage("slashing", 1, 6, 2) + Damage("slashing", 0, 0, 3) == [
-        Damage("slashing", 1, 6, 5)
-    ]
-    assert Damage("slashing", 1, 6, 2) + Damage("fire", 1, 6) == [
-        Damage("slashing", 1, 6, 2), Damage("fire", 1, 6)
-    ]
+def test_damage_list():
+    actual = Damage("slashing", 1, 6, 2) + Damage("slashing", 0, 0, 3)
+    assert actual == [Damage("slashing", 1, 6, 5)]
+    assert actual.rule == "attack"
+    assert str(actual) == "1d6+5 slashing"
+
+    actual = Damage("slashing", 1, 6, 2) + Damage("fire", 1, 6)
+    assert actual == [Damage("slashing", 1, 6, 2), Damage("fire", 1, 6)]
+    assert actual.rule == "attack"
+    assert str(actual) == "1d6+2 slashing plus 1d6 fire"
 
 
-def test_damage_add_and_expand():
+def test_damage_list_expand():
     splash = Damage("fire", 0, 0, 1, splash=True)
     assert (Damage("slashing", 1, 6, deadly=8) + splash).expand() == {
         0: [splash],
@@ -168,8 +171,73 @@ def test_damage_add_and_expand():
     }
 
 
-def test_damage_add_basic_save():
-    assert (
-        Damage("fire", 2, 6, rule="basic_save")
-        + Damage("fire", 0, 0, 1, rule="basic_save")
-    ) == [Damage("fire", 2, 6, 1, rule="basic_save")]
+def test_damage_list_basic_save():
+    actual = Damage("fire", 2, 6, rule="basic_save") + Damage(
+        "fire", 0, 0, 1, rule="basic_save"
+    )
+    assert actual == [Damage("fire", 2, 6, 1, rule="basic_save")]
+    assert actual.rule == "basic_save"
+
+
+def test_expanded_damage_init():
+    e = ExpandedDamage({1: [Damage("fire", 1, 6)]})
+    assert all(isinstance(k, DoS) for k in e)
+    assert e == {1: [Damage("fire", 1, 6)]}
+
+    e = ExpandedDamage(Damage("fire", 1, 6))
+    assert e == {1: [Damage("fire", 1, 6)], 2: [Damage("fire", 1, 6, 0, 2)]}
+
+    e = ExpandedDamage(Damage("slashing", 1, 4) + Damage("fire", 1, 6))
+    assert e == {
+        1: [Damage("slashing", 1, 4), Damage("fire", 1, 6)],
+        2: [Damage("slashing", 1, 4, 0, 2), Damage("fire", 1, 6, 0, 2)],
+    }
+
+    e = ExpandedDamage([Damage("slashing", 1, 4), Damage("fire", 1, 6)])
+    assert e == {
+        1: [Damage("slashing", 1, 4), Damage("fire", 1, 6)],
+        2: [Damage("slashing", 1, 4, 0, 2), Damage("fire", 1, 6, 0, 2)],
+    }
+
+
+def test_damage_plus_expanded():
+    assert Damage("fire", 1, 6, 4) + {
+        0: [Damage("fire", 0, 0, 4)],
+        1: [Damage("fire", 0, 0, 4)],
+    } == {
+        0: [Damage("fire", 0, 0, 4)],
+        1: [Damage("fire", 1, 6, 8)],  # simplified
+        2: [Damage("fire", 1, 6, 4, 2)],
+    }
+
+
+def test_damage_list_plus_expanded():
+    dl = Damage("fire", 1, 6) + Damage("fire", 0, 0, 1, splash=True)
+    ed = {2: [Damage("fire", 1, 4, persistent=True)]}
+    assert dl + ed == {
+        0: [Damage("fire", 0, 0, 1, splash=True)],
+        1: [Damage("fire", 1, 6), Damage("fire", 0, 0, 1, splash=True)],
+        2: [
+            Damage("fire", 1, 6, 0, 2),
+            Damage("fire", 1, 4, persistent=True),
+            Damage("fire", 0, 0, 1, splash=True),
+        ],
+    }
+
+
+def test_expanded_damage_plus():
+    e = ExpandedDamage({0: [Damage("fire", 1, 6)]})
+    assert e + Damage("slashing", 2, 6, rule="basic_save") == {
+        -1: [Damage("slashing", 2, 6, 0, 2)],
+        0: [Damage("fire", 1, 6), Damage("slashing", 2, 6)],
+        1: [Damage("slashing", 2, 6, 0, 0.5)],
+    }
+
+
+def test_expanded_damage_sum():
+    assert ExpandedDamage.sum(
+        [
+            {0: [Damage("fire", 1, 6)]},
+            {0: [Damage("fire", 0, 0, 1)]},
+        ]
+    ) == {0: [Damage("fire", 1, 6, 1)]}
