@@ -7,7 +7,7 @@ import xarray
 from xarray import DataArray, Dataset
 
 from pathfinder2e_stats.dice import d20
-from pathfinder2e_stats.typing import DoS
+from pathfinder2e_stats.damage_spec import DoS
 
 
 def map_outcomes(
