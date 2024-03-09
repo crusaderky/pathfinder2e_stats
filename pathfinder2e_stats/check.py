@@ -6,7 +6,7 @@ from typing import Any, Literal
 import xarray
 from xarray import DataArray, Dataset
 
-from pathfinder2e_stats.damage_spec import DoS
+from pathfinder2e_stats.base import DoS
 from pathfinder2e_stats.dice import d20
 
 
