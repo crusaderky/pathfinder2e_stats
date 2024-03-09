@@ -16,8 +16,6 @@ def test_damage_type_validation():
         Damage("fire", True, 6)
     with pytest.raises(TypeError):
         Damage("fire", 1, 6, splash=1)
-    with pytest.raises(ValueError):
-        Damage("fire", 1, 6, rule="foo")
     Damage("fire", 1, 6, multiplier=0.5)
     Damage("fire", 1, 6, multiplier=2)
 
@@ -53,7 +51,7 @@ def test_damage_type_str():
     d = Damage("piercing", 2, 6, 4, fatal=10)
     assert str(d) == "2d6+4 fatal d10 piercing"
 
-    d = Damage("fire", 6, 6, rule="basic_save")
+    d = Damage("fire", 6, 6, basic_save=True)
     assert str(d) == "6d6 fire, with a basic saving throw"
 
 
@@ -95,9 +93,7 @@ def test_expand_attack(persistent):
 
 @pytest.mark.parametrize("persistent", [False, True])
 def test_expand_basic_save(persistent):
-    assert Damage(
-        "fire", 1, 6, 2, rule="basic_save", persistent=persistent
-    ).expand() == {
+    assert Damage("fire", 1, 6, 2, basic_save=True, persistent=persistent).expand() == {
         -1: [Damage("fire", 1, 6, 2, 2, persistent=persistent)],
         0: [Damage("fire", 1, 6, 2, persistent=persistent)],
         1: [Damage("fire", 1, 6, 2, 0.5, persistent=persistent)],
@@ -109,11 +105,11 @@ def test_expand_bonus_only():
         1: [Damage("fire", 0, 0, 1)],
         2: [Damage("fire", 0, 0, 2)],
     }
-    assert Damage("fire", 0, 0, 1, rule="basic_save").expand() == {
+    assert Damage("fire", 0, 0, 1, basic_save=True).expand() == {
         -1: [Damage("fire", 0, 0, 2)],
         0: [Damage("fire", 0, 0, 1)],
     }
-    assert Damage("fire", 0, 0, 5, rule="basic_save").expand() == {
+    assert Damage("fire", 0, 0, 5, basic_save=True).expand() == {
         -1: [Damage("fire", 0, 0, 10)],
         0: [Damage("fire", 0, 0, 5)],
         1: [Damage("fire", 0, 0, 2)],
@@ -155,12 +151,10 @@ def test_expand_deadly_fatal():
 def test_damage_list():
     actual = Damage("slashing", 1, 6, 2) + Damage("slashing", 0, 0, 3)
     assert actual == [Damage("slashing", 1, 6, 5)]
-    assert actual.rule == "attack"
     assert str(actual) == "1d6+5 slashing"
 
     actual = Damage("slashing", 1, 6, 2) + Damage("fire", 1, 6)
     assert actual == [Damage("slashing", 1, 6, 2), Damage("fire", 1, 6)]
-    assert actual.rule == "attack"
     assert str(actual) == "1d6+2 slashing plus 1d6 fire"
 
 
@@ -174,11 +168,11 @@ def test_damage_list_expand():
 
 
 def test_damage_list_basic_save():
-    actual = Damage("fire", 2, 6, rule="basic_save") + Damage(
-        "fire", 0, 0, 1, rule="basic_save"
+    actual = Damage("fire", 2, 6, basic_save=True) + Damage(
+        "fire", 0, 0, 1, basic_save=True
     )
-    assert actual == [Damage("fire", 2, 6, 1, rule="basic_save")]
-    assert actual.rule == "basic_save"
+    assert actual == [Damage("fire", 2, 6, 1, basic_save=True)]
+    assert actual.basic_save is True
 
 
 def test_expanded_damage_init():
@@ -232,7 +226,7 @@ def test_damage_list_plus_expanded():
 
 def test_expanded_damage_plus():
     e = ExpandedDamage({0: [Damage("fire", 1, 6)]})
-    assert e + Damage("slashing", 2, 6, rule="basic_save") == {
+    assert e + Damage("slashing", 2, 6, basic_save=True) == {
         -1: [Damage("slashing", 2, 6, 0, 2)],
         0: [Damage("fire", 1, 6), Damage("slashing", 2, 6)],
         1: [Damage("slashing", 2, 6, 0, 0.5)],

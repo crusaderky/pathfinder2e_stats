@@ -3,16 +3,10 @@ from __future__ import annotations
 from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
-from enum import IntEnum
 from itertools import groupby
-from typing import Any, Literal, TypeAlias
+from typing import Any, TypeAlias
 
-
-class DoS(IntEnum):
-    critical_failure = -1
-    failure = 0
-    success = 1
-    critical_success = 2
+from pathfinder2e_stats.base import DoS
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,7 +20,7 @@ class Damage:
     splash: bool = False
     deadly: int = 0
     fatal: int = 0
-    rule: Literal["attack", "basic_save"] = "attack"
+    basic_save: bool = False
 
     def __post_init__(self) -> None:
         for k, t in self.__annotations__.items():
@@ -35,9 +29,6 @@ class Damage:
             if cls is float:
                 if type(v) not in (int, float):
                     raise TypeError(f"{k} must be of type int or float; got {type(v)}")
-            elif t.startswith("Literal["):
-                if v not in cls.__args__:
-                    raise ValueError(f"{k} can be one of {cls.__args__}; got {v!r}")
             elif type(v) is not cls:
                 raise TypeError(f"{k} must be of type {t}; got {type(v)}")
 
@@ -68,7 +59,7 @@ class Damage:
         else:
             s += f" {self.type}"
 
-        if self.rule == "basic_save":
+        if self.basic_save:
             s += ", with a basic saving throw"
         return s
 
@@ -119,7 +110,7 @@ class Damage:
         return Damage(**kwargs2)
 
     def expand(self) -> ExpandedDamage:
-        base = self.copy(deadly=0, fatal=0, multiplier=1, rule="attack")
+        base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
         out = {}
 
         if self.splash:
@@ -143,7 +134,7 @@ class Damage:
                 base.copy(dice=max(1, self.dice - 1), faces=self.deadly, bonus=0)
             )
 
-        if self.rule == "basic_save":
+        if self.basic_save:
             out[DoS.critical_failure] = out.pop(DoS.critical_success)
             out[DoS.failure] = out.pop(DoS.success)
             if self.dice == 0 and self.bonus > 1:
@@ -159,8 +150,8 @@ class Damage:
 
 class DamageList(UserList[Damage]):
     @property
-    def rule(self) -> Literal["attack", "basic_save"]:
-        return self[0].rule
+    def basic_save(self) -> bool:
+        return self[0].basic_save
 
     def __str__(self) -> str:
         return " plus ".join(str(el) for el in self)
