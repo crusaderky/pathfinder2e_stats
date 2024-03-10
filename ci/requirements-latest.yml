@@ -4,6 +4,4 @@ channels:
 dependencies:
   - pytest
   - pytest-cov
-  - packaging
   - xarray
-  - numba
