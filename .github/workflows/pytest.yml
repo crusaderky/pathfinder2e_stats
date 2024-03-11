@@ -9,7 +9,7 @@ on:
 # When this workflow is queued, automatically cancel any previous running
 # or pending jobs from the same branch
 concurrency:
-  group: tests-${{ github.ref }}
+  group: tests-stuckCI2-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
