@@ -6,4 +6,3 @@ dependencies:
   - sphinx
   - sphinx_rtd_theme
   - xarray
-  - numba

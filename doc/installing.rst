@@ -4,9 +4,8 @@ Installation
 Required dependencies
 ---------------------
 
-- Python 3.8 or later
+- Python 3.10 or later
 - xarray
-- numba
 
 Installing with conda
 ---------------------

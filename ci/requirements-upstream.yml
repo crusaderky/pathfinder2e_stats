@@ -1,0 +1,12 @@
+name: pathfinder2e_stats
+channels:
+  - conda-forge
+dependencies:
+  - pytest
+  - pytest-cov
+  - xarray
+  - pyarrow  # Hard dependency of Pandas 3
+  - pip
+  - pip:
+      - git+https://github.com/pydata/xarray
+      # numpy and pandas are upgraded to nightly builds by pytest.yml
