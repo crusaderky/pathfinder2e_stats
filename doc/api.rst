@@ -5,7 +5,6 @@ API Reference
 .. autofunction:: pathfinder2e_stats.d20
 .. autofunction:: pathfinder2e_stats.check
 .. autofunction:: pathfinder2e_stats.map_outcomes
-.. autofunction:: pathfinder2e_stats.damage
 .. autoclass:: pathfinder2e_stats.DoS
 .. autoclass:: pathfinder2e_stats.Damage
 .. autoclass:: pathfinder2e_stats.ExpandedDamage
