@@ -188,6 +188,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
             data = {
                 k if isinstance(k, DoS) else DoS(k): list(v) for k, v in data.items()
             }
+        data = {k: v for k, v in data.items() if v}
         self.data = dict(sorted(data.items()))
 
     def __add__(self, other: AnyDamageSpec) -> ExpandedDamage:
@@ -210,6 +211,14 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
             name = k.name.replace("_", " ").capitalize()
             out.append(f"**{name}:** {DamageList(v)}")
         return "\n".join(out)
+
+    def filter(self, persistent: bool = False, splash: bool = False) -> ExpandedDamage:
+        return ExpandedDamage(
+            {
+                k: [d for d in v if d.persistent is persistent and d.splash is splash]
+                for k, v in self.items()
+            }
+        )
 
 
 AnyDamageSpec: TypeAlias = (

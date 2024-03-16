@@ -16,7 +16,7 @@ def test_map_outcomes_basic():
     assert all(isinstance(v, DoS) for v in r.values())
 
     with pytest.raises(ValueError):
-        map_outcomes({-2: 0})
+        map_outcomes({-3: 0})
 
 
 def test_map_outcomes_kwargs():
@@ -70,6 +70,7 @@ def test_check_basic():
         "hero_point": False,
         "keen": False,
         "legend": {
+            -2: "no_roll",
             -1: "critical_failure",
             0: "failure",
             1: "success",
@@ -80,11 +81,11 @@ def test_check_basic():
     }
 
     assert ds.natural.dims == ("roll",)
-    assert ds.natural.dtype == "i1"
+    assert ds.natural.dtype.kind == "i"
     assert np.unique(ds.natural).tolist() == list(range(1, 21))
 
     assert ds.outcome.dims == ("roll",)
-    assert ds.outcome.dtype == "i1"
+    assert ds.outcome.dtype.kind == "i"
     assert np.unique(ds.outcome).tolist() == [-1, 0, 1, 2]
     assert_equal(ds.outcome == -1, ds.natural == 1)
     assert_equal(ds.outcome == 0, (ds.natural > 1) & (ds.natural < 7))
@@ -196,7 +197,7 @@ def test_check_map_to_failure():
     ds = check(DC=10, map_outcomes={-1: 0, 1: 0, 2: 0})
     assert ds.sizes == {"roll": 1000}
     assert ds.outcome.shape == (1000,)
-    assert ds.outcome.dtype == "i1"
+    assert ds.outcome.dtype.kind == "i"
     assert (ds.outcome == 0).all()
 
 
