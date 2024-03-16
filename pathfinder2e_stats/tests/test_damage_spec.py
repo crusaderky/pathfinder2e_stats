@@ -199,6 +199,11 @@ def test_expanded_damage_init():
     }
 
 
+def test_expanded_damage_init_filter_empty():
+    actual = ExpandedDamage({-1: [], 0: [], 1: [Damage("fire", 1, 6)], 2: []})
+    assert actual == {1: [Damage("fire", 1, 6)]}
+
+
 def test_damage_plus_expanded():
     assert Damage("fire", 1, 6, 4) + {
         0: [Damage("fire", 0, 0, 4)],
@@ -250,3 +255,24 @@ def test_expanded_damage_str():
     **Critical success:** (1d6)x2 fire plus 1 fire splash
     """
     assert str(d) == dedent(expect).strip()
+
+
+def test_expanded_damage_filter():
+    d = (
+        Damage("fire", 1, 6)
+        + Damage("fire", 0, 0, 1, splash=True)
+        + Damage("fire", 1, 4, persistent=True)
+    ).expand()
+    assert d.filter() == {
+        1: [Damage("fire", 1, 6)],
+        2: [Damage("fire", 1, 6, 0, 2)],
+    }
+    assert d.filter(persistent=True) == {
+        1: [Damage("fire", 1, 4, persistent=True)],
+        2: [Damage("fire", 1, 4, 0, 2, persistent=True)],
+    }
+    assert d.filter(splash=True) == {
+        0: [Damage("fire", 0, 0, 1, splash=True)],
+        1: [Damage("fire", 0, 0, 1, splash=True)],
+        2: [Damage("fire", 0, 0, 1, splash=True)],
+    }

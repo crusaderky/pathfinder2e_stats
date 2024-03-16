@@ -14,6 +14,7 @@ def set_size(n: int) -> int:
 
 
 class DoS(IntEnum):
+    no_roll = -2
     critical_failure = -1
     failure = 0
     success = 1

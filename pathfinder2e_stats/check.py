@@ -95,7 +95,6 @@ def check(
 
     natural = d20(fortune=fortune, misfortune=misfortune, dims=dims)
     delta = natural + bonus - DC
-    natural = natural.astype("i1")
 
     assert DoS.failure.value == 0
     assert DoS.success.value == 1
@@ -103,7 +102,7 @@ def check(
         (delta <= -10) * DoS.critical_failure
         + ((delta >= 0) & (delta < 10))  # success
         + (delta >= 10) * DoS.critical_success
-    ).astype("i1")
+    )
     del delta
 
     outcome = (
@@ -119,7 +118,7 @@ def check(
     if map_:
         # Some mappings are needed
         # Note: avoid changing the same value multiple times!
-        map2 = {k: map_.get(k, k) for k in DoS if map_.get(k, k)}
+        map2 = {k: map_.get(k, k) for k in DoS if k != DoS.no_roll and map_.get(k, k)}
         if map2:
             outcome = sum(xarray.where(outcome == k, v, 0) for k, v in map2.items())
         else:  # Edge case: map everything to failure
