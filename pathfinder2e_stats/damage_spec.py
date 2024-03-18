@@ -31,6 +31,8 @@ class Damage:
                     raise TypeError(f"{k} must be of type int or float; got {type(v)}")
             elif type(v) is not cls:
                 raise TypeError(f"{k} must be of type {t}; got {type(v)}")
+        if self.multiplier not in (0.5, 1, 2):
+            raise ValueError(f"multiplier must be 0.5, 1, or 2; got {self.multiplier}")
 
     def __str__(self) -> str:
         if self.dice and self.faces:
@@ -102,7 +104,7 @@ class Damage:
                 # Sum flat bonus to dice
                 out[-2:] = [out[-2].copy(bonus=out[-2].bonus + out[-1].bonus)]
 
-        return out
+        return [o for o in out if bool(o)]
 
     def copy(self, **kwargs: Any) -> Damage:
         kwargs2 = {k: getattr(self, k) for k in self.__annotations__}
@@ -147,6 +149,9 @@ class Damage:
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
         return DamageList([self]) + other
 
+    def __bool__(self) -> bool:
+        return self.dice * (self.fatal or self.faces) + self.bonus + self.deadly > 0
+
 
 class DamageList(UserList[Damage]):
     @property
@@ -188,6 +193,8 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
             data = {
                 k if isinstance(k, DoS) else DoS(k): list(v) for k, v in data.items()
             }
+
+        data = {k: [vi for vi in v if bool(vi)] for k, v in data.items()}
         data = {k: v for k, v in data.items() if v}
         self.data = dict(sorted(data.items()))
 
@@ -219,6 +226,9 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
                 for k, v in self.items()
             }
         )
+
+    def to_dict_of_str(self) -> dict[str, str]:
+        return {str(k): str(DamageList(v)) for k, v in self.items()}
 
 
 AnyDamageSpec: TypeAlias = (

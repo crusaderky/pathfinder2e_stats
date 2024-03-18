@@ -19,3 +19,10 @@ class DoS(IntEnum):
     failure = 0
     success = 1
     critical_success = 2
+
+    def __str__(self) -> str:
+        return self.name.replace("_", " ").capitalize()
+
+    @classmethod
+    def legend(cls) -> dict[int, str]:
+        return {dos.value: str(dos) for dos in cls.__members__.values()}

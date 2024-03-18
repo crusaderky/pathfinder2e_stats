@@ -137,7 +137,7 @@ def check(
             "misfortune": misfortune,
             "hero_point": hero_point.name if isinstance(hero_point, DoS) else False,
             "map_outcomes": {k.name: v.name for k, v in map_.items()},
-            "legend": {dos.value: dos.name for dos in DoS},
+            "legend": DoS.legend(),
         },
     )
     if hero_point is not False:

@@ -69,13 +69,7 @@ def test_check_basic():
         "fortune": False,
         "hero_point": False,
         "keen": False,
-        "legend": {
-            -2: "no_roll",
-            -1: "critical_failure",
-            0: "failure",
-            1: "success",
-            2: "critical_success",
-        },
+        "legend": DoS.legend(),
         "map_outcomes": {},
         "misfortune": False,
     }

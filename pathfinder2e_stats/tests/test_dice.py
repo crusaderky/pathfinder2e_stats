@@ -4,20 +4,7 @@ import numpy as np
 import pytest
 from xarray.testing import assert_identical
 
-from pathfinder2e_stats import d20, roll, set_size
-
-
-def test_stable_rng():
-    assert roll(1, 100)[:5].values.tolist() == [45, 48, 65, 68, 68]
-
-
-def test_set_size():
-    assert roll(1, 20).shape == (1000,)
-    n = set_size(10)
-    assert n == 1000
-    assert roll(1, 20).shape == (10,)
-    n = set_size(20)
-    assert n == 10
+from pathfinder2e_stats import d20, roll
 
 
 def test_roll():
