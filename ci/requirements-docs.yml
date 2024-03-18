@@ -6,3 +6,7 @@ dependencies:
   - sphinx
   - sphinx_rtd_theme
   - xarray
+
+  # Additional dependencies used only for notebooks
+  - jupyterlab
+  - matplotlib
