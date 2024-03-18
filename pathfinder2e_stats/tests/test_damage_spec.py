@@ -16,8 +16,11 @@ def test_damage_type_validation():
         Damage("fire", True, 6)
     with pytest.raises(TypeError):
         Damage("fire", 1, 6, splash=1)
+
     Damage("fire", 1, 6, multiplier=0.5)
     Damage("fire", 1, 6, multiplier=2)
+    with pytest.raises(ValueError):
+        Damage("fire", 1, 6, multiplier=3)
 
 
 def test_damage_type_str():
@@ -73,6 +76,7 @@ def test_damage_type_simplify():
             Damage("piercing", 2, 6, 2),
             Damage("piercing", 1, 8),
             Damage("piercing", 1, 8, multiplier=2),
+            Damage("force", 1, 6, -6),
         ]
     ) == [
         Damage("piercing", 1, 8, multiplier=2),
@@ -256,6 +260,12 @@ def test_expanded_damage_str():
     """
     assert str(d) == dedent(expect).strip()
 
+    assert d.to_dict_of_str() == {
+        "Failure": "1 fire splash",
+        "Success": "1d6 fire plus 1 fire splash",
+        "Critical success": "(1d6)x2 fire plus 1 fire splash",
+    }
+
 
 def test_expanded_damage_filter():
     d = (
@@ -276,3 +286,34 @@ def test_expanded_damage_filter():
         1: [Damage("fire", 0, 0, 1, splash=True)],
         2: [Damage("fire", 0, 0, 1, splash=True)],
     }
+
+
+def test_damage_bool():
+    assert bool(Damage("fire", 0, 0, 1)) is True
+    assert bool(Damage("fire", 0, 0, 0)) is False
+    assert bool(Damage("fire", 0, 0, -1)) is False
+
+    assert bool(Damage("fire", 2, 6, -11)) is True
+    assert bool(Damage("fire", 2, 6, -12)) is False
+    assert bool(Damage("fire", 2, 6, -13)) is False
+
+    assert bool(Damage("fire", 1, 6, -6)) is False
+    assert bool(Damage("fire", 1, 6, -6, deadly=8)) is True
+    assert bool(Damage("fire", 1, 6, -14, deadly=8)) is False
+    assert bool(Damage("fire", 1, 6, -15, deadly=8)) is False
+
+    assert bool(Damage("fire", 2, 6, -15, fatal=8)) is True
+    assert bool(Damage("fire", 2, 6, -16, fatal=8)) is False
+    assert bool(Damage("fire", 2, 6, -17, fatal=8)) is False
+
+
+def test_no_damage():
+    d = Damage("slashing", 1, 6, -6)
+    assert d.expand() == {}
+
+    d = Damage("slashing", 1, 6, -6) + Damage("fire", 0, 0, 0)
+    assert d == []
+    assert d.expand() == {}
+
+    d = ExpandedDamage({1: [Damage("slashing", 1, 6, -6)]})
+    assert d == {}
