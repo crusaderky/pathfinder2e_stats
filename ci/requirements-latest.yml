@@ -5,3 +5,7 @@ dependencies:
   - pytest
   - pytest-cov
   - xarray
+
+  # Additional dependencies used only for notebooks
+  - jupyterlab
+  - matplotlib
