@@ -20,7 +20,7 @@ def damage(
     resistances: Mapping[str, int] | DataArray | None = None,
     immunities: Mapping[str, bool] | Collection[str] | DataArray | None = None,
     persistent_damage_rounds: int = 3,
-    persistent_damage_DC: int = 15,
+    persistent_damage_DC: int | Mapping[str, int] | DataArray = 15,
     splash_damage_targets: int = 2,
 ) -> Dataset:
     out = check_outcome.copy(deep=False)
@@ -81,13 +81,26 @@ def damage(
         # Splash damage to main target is already included in direct damage
         total_damage.append(out["splash_damage"] * (splash_damage_targets - 1))
     if "persistent_damage" in out:
+        if isinstance(persistent_damage_DC, int):
+            persistent_damage_DC = {
+                k: persistent_damage_DC for k in out.damage_type.values
+            }
+        persistent_damage_DC = _parse_weaknesses(persistent_damage_DC)
+        _, persistent_damage_DC = align(
+            out, persistent_damage_DC, join="left", fill_value=15
+        )
+        out["persistent_damage_DC"] = persistent_damage_DC
+
         out["persistent_damage_check"] = check(
             DC=persistent_damage_DC,
-            dims={"persistent_round": persistent_damage_rounds},
+            # Roll separately for each damage type, but not e.g. for different targets
+            dims={
+                "damage_type": out.sizes["damage_type"],
+                "persistent_round": persistent_damage_rounds,
+            },
             allow_critical_failure=False,
             allow_critical_success=False,
         ).outcome
-        out.attrs["persistent_damage_DC"] = persistent_damage_DC
         out["apply_persistent_damage"] = (
             out["persistent_damage_check"].cumsum("persistent_round")
             # Check to extinguish persistent damage is done after taking it
