@@ -100,7 +100,6 @@ def test_splash_damage_no_direct():
 
 def test_persistent_damage():
     actual = damage(check(6, DC=15), Damage("fire", 1, 6, persistent=True))
-    assert actual.attrs["persistent_damage_DC"] == 15
     assert "direct_damage" not in actual
     assert "splash_damage" not in actual
     assert actual.persistent_damage.sizes == {
@@ -153,6 +152,68 @@ def test_persistent_damage_DC10():
     assert 0.42 < actual.apply_persistent_damage.isel(persistent_round=1).mean() < 0.47
     assert 0.18 < actual.apply_persistent_damage.isel(persistent_round=2).mean() < 0.22
     assert 1.5 < actual.total_damage[actual.outcome == 1].mean() < 1.9
+
+
+def test_multiple_persistent_damages():
+    """Persistent damages of different types roll to stop separately"""
+    actual = damage(
+        check(6, DC=15),
+        Damage("bleed", 0, 0, 1, persistent=True)
+        + Damage("fire", 0, 0, 1, persistent=True),
+    )
+    assert actual.apply_persistent_damage.sizes == {
+        "roll": 1000,
+        "damage_type": 2,
+        "persistent_round": 3,
+    }
+    bleed = actual.apply_persistent_damage.sel(damage_type="bleed", drop=True)
+    fire = actual.apply_persistent_damage.sel(damage_type="fire", drop=True)
+    assert not (bleed == fire).all()
+
+
+@pytest.mark.parametrize(
+    "DC",
+    [
+        {"bleed": 20, "fire": 10, "electricity": 12},
+        DataArray(
+            [20, 10, 12],
+            dims=["damage_type"],
+            coords={"damage_type": ["bleed", "fire", "electricity"]},
+        ),
+    ],
+)
+def test_multiple_persistent_damage_DCs(DC):
+    """Different persistent damage types can have different DCs"""
+    actual = damage(
+        check(6, DC=15),
+        Damage("bleed", 0, 0, 1, persistent=True)
+        + Damage("fire", 0, 0, 1, persistent=True)
+        + Damage("cold", 0, 0, 1, persistent=True),
+        persistent_damage_DC=DC,
+    )
+    # Omitted goes to default
+    assert_equal(
+        actual.persistent_damage_DC,
+        DataArray(
+            [20, 15, 10],
+            dims=["damage_type"],
+            coords={"damage_type": ["bleed", "cold", "fire"]},
+        ),
+    )
+
+    assert actual.apply_persistent_damage.sizes == {
+        "roll": 1000,
+        "damage_type": 3,
+        "persistent_round": 3,
+    }
+    means = (
+        actual.apply_persistent_damage.mean("roll")
+        .sum("persistent_round")
+        .values.tolist()
+    )
+    assert 2.7 < means[0] < 2.9  # bleed
+    assert 2.0 < means[1] < 2.4  # cold
+    assert 1.5 < means[2] < 1.8  # fire
 
 
 @pytest.mark.parametrize(
