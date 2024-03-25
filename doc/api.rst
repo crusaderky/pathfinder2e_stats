@@ -8,5 +8,8 @@ API Reference
 .. autoclass:: pathfinder2e_stats.DoS
 .. autoclass:: pathfinder2e_stats.Damage
 .. autoclass:: pathfinder2e_stats.ExpandedDamage
+.. autofunction:: pathfinder2e_stats.sum_bonuses
 .. autofunction:: pathfinder2e_stats.damage
+.. autofunction:: pathfinder2e_stats.level2rank
+.. autofunction:: pathfinder2e_stats.rank2level
 .. autofunction:: pathfinder2e_stats.set_size
