@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Hashable, Mapping
-from typing import Any, Literal, TypeVar, cast
+from typing import Any, Literal, TypeVar
 
-import numpy as np
 import xarray
 from xarray import DataArray, Dataset
 
@@ -46,18 +45,15 @@ def map_outcome(
         ~success_to_critical_success | (outcome != DoS.success),
         DoS.critical_success,
     )
-
     outcome = outcome + incapacitation
-
-    outcome = cast(
-        DataArray,
-        np.clip(
-            outcome,
-            xarray.where(allow_critical_failure, DoS.critical_failure, DoS.failure),
-            xarray.where(allow_critical_success, DoS.critical_success, DoS.success),
-        ),
+    outcome = outcome.clip(
+        xarray.where(allow_critical_failure, DoS.critical_failure, DoS.failure),
+        xarray.where(allow_critical_success, DoS.critical_success, DoS.success),
     )
-    outcome = outcome.where(allow_failure | (outcome != DoS.failure), DoS.success)
+    outcome = outcome.where(
+        allow_failure | (outcome != DoS.failure),
+        DoS.success,
+    )
 
     if map_:
         # False, 0, 0.0, etc.
