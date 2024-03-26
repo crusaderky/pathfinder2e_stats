@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Mapping
-from typing import Any, Literal
+from collections.abc import Hashable, Iterable, Mapping
+from typing import Any, Literal, TypeVar
 
 import xarray
 from xarray import DataArray, Dataset
@@ -9,73 +9,78 @@ from xarray import DataArray, Dataset
 from pathfinder2e_stats.base import DoS
 from pathfinder2e_stats.dice import d20
 
+_Outcome_T = TypeVar("_Outcome_T", DataArray, Dataset)
 
-def map_outcomes(
-    map_: Mapping[DoS | int, DoS | int] | None = None,
+
+def map_outcome(
+    outcome: _Outcome_T,
+    map_: Mapping[DoS | int | DataArray, object]
+    | Iterable[tuple[DoS | int | DataArray, object]]
+    | None = None,
     /,
     *,
-    evasion: bool = False,
-    juggernaut: bool = False,
-    resolve: bool = False,
-    risky_surgery: bool = False,
-    incapacitation: bool | Literal[-1, 0, 1] = 0,
-    allow_critical_failure: bool = True,
-    allow_failure: bool = True,
-    allow_critical_success: bool = True,
-) -> dict[DoS, DoS]:
-    out = {
-        DoS(k) if isinstance(k, int) else k: DoS(v) if isinstance(v, int) else v
-        for k, v in (map_ or {}).items()
-    }
-    if evasion or juggernaut or resolve or risky_surgery:
-        out[DoS.success] = DoS.critical_success
-
-    if incapacitation == -1:
-        out.update(
-            {
-                DoS.critical_success: DoS.success,
-                DoS.success: DoS.failure,
-                DoS.failure: DoS.critical_failure,
-            }
+    evasion: bool | DataArray = False,
+    juggernaut: bool | DataArray = False,
+    resolve: bool | DataArray = False,
+    risky_surgery: bool | DataArray = False,
+    incapacitation: bool | Literal[-1, 0, 1] | DataArray = 0,
+    allow_critical_failure: bool | DataArray = True,
+    allow_failure: bool | DataArray = True,
+    allow_critical_success: bool | DataArray = True,
+) -> _Outcome_T:
+    if isinstance(outcome, Dataset):
+        outcome = outcome.rename({"outcome": "original_outcome"})
+        outcome["outcome"] = map_outcome(
+            outcome["original_outcome"],
+            map_,
+            **{k: v for k, v in locals().items() if k not in ("map_", "outcome")},
         )
-    elif incapacitation in (True, 1):
-        out.update(
-            {
-                DoS.critical_failure: DoS.failure,
-                DoS.failure: DoS.success,
-                DoS.success: DoS.critical_success,
-            }
-        )
+        return outcome
 
-    if not allow_failure:
-        for k, v in out.items():
-            if v in (DoS.failure, DoS.critical_failure):
-                out[k] = DoS.success
-        out[DoS.critical_failure] = DoS.success
-        out[DoS.failure] = DoS.success
-    elif not allow_critical_failure:
-        for k, v in out.items():
-            if v is DoS.critical_failure:
-                out[k] = DoS.failure
-        out[DoS.critical_failure] = DoS.failure
-    if not allow_critical_success:
-        for k, v in out.items():
-            if v is DoS.critical_success:
-                out[k] = DoS.success
-        out[DoS.critical_success] = DoS.success
+    success_to_critical_success = (
+        DataArray(evasion)
+        | DataArray(juggernaut)
+        | DataArray(resolve)
+        | DataArray(risky_surgery)
+    )
+    orig_outcome = outcome
+    outcome = outcome.where(
+        ~success_to_critical_success | (outcome != DoS.success),
+        DoS.critical_success,
+    )
+    outcome = outcome + incapacitation
+    outcome = outcome.clip(
+        xarray.where(allow_critical_failure, DoS.critical_failure, DoS.failure),
+        xarray.where(allow_critical_success, DoS.critical_success, DoS.success),
+    )
+    outcome = orig_outcome.where(orig_outcome == DoS.no_roll, outcome)
+    outcome = outcome.where(
+        allow_failure | (outcome != DoS.failure),
+        DoS.success,
+    )
 
-    return {k: v for k, v in out.items() if k != v}
+    if map_ is not None:
+        if isinstance(map_, Mapping):
+            map_ = map_.items()
+        map_ = list(map_)
+        if not map_:
+            return xarray.zeros_like(outcome)
 
+        # False, 0, 0.0, etc.
+        out = DataArray(0).astype(DataArray(map_[0][1]).dtype)
+        if out.dtype.kind == "U":
+            out = DataArray("")
+        for from_, to in reversed(map_):
+            out = xarray.where(outcome == from_, to, out)
+        return out
 
-# Work around name shadowing
-_map_outcomes_func = map_outcomes
+    return outcome
 
 
 def check(
     bonus: int | DataArray = 0,
     *,
     DC: int | DataArray,
-    map_outcomes: Mapping[DoS | int, DoS | int] | None = None,
     keen: bool = False,
     fortune: bool = False,
     misfortune: bool = False,
@@ -83,8 +88,6 @@ def check(
     dims: Mapping[Hashable, int] | None = None,
     **kwargs: Any,
 ) -> Dataset:
-    map_ = _map_outcomes_func(map_outcomes, **kwargs)
-
     dims = dict(dims) if dims else {}
     if fortune:
         hero_point = False
@@ -115,15 +118,6 @@ def check(
             (natural != 19) | (outcome != DoS.success), DoS.critical_success
         )
 
-    if map_:
-        # Some mappings are needed
-        # Note: avoid changing the same value multiple times!
-        map2 = {k: map_.get(k, k) for k in DoS if k != DoS.no_roll and map_.get(k, k)}
-        if map2:
-            outcome = sum(xarray.where(outcome == k, v, 0) for k, v in map2.items())
-        else:  # Edge case: map everything to failure
-            outcome = xarray.zeros_like(outcome)
-
     ds = Dataset(
         data_vars={
             "bonus": bonus,
@@ -133,10 +127,13 @@ def check(
         },
         attrs={
             "keen": keen,
+            **{
+                k: v if isinstance(v, (int, bool)) else "varies"
+                for k, v in kwargs.items()
+            },
             "fortune": fortune,
             "misfortune": misfortune,
             "hero_point": hero_point.name if isinstance(hero_point, DoS) else False,
-            "map_outcomes": {k.name: v.name for k, v in map_.items()},
             "legend": DoS.legend(),
         },
     )
@@ -146,4 +143,5 @@ def check(
         use_hero_point = roll0 <= hero_point
         outcome = roll1.where(use_hero_point, roll0)
         ds.update({"outcome": outcome, "use_hero_point": use_hero_point})
-    return ds
+
+    return map_outcome(ds, **kwargs) if kwargs else ds

@@ -5,59 +5,149 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, check, map_outcomes
+from pathfinder2e_stats import DoS, check, map_outcome
 
 
-def test_map_outcomes_basic():
-    assert map_outcomes(None) == {}
-    r = map_outcomes({-1: 1, DoS.success: DoS.critical_success})
-    assert r == {-1: 1, 1: 2}
-    assert all(isinstance(k, DoS) for k in r)
-    assert all(isinstance(v, DoS) for v in r.values())
+@pytest.mark.parametrize("k", ["evasion", "juggernaut", "resolve", "risky_surgery"])
+def test_map_outcome_success_to_crit_success(k):
+    x = DataArray([-2, -1, 0, 1, 2])
+    assert_equal(
+        map_outcome(x, **{k: True}),
+        DataArray([-2, -1, 0, 2, 2]),
+    )
 
-    with pytest.raises(ValueError):
-        map_outcomes({-3: 0})
-
-
-def test_map_outcomes_kwargs():
-    assert map_outcomes(evasion=True) == {1: 2}
-    assert map_outcomes(juggernaut=True) == {1: 2}
-    assert map_outcomes(resolve=True) == {1: 2}
-    assert map_outcomes(risky_surgery=True) == {1: 2}
-
-    assert map_outcomes(incapacitation=False) == {}
-    assert map_outcomes(incapacitation=0) == {}
-    assert map_outcomes(incapacitation=True) == {-1: 0, 0: 1, 1: 2}
-    assert map_outcomes(incapacitation=1) == {-1: 0, 0: 1, 1: 2}
-    assert map_outcomes(incapacitation=-1) == {2: 1, 1: 0, 0: -1}
-
-    assert map_outcomes(allow_critical_failure=False) == {-1: 0}
-    assert map_outcomes(incapacitation=-1, allow_critical_failure=False) == {
-        -1: 0,
-        1: 0,
-        2: 1,
-    }
-    assert map_outcomes(allow_failure=False) == {-1: 1, 0: 1}
-    assert map_outcomes(incapacitation=-1, allow_failure=False) == {-1: 1, 0: 1, 2: 1}
-    assert map_outcomes(allow_critical_success=False) == {2: 1}
-    assert map_outcomes(incapacitation=True, allow_critical_success=False) == {
-        -1: 0,
-        0: 1,
-        2: 1,
-    }
-    assert map_outcomes(allow_failure=False, allow_critical_failure=False) == {
-        -1: 1,
-        0: 1,
-    }
-    assert map_outcomes(allow_critical_failure=False, allow_critical_success=False) == {
-        -1: 0,
-        2: 1,
-    }
+    assert_equal(
+        map_outcome(x, **{k: DataArray([True, False], dims=["x"])}),
+        DataArray([[-2, -2], [-1, -1], [0, 0], [2, 1], [2, 2]], dims=["dim_0", "x"]),
+    )
 
 
-def test_map_outcomes_removes_identity():
-    assert map_outcomes({0: 0, DoS.success: DoS.success}) == {}
-    assert map_outcomes(evasion=True, allow_critical_success=False) == {2: 1}
+def test_map_outcome_to_value():
+    x = DataArray([-2, -1, 0, 1, 2])
+    assert_equal(
+        map_outcome(x, {1: 10, 2: 20}),
+        DataArray([0, 0, 0, 10, 20]),
+    )
+
+    actual = map_outcome(x, {1: True, 2: True})
+    assert_equal(actual, DataArray([False, False, False, True, True]))
+    assert actual.dtype == bool
+
+    actual = map_outcome(x, {1: 3.0})
+    assert_equal(actual, DataArray([0.0, 0.0, 0.0, 3.0, 0]))
+    assert actual.dtype.kind == "f"
+
+    assert_equal(
+        map_outcome(x, {1: DataArray([10, 20], dims=["y"])}),
+        DataArray(
+            [
+                [0, 0],
+                [0, 0],
+                [0, 0],
+                [10, 20],
+                [0, 0],
+            ],
+            dims=["dim_0", "y"],
+        ),
+    )
+
+
+def test_map_outcome_incapacitation():
+    x = DataArray([-2, -1, 0, 1, 2])
+    assert_equal(
+        map_outcome(x, incapacitation=True),
+        DataArray([-2, 0, 1, 2, 2]),  # Preserve no_roll
+    )
+    assert_equal(
+        map_outcome(x, incapacitation=-1),
+        DataArray([-2, -1, -1, 0, 1]),  # Preserve no_roll
+    )
+    assert_equal(
+        map_outcome(
+            x,
+            incapacitation=DataArray([-1, 0, 1], dims=["y"]),
+        ),
+        DataArray(
+            [
+                [-2, -2, -2],  # Preserve no_roll
+                [-1, -1, 0],
+                [-1, 0, 1],
+                [0, 1, 2],
+                [1, 2, 2],
+            ],
+            dims=["dim_0", "y"],
+        ),
+    )
+
+
+def test_map_outcome_clip():
+    x = DataArray([-2, -1, 0, 1, 2])
+    assert_equal(
+        map_outcome(x, allow_critical_failure=False),
+        DataArray([-2, 0, 0, 1, 2]),
+    )
+    assert_equal(
+        map_outcome(x, allow_failure=False),
+        DataArray([-2, -1, 1, 1, 2]),
+    )
+    assert_equal(
+        map_outcome(x, allow_critical_success=False),
+        DataArray([-2, -1, 0, 1, 1]),
+    )
+    assert_equal(
+        map_outcome(x, allow_critical_failure=False, allow_failure=False),
+        DataArray([-2, 1, 1, 1, 2]),
+    )
+    assert_equal(
+        map_outcome(x, allow_critical_success=False, incapacitation=True),
+        DataArray([-2, 0, 1, 1, 1]),
+    )
+    assert_equal(
+        map_outcome(x, allow_critical_failure=False, incapacitation=-1),
+        DataArray([-2, 0, 0, 0, 1]),
+    )
+
+
+def test_map_outcome_noop():
+    x = DataArray([-2, -1, 0, 1, 2])
+    assert_equal(map_outcome(x), x)
+    assert_equal(map_outcome(x, {-2: -2, -1: -1, 0: 0, 1: 1, 2: 2}), x)
+
+
+def test_map_outcome_empty_map():
+    assert_equal(
+        map_outcome(DataArray([-2, -1, 0, 1, 2]), {}),
+        DataArray([0, 0, 0, 0, 0]),
+    )
+
+
+def test_map_outcome_string():
+    assert_equal(
+        map_outcome(DataArray([-2, -1, 0, 1, 2]), {1: "X", 2: "YY"}),
+        DataArray(["", "", "", "X", "YY"]),
+    )
+
+
+def test_map_outcome_sequence():
+    assert_equal(
+        map_outcome(
+            DataArray([-1, 0, 1, 2]),
+            [
+                # In case of multiple matches, leftmost wins
+                (DataArray([0, 1], dims=["x"]), 10),
+                (1, 20),
+            ],
+        ),
+        DataArray(
+            [
+                [0, 0],
+                [10, 0],
+                [20, 10],
+                [0, 0],
+            ],
+            dims=["dim_0", "x"],
+        ),
+    )
 
 
 def test_check_basic():
@@ -70,7 +160,6 @@ def test_check_basic():
         "hero_point": False,
         "keen": False,
         "legend": DoS.legend(),
-        "map_outcomes": {},
         "misfortune": False,
     }
 
@@ -157,42 +246,37 @@ def test_check_fortune():
         check(DC=20, fortune=True, misfortune=True)
 
 
-def test_check_map_outcomes():
-    ds = check(DC=10, evasion=True)
-    assert_equal(ds.outcome == 2, ds.natural >= 10)
+def test_check_map_outcome_bool():
+    ds = check(DC=9, juggernaut=True)
+    assert_equal(ds.original_outcome == 2, ds.natural >= 19)
+    assert_equal(ds.outcome == 2, ds.natural >= 9)
     assert np.unique(ds.outcome).tolist() == [-1, 0, 2]
-    assert ds.attrs["map_outcomes"] == {"success": "critical_success"}
+    assert ds.attrs["juggernaut"] is True
 
+
+def test_check_map_outcome_int():
+    ds = check(DC=9, incapacitation=-1)
+    assert np.unique(ds.outcome).tolist() == [-1, 0, 1]
+    assert ds.attrs["incapacitation"] == -1
+
+
+def test_check_map_outcome_array():
     ds = check(
-        DC=10, juggernaut=True, map_outcomes={1: 0}, allow_critical_failure=False
+        DC=9,
+        juggernaut=DataArray([False, True], dims=["x"]),
+        incapacitation=DataArray([-1, 0, 1], dims=["y"]),
     )
-    assert_equal(ds.outcome == 2, ds.natural >= 10)
-    assert_equal(ds.outcome == 0, ds.natural < 10)
-    assert np.unique(ds.outcome).tolist() == [0, 2]
+    assert ds.original_outcome.sizes == {"roll": 1000}
+    assert ds.outcome.sizes == {"roll": 1000, "x": 2, "y": 3}
+    assert ds.attrs["juggernaut"] == "varies"
+    assert ds.attrs["incapacitation"] == "varies"
 
 
-def test_check_map_outcomes_no_multiple_bumps():
-    """Test that we're NOT doing::
-
-        for k, v in map_outcomes.items():
-           out = out.where(out != k, v)
-
-    which e.g. would cause incapacitation to promote
-    critical failures to critical success
-    """
-    ds = check(DC=15, incapacitation=True)
-    assert_equal(ds.outcome == 0, ds.natural < 6)
-    assert_equal(ds.outcome == 1, (ds.natural >= 6) & (ds.natural < 15))
-    assert_equal(ds.outcome == 2, ds.natural >= 15)
-    assert np.unique(ds.outcome).tolist() == [0, 1, 2]
-
-
-def test_check_map_to_failure():
-    ds = check(DC=10, map_outcomes={-1: 0, 1: 0, 2: 0})
-    assert ds.sizes == {"roll": 1000}
-    assert ds.outcome.shape == (1000,)
-    assert ds.outcome.dtype.kind == "i"
-    assert (ds.outcome == 0).all()
+def test_chain_check_map_outcome():
+    ds = map_outcome(check(DC=9), {2: 10})
+    assert_equal(ds.original_outcome == 2, ds.natural >= 19)
+    assert_equal(ds.outcome == 10, ds.natural >= 19)
+    assert np.unique(ds.outcome).tolist() == [0, 10]
 
 
 @pytest.mark.parametrize(
