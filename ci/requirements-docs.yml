@@ -5,6 +5,7 @@ dependencies:
   - python=3.12
   - sphinx
   - sphinx_rtd_theme
+  - nbsphinx
   - xarray
 
   # Additional dependencies used only for notebooks

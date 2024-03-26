@@ -1,9 +1,16 @@
 from __future__ import annotations
 
 from enum import IntEnum
-from typing import TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from xarray import DataArray, Dataset
+
+if TYPE_CHECKING:
+    _T = TypeVar("_T", int, DataArray, Dataset)
+else:
+    # Hack to fix Sphinx rendering
+    _T = "int | DataArray | Dataset"
+
 
 size = 100_000
 
@@ -29,9 +36,6 @@ class DoS(IntEnum):
     @classmethod
     def legend(cls) -> dict[int, str]:
         return {dos.value: str(dos) for dos in cls.__members__.values()}
-
-
-_T = TypeVar("_T", int, DataArray, Dataset)
 
 
 def level2rank(level: _T) -> _T:
