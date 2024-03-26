@@ -43,6 +43,7 @@ def map_outcome(
         | DataArray(resolve)
         | DataArray(risky_surgery)
     )
+    orig_outcome = outcome
     outcome = outcome.where(
         ~success_to_critical_success | (outcome != DoS.success),
         DoS.critical_success,
@@ -52,6 +53,7 @@ def map_outcome(
         xarray.where(allow_critical_failure, DoS.critical_failure, DoS.failure),
         xarray.where(allow_critical_success, DoS.critical_success, DoS.success),
     )
+    outcome = orig_outcome.where(orig_outcome == DoS.no_roll, outcome)
     outcome = outcome.where(
         allow_failure | (outcome != DoS.failure),
         DoS.success,

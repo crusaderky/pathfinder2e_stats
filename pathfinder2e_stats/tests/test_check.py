@@ -10,37 +10,38 @@ from pathfinder2e_stats import DoS, check, map_outcome
 
 @pytest.mark.parametrize("k", ["evasion", "juggernaut", "resolve", "risky_surgery"])
 def test_map_outcome_success_to_crit_success(k):
-    x = DataArray([-1, 0, 1, 2])
+    x = DataArray([-2, -1, 0, 1, 2])
     assert_equal(
         map_outcome(x, **{k: True}),
-        DataArray([-1, 0, 2, 2]),
+        DataArray([-2, -1, 0, 2, 2]),
     )
 
     assert_equal(
         map_outcome(x, **{k: DataArray([True, False], dims=["x"])}),
-        DataArray([[-1, -1], [0, 0], [2, 1], [2, 2]], dims=["dim_0", "x"]),
+        DataArray([[-2, -2], [-1, -1], [0, 0], [2, 1], [2, 2]], dims=["dim_0", "x"]),
     )
 
 
 def test_map_outcome_to_value():
-    x = DataArray([-1, 0, 1, 2])
+    x = DataArray([-2, -1, 0, 1, 2])
     assert_equal(
         map_outcome(x, {1: 10, 2: 20}),
-        DataArray([0, 0, 10, 20]),
+        DataArray([0, 0, 0, 10, 20]),
     )
 
     actual = map_outcome(x, {1: True, 2: True})
-    assert_equal(actual, DataArray([False, False, True, True]))
+    assert_equal(actual, DataArray([False, False, False, True, True]))
     assert actual.dtype == bool
 
     actual = map_outcome(x, {1: 3.0})
-    assert_equal(actual, DataArray([0.0, 0.0, 3.0, 0]))
+    assert_equal(actual, DataArray([0.0, 0.0, 0.0, 3.0, 0]))
     assert actual.dtype.kind == "f"
 
     assert_equal(
         map_outcome(x, {1: DataArray([10, 20], dims=["y"])}),
         DataArray(
             [
+                [0, 0],
                 [0, 0],
                 [0, 0],
                 [10, 20],
@@ -52,14 +53,14 @@ def test_map_outcome_to_value():
 
 
 def test_map_outcome_incapacitation():
-    x = DataArray([-1, 0, 1, 2])
+    x = DataArray([-2, -1, 0, 1, 2])
     assert_equal(
         map_outcome(x, incapacitation=True),
-        DataArray([0, 1, 2, 2]),
+        DataArray([-2, 0, 1, 2, 2]),  # Preserve no_roll
     )
     assert_equal(
         map_outcome(x, incapacitation=-1),
-        DataArray([-1, -1, 0, 1]),
+        DataArray([-2, -1, -1, 0, 1]),  # Preserve no_roll
     )
     assert_equal(
         map_outcome(
@@ -68,6 +69,7 @@ def test_map_outcome_incapacitation():
         ),
         DataArray(
             [
+                [-2, -2, -2],  # Preserve no_roll
                 [-1, -1, 0],
                 [-1, 0, 1],
                 [0, 1, 2],
@@ -79,50 +81,50 @@ def test_map_outcome_incapacitation():
 
 
 def test_map_outcome_clip():
-    x = DataArray([-1, 0, 1, 2])
+    x = DataArray([-2, -1, 0, 1, 2])
     assert_equal(
         map_outcome(x, allow_critical_failure=False),
-        DataArray([0, 0, 1, 2]),
+        DataArray([-2, 0, 0, 1, 2]),
     )
     assert_equal(
         map_outcome(x, allow_failure=False),
-        DataArray([-1, 1, 1, 2]),
+        DataArray([-2, -1, 1, 1, 2]),
     )
     assert_equal(
         map_outcome(x, allow_critical_success=False),
-        DataArray([-1, 0, 1, 1]),
+        DataArray([-2, -1, 0, 1, 1]),
     )
     assert_equal(
         map_outcome(x, allow_critical_failure=False, allow_failure=False),
-        DataArray([1, 1, 1, 2]),
+        DataArray([-2, 1, 1, 1, 2]),
     )
     assert_equal(
         map_outcome(x, allow_critical_success=False, incapacitation=True),
-        DataArray([0, 1, 1, 1]),
+        DataArray([-2, 0, 1, 1, 1]),
     )
     assert_equal(
         map_outcome(x, allow_critical_failure=False, incapacitation=-1),
-        DataArray([0, 0, 0, 1]),
+        DataArray([-2, 0, 0, 0, 1]),
     )
 
 
 def test_map_outcome_noop():
-    x = DataArray([-1, 0, 1, 2])
+    x = DataArray([-2, -1, 0, 1, 2])
     assert_equal(map_outcome(x), x)
-    assert_equal(map_outcome(x, {-1: -1, 0: 0, 1: 1, 2: 2}), x)
+    assert_equal(map_outcome(x, {-2: -2, -1: -1, 0: 0, 1: 1, 2: 2}), x)
 
 
 def test_map_outcome_empty_map():
     assert_equal(
-        map_outcome(DataArray([-1, 0, 1, 2]), {}),
-        DataArray([0, 0, 0, 0]),
+        map_outcome(DataArray([-2, -1, 0, 1, 2]), {}),
+        DataArray([0, 0, 0, 0, 0]),
     )
 
 
 def test_map_outcome_string():
     assert_equal(
-        map_outcome(DataArray([-1, 0, 1, 2]), {1: "X", 2: "YY"}),
-        DataArray(["", "", "X", "YY"]),
+        map_outcome(DataArray([-2, -1, 0, 1, 2]), {1: "X", 2: "YY"}),
+        DataArray(["", "", "", "X", "YY"]),
     )
 
 
