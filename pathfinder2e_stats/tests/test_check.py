@@ -106,6 +106,48 @@ def test_map_outcome_clip():
     )
 
 
+def test_map_outcome_noop():
+    x = DataArray([-1, 0, 1, 2])
+    assert_equal(map_outcome(x), x)
+    assert_equal(map_outcome(x, {-1: -1, 0: 0, 1: 1, 2: 2}), x)
+
+
+def test_map_outcome_empty_map():
+    assert_equal(
+        map_outcome(DataArray([-1, 0, 1, 2]), {}),
+        DataArray([0, 0, 0, 0]),
+    )
+
+
+def test_map_outcome_string():
+    assert_equal(
+        map_outcome(DataArray([-1, 0, 1, 2]), {1: "X", 2: "YY"}),
+        DataArray(["", "", "X", "YY"]),
+    )
+
+
+def test_map_outcome_sequence():
+    assert_equal(
+        map_outcome(
+            DataArray([-1, 0, 1, 2]),
+            [
+                # In case of multiple matches, leftmost wins
+                (DataArray([0, 1], dims=["x"]), 10),
+                (1, 20),
+            ],
+        ),
+        DataArray(
+            [
+                [0, 0],
+                [10, 0],
+                [20, 10],
+                [0, 0],
+            ],
+            dims=["dim_0", "x"],
+        ),
+    )
+
+
 def test_check_basic():
     ds = check(DC=7)
     assert ds.bonus == 0

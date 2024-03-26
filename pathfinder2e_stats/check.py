@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Mapping
+from collections.abc import Hashable, Iterable, Mapping
 from typing import Any, Literal, TypeVar
 
 import xarray
@@ -14,7 +14,9 @@ _Outcome_T = TypeVar("_Outcome_T", DataArray, Dataset)
 
 def map_outcome(
     outcome: _Outcome_T,
-    map_: Mapping[DoS | int, DoS | int | bool | DataArray] | None = None,
+    map_: Mapping[DoS | int | DataArray, object]
+    | Iterable[tuple[DoS | int | DataArray, object]]
+    | None = None,
     /,
     *,
     evasion: bool | DataArray = False,
@@ -55,13 +57,21 @@ def map_outcome(
         DoS.success,
     )
 
-    if map_:
+    if map_ is not None:
+        if isinstance(map_, Mapping):
+            map_ = map_.items()
+        map_ = list(map_)
+        if not map_:
+            return xarray.zeros_like(outcome)
+
         # False, 0, 0.0, etc.
-        dtype = DataArray(next(iter(map_.values()))).dtype
-        # Note: avoid changing the same value multiple times!
-        return sum(xarray.where(outcome == k, v, 0) for k, v in map_.items()).astype(
-            dtype
-        )
+        out = DataArray(0).astype(DataArray(map_[0][1]).dtype)
+        if out.dtype.kind == "U":
+            out = DataArray("")
+        for from_, to in reversed(map_):
+            out = xarray.where(outcome == from_, to, out)
+        return out
+
     return outcome
 
 
