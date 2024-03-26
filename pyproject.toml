@@ -43,7 +43,7 @@ fallback_version = "9999"
 [tool.setuptools.package-data]
 pathfinder2e_stats = [
     "py.typed",
-    "tests/data/*",
+    "tables/*/*.csv",
 ]
 
 [build-system]
@@ -86,6 +86,7 @@ ignore = [
   "N802",  # Function name should be lowercase
   "N803",  # Argument name should be lowercase
   "N806",  # Variable should be lowercase
+  "N816",  # Variable in global scope should not be mixedCase
 ]
 select = [
   "F",    # Pyflakes
