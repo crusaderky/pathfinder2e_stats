@@ -8,7 +8,7 @@ pathfinder2e_stats: Statistical tools for Pathfinder 2nd edition
    develop
    whats-new
    api
-   notebooks
+   notebooks/index
 
 License
 -------
