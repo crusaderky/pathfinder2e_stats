@@ -1,10 +1,12 @@
 default: all
-.PHONY: all clean
+.PHONY: all clean html
 
 clean:
 	rm -rf _build notebooks/*.nbconvert.ipynb ../build ../notebooks/.ipynb_checkpoints ../*.egg-info
 
-all:
+all: html
+
+html:
 	pip install ..
 	jupyter nbconvert --execute --to notebook ../notebooks/*.ipynb
 	mv ../notebooks/*.nbconvert.ipynb notebooks/

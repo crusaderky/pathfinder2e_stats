@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, TypeAlias
 
-from pathfinder2e_stats.base import DoS
+from pathfinder2e_stats.check import DoS
 
 
 @dataclass(frozen=True, slots=True)
@@ -147,9 +147,11 @@ class Damage:
         return ExpandedDamage(out)
 
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
+        """Add two damage specs together"""
         return DamageList([self]) + other
 
     def __bool__(self) -> bool:
+        """Return True if rolled damage can be more than zero; False otherwise."""
         return self.dice * (self.fatal or self.faces) + self.bonus + self.deadly > 0
 
 

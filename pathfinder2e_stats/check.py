@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from collections.abc import Hashable, Iterable, Mapping
+from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 import xarray
 from xarray import DataArray, Dataset
 
-from pathfinder2e_stats.base import DoS
 from pathfinder2e_stats.dice import d20
 
 if TYPE_CHECKING:
@@ -14,6 +14,34 @@ if TYPE_CHECKING:
 else:
     # Hack to fix Sphinx rendering
     _Outcome_T = "DataArray | Dataset"
+
+
+class DoS(IntEnum):
+    """Enum for all possible check outcomes. In order to improve readability and
+    reduce human error, you should not use the numeric values directly.
+
+    ===== ================
+    value code
+    ===== ================
+       -2 no_roll
+       -1 critical_failure
+        0 failure
+        1 success
+        2 critical_success
+    ===== ================
+
+    Disequality comparisons work as expected. For example,
+    ``mycheck.outcome >= DoS.success`` returns True for success and critical success.
+    """
+
+    no_roll = -2
+    critical_failure = -1
+    failure = 0
+    success = 1
+    critical_success = 2
+
+    def __str__(self) -> str:
+        return self.name.replace("_", " ").capitalize()
 
 
 def map_outcome(
@@ -140,7 +168,7 @@ def check(
             "fortune": fortune,
             "misfortune": misfortune,
             "hero_point": hero_point.name if isinstance(hero_point, DoS) else False,
-            "legend": DoS.legend(),
+            "legend": {dos.value: str(dos) for dos in DoS.__members__.values()},
         },
     )
     if hero_point is not False:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, level2rank, rank2level, roll, set_size
+from pathfinder2e_stats import level2rank, rank2level, roll, set_size
 
 
 def test_stable_rng():
@@ -17,20 +17,6 @@ def test_set_size():
     assert roll(1, 20).shape == (10,)
     n = set_size(20)
     assert n == 10
-
-
-def test_DoS_str():
-    assert str(DoS.critical_success) == "Critical success"
-
-
-def test_DoS_legend():
-    assert DoS.legend() == {
-        -2: "No roll",
-        -1: "Critical failure",
-        0: "Failure",
-        1: "Success",
-        2: "Critical success",
-    }
 
 
 def test_level2rank():
