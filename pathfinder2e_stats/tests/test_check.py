@@ -8,6 +8,10 @@ from xarray.testing import assert_equal
 from pathfinder2e_stats import DoS, check, map_outcome
 
 
+def test_DoS_str():
+    assert str(DoS.critical_success) == "Critical success"
+
+
 @pytest.mark.parametrize("k", ["evasion", "juggernaut", "resolve", "risky_surgery"])
 def test_map_outcome_success_to_crit_success(k):
     x = DataArray([-2, -1, 0, 1, 2])
@@ -159,7 +163,13 @@ def test_check_basic():
         "fortune": False,
         "hero_point": False,
         "keen": False,
-        "legend": DoS.legend(),
+        "legend": {
+            -2: "No roll",
+            -1: "Critical failure",
+            0: "Failure",
+            1: "Success",
+            2: "Critical success",
+        },
         "misfortune": False,
     }
 
