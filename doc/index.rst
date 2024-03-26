@@ -2,7 +2,7 @@ pathfinder2e_stats: Statistical tools for Pathfinder 2nd edition
 ================================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    installing
    develop
