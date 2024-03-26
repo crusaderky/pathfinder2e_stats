@@ -6,12 +6,13 @@ from xarray import DataArray, concat
 
 BonusType: TypeAlias = Literal[
     "untyped",
+    "ability",
     "circumstance",
     "proficiency",
     "status",
     "item",
 ]
-_BONUS_DOMAIN = {"untyped", "circumstance", "proficiency", "status", "item"}
+_BONUS_DOMAIN = {"untyped", "ability", "circumstance", "proficiency", "status", "item"}
 
 
 def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> DataArray:

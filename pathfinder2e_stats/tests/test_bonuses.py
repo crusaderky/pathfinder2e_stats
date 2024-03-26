@@ -28,8 +28,9 @@ from pathfinder2e_stats import sum_bonuses
                 ("untyped", 5),
                 ("untyped", 6),
                 ("proficiency", 15),
+                ("ability", 4),
             ),
-            35,
+            39,
         ),
     ],
 )
