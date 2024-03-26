@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Hashable, Iterable, Mapping
-from typing import Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 import xarray
 from xarray import DataArray, Dataset
@@ -9,7 +9,11 @@ from xarray import DataArray, Dataset
 from pathfinder2e_stats.base import DoS
 from pathfinder2e_stats.dice import d20
 
-_Outcome_T = TypeVar("_Outcome_T", DataArray, Dataset)
+if TYPE_CHECKING:
+    _Outcome_T = TypeVar("_Outcome_T", DataArray, Dataset)
+else:
+    # Hack to fix Sphinx rendering
+    _Outcome_T = "DataArray | Dataset"
 
 
 def map_outcome(
@@ -23,7 +27,7 @@ def map_outcome(
     juggernaut: bool | DataArray = False,
     resolve: bool | DataArray = False,
     risky_surgery: bool | DataArray = False,
-    incapacitation: bool | Literal[-1, 0, 1] | DataArray = 0,
+    incapacitation: bool | int | DataArray = 0,
     allow_critical_failure: bool | DataArray = True,
     allow_failure: bool | DataArray = True,
     allow_critical_success: bool | DataArray = True,

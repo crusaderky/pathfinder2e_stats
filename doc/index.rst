@@ -2,12 +2,13 @@ pathfinder2e_stats: Statistical tools for Pathfinder 2nd edition
 ================================================================
 
 .. toctree::
+   :maxdepth: 2
 
    installing
    develop
    whats-new
    api
-
+   notebooks
 
 License
 -------
