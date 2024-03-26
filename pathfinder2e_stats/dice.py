@@ -1,4 +1,5 @@
 """Basic dice rolls"""
+
 from __future__ import annotations
 
 import re
@@ -15,8 +16,7 @@ _pattern = re.compile(r"([0-9]+)?d([0-9]+)([+-][0-9]+)?$")
 
 
 @overload
-def roll(s: str, /, *, dims: Mapping[Hashable, int] | None = None) -> DataArray:
-    ...
+def roll(s: str, /, *, dims: Mapping[Hashable, int] | None = None) -> DataArray: ...
 
 
 @overload
@@ -27,8 +27,7 @@ def roll(
     /,
     *,
     dims: Mapping[Hashable, int] | None = None,
-) -> DataArray:
-    ...
+) -> DataArray: ...
 
 
 def roll(

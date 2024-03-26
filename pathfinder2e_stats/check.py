@@ -18,9 +18,11 @@ else:
 
 def map_outcome(
     outcome: _Outcome_T,
-    map_: Mapping[DoS | int | DataArray, object]
-    | Iterable[tuple[DoS | int | DataArray, object]]
-    | None = None,
+    map_: (
+        Mapping[DoS | int | DataArray, object]
+        | Iterable[tuple[DoS | int | DataArray, object]]
+        | None
+    ) = None,
     /,
     *,
     evasion: bool | DataArray = False,
@@ -132,7 +134,7 @@ def check(
         attrs={
             "keen": keen,
             **{
-                k: v if isinstance(v, (int, bool)) else "varies"
+                k: v if isinstance(v, int | bool) else "varies"
                 for k, v in kwargs.items()
             },
             "fortune": fortune,

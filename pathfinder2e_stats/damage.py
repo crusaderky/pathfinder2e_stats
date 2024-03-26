@@ -41,7 +41,11 @@ def damage(
         if spec
     }
     damages = dict(
-        zip(damages, align(*damages.values(), join="outer", copy=False, fill_value=0))
+        zip(
+            damages,
+            align(*damages.values(), join="outer", copy=False, fill_value=0),
+            strict=False,
+        )
     )
     out.update(damages)
 
@@ -146,7 +150,9 @@ def _roll_damage(
         out.append(r)
 
     out = list(align(*out, copy=False, join="outer", fill_value=0))
-    return sum(where(check_outcome == dos, r, 0) for dos, r in zip(spec, out))
+    return sum(
+        where(check_outcome == dos, r, 0) for dos, r in zip(spec, out, strict=False)
+    )
 
 
 def _parse_weaknesses(a: Collection[str] | DataArray | None) -> DataArray:
