@@ -7,6 +7,7 @@ from collections.abc import Hashable, Mapping
 from typing import cast, overload
 
 import numpy as np
+import xarray
 from xarray import DataArray
 
 from pathfinder2e_stats import base
@@ -67,16 +68,24 @@ def roll(
 
 def d20(
     *,
-    fortune: bool = False,
-    misfortune: bool = False,
+    fortune: bool | DataArray = False,
+    misfortune: bool | DataArray = False,
     dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
-    if fortune and misfortune:
-        raise ValueError("Can't have both fortune and misfortune on a roll")
-    if fortune or misfortune:
-        dims = dict(dims) if dims else {}
-        dims["fortune"] = 2
-        raw = roll(1, 20, dims=dims)
-        return raw.max("fortune") if fortune else raw.min("fortune")
-    else:
+    if fortune is False and misfortune is False:
         return roll(1, 20, dims=dims)
+
+    fortune = DataArray(fortune)
+    misfortune = DataArray(misfortune)
+    dims = dict(dims) if dims else {}
+    dims["__fortune"] = 2
+    raw = roll(1, 20, dims=dims)
+    return xarray.where(
+        fortune & ~misfortune,
+        raw.max("__fortune"),
+        xarray.where(
+            misfortune & ~fortune,
+            raw.min("__fortune"),
+            raw.isel(__fortune=0),
+        ),
+    )

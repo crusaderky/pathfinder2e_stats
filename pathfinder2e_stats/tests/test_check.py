@@ -237,23 +237,52 @@ def test_check_keen():
     assert np.unique(ds.outcome).tolist() == [-1, 0, 1, 2]
 
 
+def test_check_keen_array():
+    r = check(DC=11, keen=DataArray([False, True], dims=["keen"]))
+    assert r.natural.sizes == {"roll": 1000}
+    assert r.outcome.sizes == {"keen": 2, "roll": 1000}
+    r = r.isel(roll=(r.natural == 19))
+    assert (r.outcome.isel(keen=0) == DoS.success).all()
+    assert (r.outcome.isel(keen=1) == DoS.critical_success).all()
+    assert r.attrs["keen"] == "varies"
+
+
 def test_check_fortune():
-    r1 = check(DC=10)
-    r2 = check(DC=10, fortune=True)
-    r3 = check(DC=10, misfortune=True)
+    r1 = check(DC=11)
+    r2 = check(DC=11, fortune=True)
+    r3 = check(DC=11, misfortune=True)
+    r4 = check(DC=11, fortune=True, misfortune=True)
     for r in r1, r2, r3:
         assert np.unique(r.natural).tolist() == list(range(1, 21))
         assert np.unique(r.outcome).tolist() == [-1, 0, 1, 2]
 
-    assert 450 < (r1.natural > 10).sum() < 550
-    assert 700 < (r2.natural > 10).sum() < 800
-    assert 200 < (r3.natural > 10).sum() < 300
-    assert 450 < (r1.outcome > 0).sum() < 550
-    assert 700 < (r2.outcome > 0).sum() < 800
-    assert 200 < (r3.outcome > 0).sum() < 300
+    assert r1.attrs["fortune"] is False
+    assert r1.attrs["misfortune"] is False
+    assert r2.attrs["fortune"] is True
+    assert r2.attrs["misfortune"] is False
+    assert r3.attrs["fortune"] is False
+    assert r3.attrs["misfortune"] is True
+    assert r4.attrs["fortune"] is True
+    assert r4.attrs["misfortune"] is True
 
-    with pytest.raises(ValueError, match="both fortune and misfortune"):
-        check(DC=20, fortune=True, misfortune=True)
+    assert 0.45 < (r1.natural > 10).mean() < 0.55
+    assert 0.45 < (r1.outcome > 0).mean() < 0.55
+    assert 0.7 < (r2.natural > 10).mean() < 0.8
+    assert 0.7 < (r2.outcome > 0).mean() < 0.8
+    assert 0.2 < (r3.natural > 10).mean() < 0.3
+    assert 0.2 < (r3.outcome > 0).mean() < 0.3
+    # Fortune and misfortune cancel each other out
+    assert 0.45 < (r4.natural > 10).mean() < 0.55
+    assert 0.45 < (r4.outcome > 0).mean() < 0.55
+
+
+def test_check_fortune_array():
+    fortune = DataArray([False, True], dims=["f"], coords={"f": [False, True]})
+    r = check(DC=11, fortune=fortune, misfortune=fortune.rename({"f": "m"}))
+    assert r.sizes == {"f": 2, "m": 2, "roll": 1000}
+    assert r.natural.dims == r.outcome.dims == ("f", "m", "roll")
+    assert r.attrs["fortune"] == "varies"
+    assert r.attrs["misfortune"] == "varies"
 
 
 def test_check_map_outcome_bool():
@@ -319,6 +348,56 @@ def test_heropoint(hp, attr, lt):
 
         ds_roll1 = ds.sel(roll=ds.use_hero_point)
         assert_equal(ds_roll1.outcome >= 1, ds_roll1.natural[:, 1] >= 15)
+
+
+def test_heropoint_with_fortune():
+    """Hero point is a fortune effect; can't use it when there's another already,
+    e.g. Sure Strike
+    """
+    ds = check(DC=11, hero_point=DoS.failure)
+    assert ds.outcome.shape == (1000,)
+    assert 0.7 < (ds.outcome >= DoS.success).mean() < 0.8
+    assert 0.45 < ds.use_hero_point.mean() < 0.55
+
+    for hero_point in (False, DoS.failure):
+        # Disallow hero point
+        ds = check(DC=11, hero_point=hero_point, fortune=True)
+        assert ds.outcome.shape == (1000,)
+        assert 0.7 < (ds.outcome >= DoS.success).mean() < 0.8
+        if hero_point is not False:
+            assert not ds.use_hero_point.any()
+
+    ds = check(DC=11, misfortune=True)
+    assert ds.outcome.shape == (1000,)
+    assert 0.2 < (ds.outcome >= DoS.success).mean() < 0.3
+
+    # It's debated how hero points and misfortune interact:
+    # https://paizo.com/threads/rzs43lwf?Hero-Points-and-Misfortune-Effects
+    # This library implements rolling twice, both times with misfortune.
+    ds = check(DC=11, misfortune=True, hero_point=DoS.failure)
+    assert ds.outcome.shape == (1000,)
+    assert 0.4 < (ds.outcome >= DoS.success).mean() < 0.5
+    assert 0.7 < ds.use_hero_point.mean() < 0.8
+
+
+def test_heropoint_with_fortune_array():
+    ds = check(
+        DC=11,
+        hero_point=DataArray(
+            [-2, -1, 0, 1, 2], dims=["hp"], coords={"hp": [-2, -1, 0, 1, 2]}
+        ),
+        fortune=DataArray([False, True], dims=["f"], coords={"f": [False, True]}),
+    )
+    assert ds.attrs["hero_point"] == "varies"
+    assert ds.attrs["fortune"] == "varies"
+    assert ds.outcome.sizes == {"roll": 1000, "hp": 5, "f": 2}
+    assert ds.use_hero_point.sizes == {"roll": 1000, "hp": 5, "f": 2}
+    assert not ds.use_hero_point.sel(f=True).any()
+    assert not ds.use_hero_point.sel(hp=-2).any()
+    assert 0.03 < ds.use_hero_point.sel(hp=-1, f=False).mean() < 0.06
+    assert 0.45 < ds.use_hero_point.sel(hp=0, f=False).mean() < 0.55
+    assert 0.93 < ds.use_hero_point.sel(hp=1, f=False).mean() < 0.97
+    assert ds.use_hero_point.sel(hp=2, f=False).all()
 
 
 def test_check_array_input():
