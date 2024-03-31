@@ -115,17 +115,15 @@ def check(
     bonus: int | DataArray = 0,
     *,
     DC: int | DataArray,
-    keen: bool = False,
-    fortune: bool = False,
-    misfortune: bool = False,
-    hero_point: DoS | int | Literal[False] = False,
+    keen: bool | DataArray = False,
+    fortune: bool | DataArray = False,
+    misfortune: bool | DataArray = False,
+    hero_point: DoS | int | Literal[False] | DataArray = False,
     dims: Mapping[Hashable, int] | None = None,
     **kwargs: Any,
 ) -> Dataset:
     dims = dict(dims) if dims else {}
-    if fortune:
-        hero_point = False
-    elif hero_point is not False:
+    if hero_point is not False:
         dims["hp_reroll"] = 2
         if isinstance(hero_point, int):
             hero_point = DoS(hero_point)
@@ -147,10 +145,11 @@ def check(
         .where(natural != 20, outcome + 1)
         .clip(DoS.critical_failure, DoS.critical_success)
     )
-    if keen:
-        outcome = outcome.where(
-            (natural != 19) | (outcome != DoS.success), DoS.critical_success
-        )
+
+    outcome = outcome.where(
+        ~DataArray(keen) | (natural != 19) | (outcome != DoS.success),
+        DoS.critical_success,
+    )
 
     ds = Dataset(
         data_vars={
@@ -160,21 +159,26 @@ def check(
             "outcome": outcome,
         },
         attrs={
-            "keen": keen,
+            "keen": keen if isinstance(keen, bool) else "varies",
             **{
                 k: v if isinstance(v, int | bool) else "varies"
                 for k, v in kwargs.items()
             },
-            "fortune": fortune,
-            "misfortune": misfortune,
-            "hero_point": hero_point.name if isinstance(hero_point, DoS) else False,
+            "fortune": fortune if isinstance(fortune, bool) else "varies",
+            "misfortune": misfortune if isinstance(misfortune, bool) else "varies",
+            "hero_point": (
+                hero_point.name
+                if isinstance(hero_point, DoS)
+                else "varies" if isinstance(hero_point, DataArray) else False
+            ),
             "legend": {dos.value: str(dos) for dos in DoS.__members__.values()},
         },
     )
     if hero_point is not False:
-        roll0 = outcome.isel(hp_reroll=0, drop=True)
-        roll1 = outcome.isel(hp_reroll=1, drop=True)
-        use_hero_point = roll0 <= hero_point
+        roll0 = outcome.isel(hp_reroll=0)
+        roll1 = outcome.isel(hp_reroll=1)
+        # Can't use a hero point when there's already a fortune effect
+        use_hero_point = (roll0 <= hero_point) & ~DataArray(fortune)
         outcome = roll1.where(use_hero_point, roll0)
         ds.update({"outcome": outcome, "use_hero_point": use_hero_point})
 

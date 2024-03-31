@@ -192,9 +192,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         elif not isinstance(data, Mapping):
             data = ExpandedDamage.sum(data).data
         else:
-            data = {
-                k if isinstance(k, DoS) else DoS(k): list(v) for k, v in data.items()
-            }
+            data = {DoS(k): list(v) for k, v in data.items()}
 
         data = {k: [vi for vi in v if bool(vi)] for k, v in data.items()}
         data = {k: v for k, v in data.items() if v}
