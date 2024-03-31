@@ -72,20 +72,20 @@ def d20(
     misfortune: bool | DataArray = False,
     dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
-    if fortune is not False or misfortune is not False:
-        fortune = DataArray(fortune)
-        misfortune = DataArray(misfortune)
-        dims = dict(dims) if dims else {}
-        dims["fortune"] = 2
-        raw = roll(1, 20, dims=dims)
-        return xarray.where(
-            fortune & ~misfortune,
-            raw.max("fortune"),
-            xarray.where(
-                misfortune & ~fortune,
-                raw.min("fortune"),
-                raw.isel(fortune=0, drop=True),
-            ),
-        )
-    else:
+    if fortune is False and misfortune is False:
         return roll(1, 20, dims=dims)
+
+    fortune = DataArray(fortune)
+    misfortune = DataArray(misfortune)
+    dims = dict(dims) if dims else {}
+    dims["__fortune"] = 2
+    raw = roll(1, 20, dims=dims)
+    return xarray.where(
+        fortune & ~misfortune,
+        raw.max("__fortune"),
+        xarray.where(
+            misfortune & ~fortune,
+            raw.min("__fortune"),
+            raw.isel(__fortune=0),
+        ),
+    )
