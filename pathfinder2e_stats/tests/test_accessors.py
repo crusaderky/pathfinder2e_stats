@@ -1,12 +1,14 @@
 import pytest
 import xarray
-from xarray.testing import assert_identical
+from xarray.testing import assert_identical, assert_allclose
 
-import pathfinder2e_stats  # noqa: F401
+from pathfinder2e_stats import value_counts  # noqa: F401
 
 
 @pytest.mark.parametrize("transpose", [False, True])
-def test_value_count(transpose):
+@pytest.mark.parametrize("use_accessor", [False, True])
+@pytest.mark.parametrize("normalize", [False, True])
+def test_value_count(transpose, use_accessor, normalize):
     a = xarray.DataArray(
         [
             [1, 2, 5, 5, 2, 5],
@@ -19,9 +21,12 @@ def test_value_count(transpose):
     if transpose:
         a = a.T
 
-    assert_identical(
-        a.value_counts("c"),
-        xarray.DataArray(
+    if use_accessor:
+        actual = a.value_counts("c", normalize=normalize)
+    else:
+        actual = value_counts(a, "c", normalize=normalize)
+
+    expect = xarray.DataArray(
             [
                 [0, 1, 2, 3],
                 [2, 4, 0, 0],
@@ -29,5 +34,9 @@ def test_value_count(transpose):
             dims=["r", "unique_value"],
             coords={"r": ["r0", "r1"], "unique_value": [0, 1, 2, 5]},
             attrs={"foo": "bar"},
-        ),
     )
+
+    if normalize:
+        assert_allclose(expect / 6.0, actual)
+    else:
+        assert_identical(expect, actual)

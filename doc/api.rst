@@ -50,10 +50,4 @@ Xarray extensions
 When you ``import pathfinder2e_stats``, all DataArray and Dataset objects gain these
 new methods:
 
-.. class:: xarray.DataArray
-    .. method:: value_counts(dim, *, new_dim="unique_value")
-
-        Return the count of unique values for every point along dim, individually for
-        each other dimension. This is conceptually the same as calling
-        :meth:`pandas.Series.value_counts` individually for every series of a
-        :class:`pandas.DataFrame` and then merging the output.
+.. autofunction:: pathfinder2e_stats.value_counts
