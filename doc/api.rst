@@ -50,4 +50,22 @@ Xarray extensions
 When you ``import pathfinder2e_stats``, all DataArray and Dataset objects gain these
 new methods:
 
-.. autofunction:: pathfinder2e_stats.value_counts
+.. function:: xarray.DataArray.value_counts(dim, *, new_dim="unique_value", normalize=False)
+
+    Return the count of unique values for every point along dim, individually for
+    each other dimension.
+
+    This is conceptually the same as calling :meth:`pandas.Series.value_counts`
+    individually for every series of a :class:`pandas.DataFrame` and then merging the
+    output.
+
+    :param dim:
+        Name of the dimension to count the values along.
+        It will be removed in the output array.
+    :param new_dim:
+        Name of the new dimension in the output array; defaults to ``unique_value``
+    :param normalize:
+        Return proportions rather than frequencies; defaults to False
+    :returns:
+        :class:`xarray.DataArray` with the same dimensions as the input array,
+        minus dim, plus new_dim.

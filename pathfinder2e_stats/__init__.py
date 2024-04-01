@@ -1,6 +1,6 @@
 import importlib.metadata
 
-from pathfinder2e_stats.accessors import value_counts as value_counts
+import pathfinder2e_stats.accessors  # noqa: F401
 from pathfinder2e_stats.base import level2rank as level2rank
 from pathfinder2e_stats.base import rank2level as rank2level
 from pathfinder2e_stats.base import set_size as set_size
