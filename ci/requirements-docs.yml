@@ -11,3 +11,5 @@ dependencies:
   # Additional dependencies used only for notebooks
   - jupyterlab
   - matplotlib
+  - hvplot
+  - scipy  # Add violin plots to hvplot
