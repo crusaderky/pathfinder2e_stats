@@ -10,7 +10,3 @@ dependencies:
   - pip:
       - git+https://github.com/pydata/xarray
       # numpy and pandas are upgraded to nightly builds by pytest.yml
-
-  # Additional dependencies used only for notebooks
-  - jupyterlab
-  - matplotlib
