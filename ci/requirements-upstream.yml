@@ -6,7 +6,7 @@ dependencies:
   - pytest-cov
   - xarray
   - pyarrow  # Hard dependency of Pandas 3
-  - meson-python
+  - meson-python==0.13.1
   - pip
   - pip:
       - git+https://github.com/pydata/xarray
