@@ -1,13 +1,8 @@
-import pytest
-
 from pathfinder2e_stats import tables
 
 
-@pytest.mark.parametrize(
-    "name", ["raw_PC", pytest.param("raw_NPC", marks=pytest.mark.xfail(reason="TODO"))]
-)
-def test_raw(name):
-    ds = getattr(tables, name)
+def test_raw_PC():
+    ds = tables.raw_PC
     assert ds.data_vars
     for k, v in ds.variables.items():
         if k in ds.data_vars or k == "level":
