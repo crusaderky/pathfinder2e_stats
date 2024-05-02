@@ -34,12 +34,12 @@ def _read_raw_NPC_table(fname: Path) -> DataArray:
     )
 
     dtypes = set(df.dtypes)
-    assert len(dtypes) == 1
+    assert len(dtypes) == 1, dtypes
     dtype = dtypes.pop()
     if dtype == object:
         df = df.astype("U")
     else:
-        assert dtype == int
+        assert dtype == int, (fname, dtype)
 
     arr = DataArray(df)
     return arr
