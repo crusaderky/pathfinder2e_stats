@@ -39,7 +39,7 @@ def _read_NPC_table(fname: Path) -> DataArray:
 
     dim_1 = arr.coords["dim_1"]
     if fname.name == "HP.csv":
-        arr = arr.unstack("dim_1")
+        arr = arr.unstack("dim_1", fill_value=1337)
         # Undo alphabetical sorting
         arr = arr.sel(challenge=["High", "Moderate", "Low"])
     elif "High" in dim_1:

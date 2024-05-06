@@ -46,3 +46,8 @@ def test_NPC():
 
     # Test that Extreme and Terrible are filled with zeros when missing
     assert ds.HP.sel(level=2, mm="min").values.tolist() == [0, 36, 28, 21, 0]
+
+    # Test that unstack didn't need to use fill values
+    HP = ds.HP.sel(challenge=["High", "Moderate", "Low"])
+    assert (HP > 0).all()
+    assert (HP < 700).all()
