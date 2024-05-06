@@ -51,3 +51,22 @@ def test_NPC():
     HP = ds.HP.sel(challenge=["High", "Moderate", "Low"])
     assert (HP > 0).all()
     assert (HP < 700).all()
+
+
+def test_DC():
+    assert tables.DC[0] == 14
+    assert tables.DC[-1] == 50
+    assert tables.DC.coords["level"][0] == 0
+    assert tables.DC.coords["level"][-1] == 25
+    assert tables.DC.dtype.kind == "i"
+
+
+def test_earn_income():
+    ds = tables.EARN_INCOME
+    assert ds.level[0] == 0
+    assert ds.level[-1] == 21
+    assert ds.sel(level=7).DC == 23
+    assert ds.sel(level=7).income_earned.values.tolist() == [0.4, 2, 2.5, 2.5, 2.5]
+    assert ds.DC.dtype.kind == "i"
+    assert ds.income_earned.dtype.kind == "f"
+    assert ds.proficiency.dtype.kind == "U"

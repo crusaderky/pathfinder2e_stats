@@ -83,7 +83,20 @@ def _read_NPC_tables() -> Dataset:
     return ds
 
 
+def _read_earn_income_table() -> Dataset:
+    fname = Path(__file__).parent / "earn_income.csv"
+    df = pd.read_csv(fname, index_col=0)
+    ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
+    ds = ds.rename({"dim_1": "proficiency"})
+    ds.coords["proficiency"] = ds.proficiency.astype("U")
+    return ds
+
+
 PC = _read_PC_tables()
 NPC = _read_NPC_tables()
+EARN_INCOME = _read_earn_income_table()
+DC = EARN_INCOME.DC
+EARN_INCOME = EARN_INCOME.sel(level=EARN_INCOME.level < 22)
 
-__all__ = ("PC", "NPC")
+
+__all__ = ("PC", "NPC", "DC", "EARN_INCOME")
