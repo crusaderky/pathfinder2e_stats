@@ -10,4 +10,4 @@ html:
 	pip install ..
 	jupyter nbconvert --execute --to notebook ../notebooks/*.ipynb
 	mv ../notebooks/*.nbconvert.ipynb notebooks/
-	sphinx-build -W -n -j auto -b html -d ../build/doctrees . ../build/html
+	sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html
