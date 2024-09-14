@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from xarray import DataArray
+from xarray import DataArray, align
 from xarray.testing import assert_equal
 
 from pathfinder2e_stats import Damage, check, damage, set_size
@@ -237,14 +237,14 @@ def test_immunities(immunities):
         immunities=immunities,
     )
     assert actual.immunities.dtype == bool
-    assert_equal(
-        actual.immunities,
-        DataArray(
-            [True, False],
-            dims=["damage_type"],
-            coords={"damage_type": ["fire", "slashing"]},
-        ),
+    expect = DataArray(
+        [False, True],
+        dims=["damage_type"],
+        coords={"damage_type": ["slashing", "fire"]},
     )
+    # Different versions of xarray produce different orderings
+    actual, expect = align(actual, expect, join="outer")
+    assert_equal(actual.immunities, expect)
     assert actual.direct_damage.sel(damage_type="slashing").max() == 12
     assert actual.direct_damage.sel(damage_type="fire").max() == 0
 
