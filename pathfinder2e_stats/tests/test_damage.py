@@ -240,9 +240,9 @@ def test_immunities(immunities):
     assert_equal(
         actual.immunities,
         DataArray(
-            [True, False],
+            [False, True],
             dims=["damage_type"],
-            coords={"damage_type": ["fire", "slashing"]},
+            coords={"damage_type": ["slashing", "fire"]},
         ),
     )
     assert actual.direct_damage.sel(damage_type="slashing").max() == 12
