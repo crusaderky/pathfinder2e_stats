@@ -60,7 +60,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "pathfinder2e_stats"
-copyright = "2020-%s, pathfinder2e_stats Developers" % datetime.datetime.now().year
+copyright = f"2020-{datetime.datetime.now().year}, pathfinder2e_stats Developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
