@@ -183,3 +183,20 @@ def check(
         ds.update({"outcome": outcome, "use_hero_point": use_hero_point})
 
     return map_outcome(ds, **kwargs) if kwargs else ds
+
+
+def outcome_counts(
+    check_outcome: DataArray | Dataset,
+    dim: Hashable = "roll",
+    *,
+    new_dim: Hashable = "outcome",
+    normalize: bool = True,
+) -> DataArray:
+    if isinstance(check_outcome, Dataset):
+        check_outcome = check_outcome.outcome
+
+    vc = check_outcome.value_counts(dim, new_dim=new_dim, normalize=normalize)
+    vc.coords[new_dim] = [str(DoS(i)) for i in vc.coords[new_dim]]
+    # Sort from critical success to critical failure
+    vc = vc.isel({new_dim: slice(None, None, -1)})
+    return vc

@@ -8,6 +8,7 @@ from pathfinder2e_stats.bonuses import sum_bonuses as sum_bonuses
 from pathfinder2e_stats.check import DoS as DoS
 from pathfinder2e_stats.check import check as check
 from pathfinder2e_stats.check import map_outcome as map_outcome
+from pathfinder2e_stats.check import outcome_counts as outcome_counts
 from pathfinder2e_stats.damage import damage as damage
 from pathfinder2e_stats.damage_spec import Damage as Damage
 from pathfinder2e_stats.damage_spec import DamageList as DamageList

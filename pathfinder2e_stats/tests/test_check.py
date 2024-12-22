@@ -5,7 +5,7 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, check, map_outcome
+from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts
 
 
 def test_DoS_str():
@@ -424,3 +424,29 @@ def test_check_array_input():
         ds.sel(PC="Alice", monster="Goblin").outcome.mean()
         < ds.sel(PC="Bob", monster="Goblin").outcome.mean()
     )
+
+
+def test_outcome_counts():
+    c = check(5, DC=12)
+    oc = outcome_counts(c, normalize=False)
+    assert oc.dims == ("outcome",)
+    assert oc.coords["outcome"][0] == "Critical success"  # success > failure
+    assert (
+        oc.sel(outcome="Critical success").sum()
+        == c.outcome[c.outcome == DoS.critical_success].size
+    )
+
+    oc2 = outcome_counts(c.outcome, normalize=False)
+    assert_equal(oc, oc2)
+
+    oc3 = outcome_counts(c)  # Defaults to normalize=True
+    assert_equal(oc3, oc / c.sizes["roll"])
+
+
+def test_outcome_counts_extra_dims():
+    c = check(5, DC=12, dims={"foo": 3, "bar": 4})
+    oc = outcome_counts(c)
+    assert oc.dims == ("foo", "bar", "outcome")
+
+    oc2 = outcome_counts(c, dim="foo", new_dim="baz")
+    assert oc2.dims == ("roll", "bar", "baz")
