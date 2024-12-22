@@ -34,7 +34,7 @@ class Damage:
         if self.multiplier not in (0.5, 1, 2):
             raise ValueError(f"multiplier must be 0.5, 1, or 2; got {self.multiplier}")
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         if self.dice and self.faces:
             s = f"{self.dice}d{self.faces}"
             if self.bonus > 0:
@@ -160,7 +160,7 @@ class DamageList(UserList[Damage]):
     def basic_save(self) -> bool:
         return self[0].basic_save
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return " plus ".join(str(el) for el in self)
 
     def expand(self) -> ExpandedDamage:
@@ -196,7 +196,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
 
         data = {k: [vi for vi in v if bool(vi)] for k, v in data.items()}
         data = {k: v for k, v in data.items() if v}
-        self.data = dict(sorted(data.items()))
+        self.data = dict(sorted(data.items(), reverse=True))  # success > failure
 
     def __add__(self, other: AnyDamageSpec) -> ExpandedDamage:
         return ExpandedDamage.sum([self, other])
@@ -212,12 +212,20 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         out = {k: Damage.simplify(v) for k, v in out.items()}
         return ExpandedDamage(out)
 
-    def __str__(self) -> str:
+    def _repr_html_(self) -> str:
         out = []
         for k, v in self.items():
             name = k.name.replace("_", " ").capitalize()
-            out.append(f"**{name}:** {DamageList(v)}")
-        return "\n".join(out)
+            out.append(f"<b>{name}:</b> {DamageList(v)}")
+        return "<br>\n".join(out)
+
+    def __repr__(self) -> str:
+        return (
+            self._repr_html_()
+            .replace("<b>", "**")
+            .replace("</b>", "**")
+            .replace("<br>", "")
+        )
 
     def filter(self, persistent: bool = False, splash: bool = False) -> ExpandedDamage:
         return ExpandedDamage(
