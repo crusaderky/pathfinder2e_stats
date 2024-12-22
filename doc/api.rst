@@ -18,6 +18,8 @@ Checks
 
 .. autofunction:: pathfinder2e_stats.map_outcome
 
+.. autofunction:: pathfinder2e_stats.outcome_counts
+
 
 Damage rolls
 ------------
