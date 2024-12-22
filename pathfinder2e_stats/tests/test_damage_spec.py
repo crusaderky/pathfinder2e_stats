@@ -26,6 +26,7 @@ def test_damage_type_validation():
 def test_damage_type_str():
     d = Damage("fire", 1, 6)
     assert str(d) == "1d6 fire"
+    assert repr(d) == str(d)  # ipython / jupyter calls repr()
 
     d = Damage("fire", 2, 6, 3)
     assert str(d) == "2d6+3 fire"
@@ -253,17 +254,24 @@ def test_expanded_damage_sum():
 
 def test_expanded_damage_str():
     d = (Damage("fire", 1, 6) + Damage("fire", 0, 0, 1, splash=True)).expand()
-    expect = """
-    **Failure:** 1 fire splash
-    **Success:** 1d6 fire plus 1 fire splash
+    expect_txt = """
     **Critical success:** (1d6)x2 fire plus 1 fire splash
+    **Success:** 1d6 fire plus 1 fire splash
+    **Failure:** 1 fire splash
     """
-    assert str(d) == dedent(expect).strip()
+    expect_html = """
+    <b>Critical success:</b> (1d6)x2 fire plus 1 fire splash<br>
+    <b>Success:</b> 1d6 fire plus 1 fire splash<br>
+    <b>Failure:</b> 1 fire splash
+    """
+
+    assert repr(d) == str(d) == dedent(expect_txt).strip()
+    assert d._repr_html_() == dedent(expect_html).strip()
 
     assert d.to_dict_of_str() == {
-        "Failure": "1 fire splash",
-        "Success": "1d6 fire plus 1 fire splash",
         "Critical success": "(1d6)x2 fire plus 1 fire splash",
+        "Success": "1d6 fire plus 1 fire splash",
+        "Failure": "1 fire splash",
     }
 
 
