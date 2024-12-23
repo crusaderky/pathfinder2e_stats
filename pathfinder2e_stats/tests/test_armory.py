@@ -3,14 +3,13 @@ from types import ModuleType
 import pytest
 
 import pathfinder2e_stats.armory as armory
-from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage
+from pathfinder2e_stats import Damage, DamageList, ExpandedDamage
 
 mods = [
     mod
     for mod in armory.__dict__.values()
     if isinstance(mod, ModuleType) and mod is not armory._common
 ]
-funcs = [getattr(mod, name) for mod in mods for name in mod.__all__]
 weapon_mods = (
     armory.bows,
     armory.crossbows,
@@ -22,13 +21,27 @@ weapon_mods = (
 spell_mods = (armory.cantrips, armory.spells)
 
 
-@pytest.mark.parametrize("func", funcs)
+@pytest.mark.parametrize(
+    "func",
+    [
+        getattr(mod, name)
+        for mod in mods
+        for name in mod.__all__
+        if name != "critical_specialization"
+    ],
+)
 def test_armory(func):
     assert isinstance(func(), Damage | DamageList | ExpandedDamage)
 
 
 @pytest.mark.parametrize(
-    "func", [getattr(mod, name) for mod in weapon_mods for name in mod.__all__]
+    "func",
+    [
+        getattr(mod, name)
+        for mod in weapon_mods
+        for name in mod.__all__
+        if name != "critical_specialization"
+    ],
 )
 def test_weapons(func):
     w = func()
@@ -53,78 +66,33 @@ def test_spells(func):
     assert s10 != smin
 
 
-@pytest.mark.parametrize(
-    "func", [getattr(armory.picks, name) for name in armory.picks.__all__]
-)
-def test_picks(func):
-    pick = func(dice=2, bonus=5)
-    assert isinstance(pick, Damage)
-    assert pick.bonus == 5
-
-    assert func(dice=2, bonus=5, critical_specialization=True) == pick + {
-        DoS.critical_success: [Damage("piercing", 0, 0, 4)]
-    }
-
-    assert func(
-        dice=2, bonus=5, critical_specialization=True, grievous=True
-    ) == pick + {DoS.critical_success: [Damage("piercing", 0, 0, 8)]}
-
-    # Grievous without critical specialization does nothing
-    assert func(dice=2, bonus=5, grievous=True) == pick
+@pytest.mark.parametrize("mod", [armory.darts, armory.crossbows, armory.knives])
+def test_critical_specialization_bleed(mod):
+    w = mod.critical_specialization(123)
+    assert w == {2: [Damage("bleed", 1, 6, 123, persistent=True)]}
 
 
-@pytest.mark.parametrize(
-    "func",
-    [
-        getattr(mod, name)
-        for mod in (armory.knives, armory.darts, armory.crossbows)
-        for name in mod.__all__
-    ],
-)
-def test_bleed_on_crit_weapons(func):
-    if func.__name__ == "sukgung":
-        pytest.skip(reason="fatal aim")
-
-    w = func()
-    assert isinstance(w, Damage)
-
-    # FIXME
-    if func.__name__ == "sukgung":
-        with pytest.warns(UserWarning, match="two hands"):  # FIXME
-            w = func(critical_specialization=True, item_attack_bonus=123)
-    else:
-        w = func(critical_specialization=True, item_attack_bonus=123)
-
-    assert isinstance(w, ExpandedDamage)
-    assert w[DoS.critical_success][-1] == Damage("bleed", 1, 6, 123, persistent=True)
+def test_critical_specialization_grievous_darts():
+    w = armory.darts.critical_specialization(123, grievous=True)
+    assert w == {2: [Damage("bleed", 2, 6, 123, persistent=True)]}
 
 
-@pytest.mark.parametrize("hands", [1, 2])
-def test_sukgung(hands):
-    w = armory.crossbows.sukgung().hands(hands=hands)
-    assert isinstance(w, Damage)
-    w = armory.crossbows.sukgung(
-        critical_specialization=True, item_attack_bonus=123, hands=hands
-    )
-    assert isinstance(w, ExpandedDamage)
-    assert w[DoS.critical_success][-1] == Damage("bleed", 1, 6, 123, persistent=True)
+def test_critical_specialization_picks():
+    w = armory.picks.critical_specialization(3)
+    assert w == {2: [Damage("piercing", 0, 0, 6)]}
 
+    w = armory.picks.critical_specialization(3, grievous=True)
+    assert w == {2: [Damage("piercing", 0, 0, 12)]}
 
-def test_sukgung_implicit_hands():
-    w1 = armory.crossbows.sukgung(
-        critical_specialization=True, item_attack_bonus=123, hands=2
-    )
-    with pytest.warns(UserWarning, match="two hands"):
-        w2 = armory.crossbows.sukgung(
-            critical_specialization=True, item_attack_bonus=123
-        )
-    assert w1 == w2
+    # Grievous pick, switchscythe, some barbarians can change the damage type
+    w = armory.picks.critical_specialization(2, type="slashing")
+    assert w == {2: [Damage("slashing", 0, 0, 4)]}
 
 
 def test_ignition():
     ir = armory.cantrips.ignition()
     im = armory.cantrips.ignition(melee=True)
-    for dos in (DoS.success, DoS.critical_success):
+    for dos in (1, 2):
         for el in ir[dos]:
             assert el.faces == 4
         for el in im[dos]:
