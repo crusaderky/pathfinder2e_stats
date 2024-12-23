@@ -40,6 +40,8 @@ def test_damage_type_validation():
         Damage("fire", 1, 6, deadly=20)
     with pytest.raises(ValueError, match="faces"):
         Damage("fire", 1, 6, fatal=20)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, fatal_aim=20)
 
     with pytest.raises(ValueError, match="persistent and splash"):
         Damage("fire", 0, 0, 1, persistent=True, splash=True)
@@ -84,6 +86,9 @@ def test_damage_type_str():
 
     d = Damage("piercing", 2, 6, 4, fatal=10)
     assert str(d) == "2d6+4 piercing fatal d10"
+
+    d = Damage("piercing", 1, 8, fatal_aim=12)
+    assert str(d) == "1d8 piercing fatal aim d12"
 
     d = Damage("fire", 6, 6, basic_save=True)
     assert str(d) == "6d6 fire, with a basic saving throw"
@@ -412,6 +417,23 @@ def test_two_hands():
 
     assert d.hands(1) == Damage("slashing", 1, 8)
     assert d.hands(2) == Damage("slashing", 1, 12)
+    with pytest.raises(ValueError, match="hands"):
+        d.hands(0)
+    with pytest.raises(ValueError, match="hands"):
+        d.hands(3)
+    with pytest.raises(ValueError, match="hands"):
+        d.hands(True)
+
+
+def test_fatal_aim():
+    d = Damage("piercing", 1, 8, fatal_aim=12)
+    with pytest.raises(ValueError, match="fatal aim"):
+        d.expand()
+    with pytest.raises(ValueError, match="fatal aim"):
+        d + Damage("fire", 1, 6)
+
+    assert d.hands(1) == Damage("piercing", 1, 8)
+    assert d.hands(2) == Damage("piercing", 1, 8, fatal=12)
     with pytest.raises(ValueError, match="hands"):
         d.hands(0)
     with pytest.raises(ValueError, match="hands"):

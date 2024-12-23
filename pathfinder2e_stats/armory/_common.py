@@ -7,7 +7,7 @@ from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
 
 
 def _bleed_crit_weapon(
-    name: str, type: str, faces: int
+    name: str, type: str, faces: int, fatal_aim: int = 0
 ) -> Callable[..., Damage | ExpandedDamage]:
     def _weapon(
         dice: int = 1,
@@ -15,7 +15,7 @@ def _bleed_crit_weapon(
         critical_specialization: bool = False,
         item_attack_bonus: int = 1,
     ) -> Damage | ExpandedDamage:
-        spec = Damage(type, dice, faces, bonus)
+        spec = Damage(type, dice, faces, bonus, fatal_aim=fatal_aim)
         if not critical_specialization:
             return spec
         bleed = Damage("bleed", 1, 6, item_attack_bonus, persistent=True)
