@@ -137,3 +137,20 @@ def test_shocking_grasp():
     assert isinstance(nonmetal, Damage)
     assert isinstance(metal, ExpandedDamage)
     assert nonmetal.expand() != metal
+
+
+def test_blazing_bolt():
+    assert armory.spells.blazing_bolt(actions=1) == Damage("fire", 2, 6)
+    assert armory.spells.blazing_bolt(actions=2) == Damage("fire", 4, 6)
+    assert armory.spells.blazing_bolt(actions=3) == Damage("fire", 4, 6)
+    assert armory.spells.blazing_bolt(rank=3, actions=1) == Damage("fire", 3, 6)
+    assert armory.spells.blazing_bolt(rank=3, actions=2) == Damage("fire", 6, 6)
+    assert armory.spells.blazing_bolt(rank=3, actions=3) == Damage("fire", 6, 6)
+
+
+def test_force_barrage():
+    assert armory.spells.force_barrage(actions=1) == Damage("force", 1, 4, 1)
+    assert armory.spells.force_barrage(actions=2) == Damage("force", 2, 4, 2)
+    assert armory.spells.force_barrage(actions=3) == Damage("force", 3, 4, 3)
+    assert armory.spells.force_barrage(rank=2, actions=3) == Damage("force", 3, 4, 3)
+    assert armory.spells.force_barrage(rank=3, actions=3) == Damage("force", 6, 4, 6)
