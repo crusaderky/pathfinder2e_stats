@@ -34,6 +34,12 @@ def test_damage_type_validation():
         Damage("fire", 1, 20)
     with pytest.raises(TypeError, match="faces"):
         Damage("fire", 1, "2")
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, two_hands=20)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, deadly=20)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, fatal=20)
 
     with pytest.raises(ValueError, match="persistent and splash"):
         Damage("fire", 0, 0, 1, persistent=True, splash=True)

@@ -34,8 +34,9 @@ class Damage:
                 raise TypeError(f"{k} must be of type {t}; got {type(v)}")
         if self.dice < 0:
             raise ValueError(f"dice must be non-negative; got {self.dice}")
-        if self.faces not in (0, 2, 4, 6, 8, 10, 12):
-            raise ValueError(f"Invalid faces: {self.faces}")
+        for faces in (self.faces, self.two_hands, self.deadly, self.fatal):
+            if faces not in {0, 2, 4, 6, 8, 10, 12}:
+                raise ValueError(f"Invalid faces: {self.faces}")
         if (self.dice == 0) != (self.faces == 0):
             raise ValueError(
                 f"dice and faces must be both zero or both non-zero; got {self}"
