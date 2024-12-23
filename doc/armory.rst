@@ -2,26 +2,36 @@ The Armory
 ==========
 .. currentmodule:: pathfinder2e_stats
 
-This is a precompiled package of a collection of common weapons and spells.
+This is a collection of commonly-tested weapons and spells.
 
-Note that this will always be incomplete. Feel free to open a PR to add more, but do expect to have to manually write your own damage profiles using :func:`Damage` for all uncommon weapons and spells.
+Note that this will always be incomplete. Feel free to open a PR to add more, but do expect to have to manually write your own damage profiles using :func:`Damage` for less common weapons and spells.
 
 Swords
 ------
-.. automodule:: armory.swords
+.. automodule:: pathfinder2e_stats.armory.swords
+   :members:
+   :undoc-members:
 
 Picks
 -----
-.. automodule:: armory.picks
+.. automodule:: pathfinder2e_stats.armory.picks
+   :members:
+   :undoc-members:
 
-Runes
------
-.. automodule:: armory.runes
+Property Runes
+--------------
+.. automodule:: pathfinder2e_stats.armory.runes
+   :members:
+   :undoc-members:
 
 Cantrips
 --------
-.. automodule:: armory.cantrips
+.. automodule:: pathfinder2e_stats.armory.cantrips
+   :members:
+   :undoc-members:
 
 Spells
 ------
-.. automodule:: armory.spells
+.. automodule:: pathfinder2e_stats.armory.spells
+   :members:
+   :undoc-members:

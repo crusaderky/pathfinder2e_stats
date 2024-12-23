@@ -12,9 +12,7 @@ def _pick_specialization(
     if not critical_specialization:
         return spec
     bonus = spec.dice * (4 if grievous else 2)
-    exp = spec + {DoS.critical_success: [Damage("piercing", 0, 0, bonus)]}
-    assert isinstance(exp, ExpandedDamage)
-    return exp
+    return spec.expand() + {DoS.critical_success: [Damage("piercing", 0, 0, bonus)]}
 
 
 def light_pick(

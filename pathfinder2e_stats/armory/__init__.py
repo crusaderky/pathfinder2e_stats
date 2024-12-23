@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import pathfinder2e_stats.armory.cantrips
-import pathfinder2e_stats.armory.picks
-import pathfinder2e_stats.armory.runes
-import pathfinder2e_stats.armory.spells
-import pathfinder2e_stats.armory.swords  # noqa: F401
+from pathfinder2e_stats.armory import cantrips as cantrips
+from pathfinder2e_stats.armory import picks as picks
+from pathfinder2e_stats.armory import runes as runes
+from pathfinder2e_stats.armory import spells as spells
+from pathfinder2e_stats.armory import swords as swords

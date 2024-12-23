@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathfinder2e_stats.check import DoS
-from pathfinder2e_stats.damage_spec import AnyDamageSpec, Damage
+from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
 __all__ = (
     "breathe_fire",
@@ -24,15 +24,15 @@ def fireball(rank: int = 3) -> Damage:
     return Damage("fire", 2 * rank, 6, basic_save=True)
 
 
-def shocking_grasp(rank: int = 1, metal: bool = False) -> AnyDamageSpec:
+def shocking_grasp(rank: int = 1, metal: bool = False) -> Damage | ExpandedDamage:
     d = Damage("electricity", rank + 1, 12)
     if not metal:
         return d
     p = Damage("electricity", 1, 4, rank - 1, persistent=True)
-    return d + {DoS.critical_success: [p], DoS.success: [p]}
+    return d.expand() + {DoS.critical_success: [p], DoS.success: [p]}
 
 
-def thunderstrike(rank: int = 1) -> AnyDamageSpec:
+def thunderstrike(rank: int = 1) -> DamageList:
     e = Damage("electricity", rank, 12, basic_save=True)
     s = Damage("sonic", 1, 4, basic_save=True)
-    return e + s
+    return DamageList([e, s])
