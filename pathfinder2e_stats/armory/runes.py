@@ -27,8 +27,7 @@ def flaming(greater: bool = False) -> ExpandedDamage:
 
 
 def shock() -> ExpandedDamage:
-    """Shock rune
-
+    """
     .. note::
        Doesn't include damage dealt to secondary targets on a critical hit
     """
@@ -40,8 +39,7 @@ def frost() -> ExpandedDamage:
 
 
 def corrosive() -> ExpandedDamage:
-    """Corrosive rune
-
+    """
     .. note::
        Doesn't include damage dealt to armor on a critical hit
     """
