@@ -12,9 +12,33 @@ Swords
    :members:
    :undoc-members:
 
+Knives
+------
+.. automodule:: pathfinder2e_stats.armory.knives
+   :members:
+   :undoc-members:
+
 Picks
 -----
 .. automodule:: pathfinder2e_stats.armory.picks
+   :members:
+   :undoc-members:
+
+Bows
+----
+.. automodule:: pathfinder2e_stats.armory.bows
+   :members:
+   :undoc-members:
+
+Crossbows
+---------
+.. automodule:: pathfinder2e_stats.armory.crossbows
+   :members:
+   :undoc-members:
+
+Darts
+-----
+.. automodule:: pathfinder2e_stats.armory.darts
    :members:
    :undoc-members:
 
