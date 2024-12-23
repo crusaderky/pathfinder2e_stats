@@ -8,19 +8,49 @@ from pathfinder2e_stats import Damage, DoS, ExpandedDamage
 
 
 def test_damage_type_validation():
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="type"):
         Damage(1, 6, 4)
-    with pytest.raises(TypeError):
-        Damage("fire", 1, 6, multiplier=True)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="dice"):
         Damage("fire", True, 6)
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="splash"):
         Damage("fire", 1, 6, splash=1)
 
     Damage("fire", 1, 6, multiplier=0.5)
     Damage("fire", 1, 6, multiplier=2)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError, match="multiplier"):
+        Damage("fire", 1, 6, multiplier=True)
+    with pytest.raises(ValueError, match="multiplier"):
         Damage("fire", 1, 6, multiplier=3)
+
+    for i in (2, 4, 6, 8, 10, 12):
+        Damage("fire", 1, i)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 3)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 1)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 14)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 20)
+    with pytest.raises(TypeError, match="faces"):
+        Damage("fire", 1, "2")
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, two_hands=20)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, deadly=20)
+    with pytest.raises(ValueError, match="faces"):
+        Damage("fire", 1, 6, fatal=20)
+
+    with pytest.raises(ValueError, match="persistent and splash"):
+        Damage("fire", 0, 0, 1, persistent=True, splash=True)
+
+    Damage("fire", 0, 0, 1)
+    with pytest.raises(ValueError, match="dice and faces"):
+        Damage("fire", 1, 0, 1)
+    with pytest.raises(ValueError, match="dice and faces"):
+        Damage("fire", 0, 2, 1)
+    with pytest.raises(ValueError, match="dice"):
+        Damage("fire", -1, 6)
 
 
 def test_damage_type_str():
@@ -50,13 +80,16 @@ def test_damage_type_str():
     assert str(d) == "1 fire splash"
 
     d = Damage("piercing", 2, 6, 4, deadly=8)
-    assert str(d) == "2d6+4 deadly d8 piercing"
+    assert str(d) == "2d6+4 piercing deadly d8"
 
     d = Damage("piercing", 2, 6, 4, fatal=10)
-    assert str(d) == "2d6+4 fatal d10 piercing"
+    assert str(d) == "2d6+4 piercing fatal d10"
 
     d = Damage("fire", 6, 6, basic_save=True)
     assert str(d) == "6d6 fire, with a basic saving throw"
+
+    d = Damage("slashing", 1, 8, two_hands=12)
+    assert str(d) == "1d8 slashing two-hands d12"
 
 
 def test_damage_type_copy():
@@ -142,12 +175,39 @@ def test_expand_fatal():
 
 
 def test_expand_deadly_fatal():
-    """Probably possible through some features"""
+    """Probably possible through some class features or feats"""
     assert Damage("slashing", 2, 8, 4, deadly=8, fatal=12).expand() == {
         1: [Damage("slashing", 2, 8, 4)],
         2: [
             Damage("slashing", 2, 12, 4, 2),
             Damage("slashing", 1, 12),
+            Damage("slashing", 1, 8),
+        ],
+    }
+
+
+def test_vicious_swing():
+    """Vicious Swing (Fighter feat) adds 1 or more dice of damage, which
+    are enlarged by fatal but don't cause deadly to bump up
+    """
+    assert Damage("slashing", 2, 8).vicious_swing(1) == Damage("slashing", 3, 8)
+    assert Damage("slashing", 2, 8, fatal=12).vicious_swing(1) == Damage(
+        "slashing", 3, 8, fatal=12
+    )
+
+    # 3d6 deadly d8 adds 2d8 on a crit
+    # 2d6 deadly d8 with vicious swing adds 1d8 on a crit
+    assert Damage("slashing", 2, 6, deadly=8).vicious_swing(1) == {
+        1: [Damage("slashing", 3, 6)],
+        2: [Damage("slashing", 3, 6, 0, 2), Damage("slashing", 1, 8)],
+    }
+
+    # Both deadly and fatal
+    assert Damage("slashing", 2, 6, fatal=10, deadly=8).vicious_swing(1) == {
+        1: [Damage("slashing", 3, 6)],
+        2: [
+            Damage("slashing", 3, 10, 0, 2),
+            Damage("slashing", 1, 10),
             Damage("slashing", 1, 8),
         ],
     }
@@ -325,3 +385,36 @@ def test_no_damage():
 
     d = ExpandedDamage({1: [Damage("slashing", 1, 6, -6)]})
     assert d == {}
+
+
+def test_reduce_die():
+    d = Damage("slashing", 1, 4, 3)
+    d2 = d.reduce_die()
+    assert d2 == Damage("slashing", 1, 2, 3)
+    with pytest.raises(ValueError, match="faces"):
+        d2.reduce_die()
+
+
+def test_increase_die():
+    d = Damage("slashing", 2, 10, 3)
+    d2 = d.increase_die()
+    assert d2 == Damage("slashing", 2, 12, 3)
+    with pytest.raises(ValueError, match="faces"):
+        d2.increase_die()
+
+
+def test_two_hands():
+    d = Damage("slashing", 1, 8, two_hands=12)
+    with pytest.raises(ValueError, match="two-hands"):
+        d.expand()
+    with pytest.raises(ValueError, match="two-hands"):
+        d + Damage("fire", 1, 6)
+
+    assert d.hands(1) == Damage("slashing", 1, 8)
+    assert d.hands(2) == Damage("slashing", 1, 12)
+    with pytest.raises(ValueError, match="hands"):
+        d.hands(0)
+    with pytest.raises(ValueError, match="hands"):
+        d.hands(3)
+    with pytest.raises(ValueError, match="hands"):
+        d.hands(True)

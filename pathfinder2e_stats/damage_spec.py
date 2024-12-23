@@ -4,7 +4,7 @@ from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, TypeAlias
+from typing import Any, Literal, TypeAlias
 
 from pathfinder2e_stats.check import DoS
 
@@ -18,6 +18,7 @@ class Damage:
     multiplier: float = 1
     persistent: bool = False
     splash: bool = False
+    two_hands: int = 0
     deadly: int = 0
     fatal: int = 0
     basic_save: bool = False
@@ -31,8 +32,19 @@ class Damage:
                     raise TypeError(f"{k} must be of type int or float; got {type(v)}")
             elif type(v) is not cls:
                 raise TypeError(f"{k} must be of type {t}; got {type(v)}")
+        if self.dice < 0:
+            raise ValueError(f"dice must be non-negative; got {self.dice}")
+        for faces in (self.faces, self.two_hands, self.deadly, self.fatal):
+            if faces not in {0, 2, 4, 6, 8, 10, 12}:
+                raise ValueError(f"Invalid faces: {self.faces}")
+        if (self.dice == 0) != (self.faces == 0):
+            raise ValueError(
+                f"dice and faces must be both zero or both non-zero; got {self}"
+            )
         if self.multiplier not in (0.5, 1, 2):
             raise ValueError(f"multiplier must be 0.5, 1, or 2; got {self.multiplier}")
+        if self.persistent and self.splash:
+            raise ValueError("Damage can't be both persistent and splash")
 
     def __repr__(self) -> str:
         if self.dice and self.faces:
@@ -49,17 +61,19 @@ class Damage:
         elif self.multiplier != 1:
             s = f"({s})x{self.multiplier}"
 
-        if self.deadly:
-            s += f" deadly d{self.deadly}"
-        if self.fatal:
-            s += f" fatal d{self.fatal}"
-
         if self.persistent:
             s += f" persistent {self.type}"
         elif self.splash:
             s += f" {self.type} splash"
         else:
             s += f" {self.type}"
+
+        if self.two_hands:
+            s += f" two-hands d{self.two_hands}"
+        if self.deadly:
+            s += f" deadly d{self.deadly}"
+        if self.fatal:
+            s += f" fatal d{self.fatal}"
 
         if self.basic_save:
             s += ", with a basic saving throw"
@@ -77,6 +91,7 @@ class Damage:
                 types_by_appearance.setdefault(d.type, len(types_by_appearance)),
                 -d.multiplier,  # Doubled damage first
                 -d.faces,  # Largest die size first
+                d.two_hands,
                 d.deadly,
                 d.fatal,
             )
@@ -111,7 +126,48 @@ class Damage:
         kwargs2.update(kwargs)
         return Damage(**kwargs2)
 
+    def hands(self, n_hands: Literal[1, 2]) -> Damage:
+        if not self.two_hands:
+            raise ValueError("Weapon does not have the two-hands trait")
+        elif n_hands == 1 and n_hands is not True:
+            return self.copy(two_hands=0)
+        elif n_hands == 2:
+            return self.copy(faces=self.two_hands, two_hands=0)
+        else:
+            raise ValueError("Must use 1 or 2 hands to wield")
+
+    def reduce_die(self) -> Damage:
+        return self.copy(faces=self.faces - 2)
+
+    def increase_die(self) -> Damage:
+        return self.copy(faces=self.faces + 2)
+
+    def vicious_swing(self, dice: int = 1) -> AnyDamageSpec:
+        """Vicious Swing / Power Attack and similar effects
+
+        Add extra weapon dice, which impact the fatal trait but
+        not the deadly trait
+        """
+        if self.deadly:
+            return self.expand() + {
+                DoS.critical_success: [
+                    Damage(self.type, dice, self.fatal or self.faces, multiplier=2)
+                ],
+                DoS.success: [Damage(self.type, dice, self.faces)],
+            }
+        else:
+            return self.copy(dice=self.dice + dice)
+
+    def _check_two_hands(self) -> None:
+        if self.two_hands:
+            raise ValueError(
+                "Weapon has the two-hands trait; please call "
+                ".hands(1) or .hands(2) method"
+            )
+
     def expand(self) -> ExpandedDamage:
+        self._check_two_hands()
+
         base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
         out = {}
 
@@ -148,6 +204,7 @@ class Damage:
 
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
         """Add two damage specs together"""
+        self._check_two_hands()
         return DamageList([self]) + other
 
     def __bool__(self) -> bool:
