@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
@@ -138,28 +139,26 @@ class Damage:
         kwargs2.update(kwargs)
         return Damage(**kwargs2)
 
-    def hands(self, n_hands: Literal[1, 2]) -> Damage:
-        if n_hands not in (1, 2) or n_hands is True:
+    def hands(self, hands: Literal[1, 2]) -> Damage:
+        if hands not in (1, 2) or hands is True:
             raise ValueError("Must use 1 or 2 hands to wield")
         if self.two_hands:
             return self.copy(
-                faces=self.two_hands if n_hands == 2 else self.faces, two_hands=0
+                faces=self.two_hands if hands == 2 else self.faces, two_hands=0
             )
         if self.fatal_aim:
-            return self.copy(fatal=self.fatal_aim if n_hands == 2 else 0, fatal_aim=0)
+            return self.copy(fatal=self.fatal_aim if hands == 2 else 0, fatal_aim=0)
         raise ValueError("Weapon does not have the two-hands or fatal aim traits")
 
-    def _check_two_hands(self) -> None:
-        def msg(name: str) -> str:
-            return (
-                f"Weapon has the {name} trait; please call "
-                ".hands(1) or .hands(2) method"
+    def _auto_two_hands(self) -> Damage:
+        if self.two_hands or self.fatal_aim:
+            warnings.warn(
+                "Assuming weapon is held in two hands. "
+                "You should explicitly call .hands(2) or .hands(1).",
+                stacklevel=2,
             )
-
-        if self.two_hands:
-            raise ValueError(msg("two-hands"))
-        if self.fatal_aim:
-            raise ValueError(msg("fatal aim"))
+            return self.hands(2)
+        return self
 
     def reduce_die(self) -> Damage:
         return self.copy(faces=self.faces - 2)
@@ -184,8 +183,7 @@ class Damage:
             return self.copy(dice=self.dice + dice)
 
     def expand(self) -> ExpandedDamage:
-        self._check_two_hands()
-
+        self = self._auto_two_hands()
         base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
         out = {}
 
@@ -222,7 +220,7 @@ class Damage:
 
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
         """Add two damage specs together"""
-        self._check_two_hands()
+        self = self._auto_two_hands()
         return DamageList([self]) + other
 
     def __bool__(self) -> bool:

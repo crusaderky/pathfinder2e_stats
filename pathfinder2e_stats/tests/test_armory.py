@@ -82,11 +82,43 @@ def test_picks(func):
     ],
 )
 def test_bleed_on_crit_weapons(func):
+    if func.__name__ == "sukgung":
+        pytest.skip(reason="fatal aim")
+
     w = func()
     assert isinstance(w, Damage)
-    w = func(critical_specialization=True, item_attack_bonus=123)
+
+    # FIXME
+    if func.__name__ == "sukgung":
+        with pytest.warns(UserWarning, match="two hands"):  # FIXME
+            w = func(critical_specialization=True, item_attack_bonus=123)
+    else:
+        w = func(critical_specialization=True, item_attack_bonus=123)
+
     assert isinstance(w, ExpandedDamage)
-    assert w[DoS.critical_success][1] == Damage("bleed", 1, 6, 123, persistent=True)
+    assert w[DoS.critical_success][-1] == Damage("bleed", 1, 6, 123, persistent=True)
+
+
+@pytest.mark.parametrize("hands", [1, 2])
+def test_sukgung(hands):
+    w = armory.crossbows.sukgung().hands(hands=hands)
+    assert isinstance(w, Damage)
+    w = armory.crossbows.sukgung(
+        critical_specialization=True, item_attack_bonus=123, hands=hands
+    )
+    assert isinstance(w, ExpandedDamage)
+    assert w[DoS.critical_success][-1] == Damage("bleed", 1, 6, 123, persistent=True)
+
+
+def test_sukgung_implicit_hands():
+    w1 = armory.crossbows.sukgung(
+        critical_specialization=True, item_attack_bonus=123, hands=2
+    )
+    with pytest.warns(UserWarning, match="two hands"):
+        w2 = armory.crossbows.sukgung(
+            critical_specialization=True, item_attack_bonus=123
+        )
+    assert w1 == w2
 
 
 def test_ignition():

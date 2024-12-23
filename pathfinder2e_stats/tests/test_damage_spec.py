@@ -410,9 +410,9 @@ def test_increase_die():
 
 def test_two_hands():
     d = Damage("slashing", 1, 8, two_hands=12)
-    with pytest.raises(ValueError, match="two-hands"):
+    with pytest.warns(UserWarning, match="two hands"):
         d.expand()
-    with pytest.raises(ValueError, match="two-hands"):
+    with pytest.warns(UserWarning, match="two hands"):
         d + Damage("fire", 1, 6)
 
     assert d.hands(1) == Damage("slashing", 1, 8)
@@ -427,9 +427,9 @@ def test_two_hands():
 
 def test_fatal_aim():
     d = Damage("piercing", 1, 8, fatal_aim=12)
-    with pytest.raises(ValueError, match="fatal aim"):
+    with pytest.warns(UserWarning, match="two hands"):
         d.expand()
-    with pytest.raises(ValueError, match="fatal aim"):
+    with pytest.warns(UserWarning, match="two hands"):
         d + Damage("fire", 1, 6)
 
     assert d.hands(1) == Damage("piercing", 1, 8)
