@@ -18,6 +18,8 @@ def _build_docstrings() -> None:
     for mod in globals().values():
         if isinstance(mod, ModuleType) and mod is not _common:
             for name in mod.__all__:
+                if name == "critical_specialization":
+                    continue
                 func = getattr(mod, name)
                 if not func.__doc__:
                     func.__doc__ = str(func())
