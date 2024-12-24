@@ -94,9 +94,26 @@ def _read_earn_income_table() -> Dataset:
 
 PC = _read_PC_tables()
 NPC = _read_NPC_tables()
+
+# Level -2 henchman, everything is Low
+# At-level opponent, everything is Moderate
+# Level +2 boss, everything is High
+SIMPLE_NPC = (
+    concat(
+        [
+            NPC.sel(challenge="Low").shift({"level": 2}, fill_value=0),
+            NPC.sel(challenge="Moderate"),
+            NPC.sel(challenge="High").shift({"level": -2}, fill_value=0),
+        ],
+        dim="challenge",
+    )
+    .sel(level=range(1, 21), mm="mean", drop=True)
+    .transpose("level", "challenge", "limited")
+)
+
 EARN_INCOME = _read_earn_income_table()
 DC = EARN_INCOME.DC
 EARN_INCOME = EARN_INCOME.sel(level=EARN_INCOME.level < 22)
 
 
-__all__ = ("DC", "EARN_INCOME", "NPC", "PC")
+__all__ = ("DC", "EARN_INCOME", "NPC", "PC", "SIMPLE_NPC")

@@ -32,6 +32,19 @@ def test_level2rank():
     )
 
 
+def test_level2rank_dedication():
+    level = list(range(1, 21))
+    expect = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8]
+    assert_equal(
+        level2rank(DataArray(level), dedication=True),
+        DataArray(expect),
+    )
+    for level_i, expect_i in zip(level, expect, strict=False):
+        actual_i = level2rank(level_i, dedication=True)
+        assert actual_i == expect_i
+        assert isinstance(actual_i, int)
+
+
 def test_rank2level():
     assert rank2level(3) == 6
 
