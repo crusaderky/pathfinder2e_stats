@@ -40,7 +40,8 @@ def level2rank(level: _T, *, dedication: bool = False) -> _T:
     if dedication:
         res = where(
             level < 12,
-            np.clip(level // 2 - 1, 0, 3),
+            # FIXME np.clip() raises a DeprecationWarning vs. xarray
+            np.maximum(0, np.minimum(3, level // 2 - 1)),
             level // 2 - 2,
         )
         if isinstance(res, np.ndarray) and res.ndim == 0:
