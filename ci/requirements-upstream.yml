@@ -5,7 +5,7 @@ dependencies:
   - pytest
   - pytest-cov
   - xarray
-  - pyarrow  # Hard dependency of Pandas 3
+  - pyarrow # Hard dependency of Pandas 3
   - pip
   - pip:
       - git+https://github.com/pydata/xarray

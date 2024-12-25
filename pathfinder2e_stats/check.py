@@ -169,7 +169,9 @@ def check(
             "hero_point": (
                 hero_point.name
                 if isinstance(hero_point, DoS)
-                else "varies" if isinstance(hero_point, DataArray) else False
+                else "varies"
+                if isinstance(hero_point, DataArray)
+                else False
             ),
             "legend": {dos.value: str(dos) for dos in DoS.__members__.values()},
         },
@@ -198,5 +200,4 @@ def outcome_counts(
     vc = check_outcome.value_counts(dim, new_dim=new_dim, normalize=normalize)
     vc.coords[new_dim] = [str(DoS(i)) for i in vc.coords[new_dim]]
     # Sort from critical success to critical failure
-    vc = vc.isel({new_dim: slice(None, None, -1)})
-    return vc
+    return vc.isel({new_dim: slice(None, None, -1)})

@@ -106,7 +106,8 @@ def damage(
             allow_critical_success=False,
         ).outcome
         out["apply_persistent_damage"] = (
-            out["persistent_damage_check"].cumsum("persistent_round")
+            out["persistent_damage_check"]
+            .cumsum("persistent_round")
             # Check to extinguish persistent damage is done after taking it
             .shift({"persistent_round": 1}, fill_value=0)
             == 0

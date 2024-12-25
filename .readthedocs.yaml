@@ -13,11 +13,11 @@ conda:
   environment: ci/requirements-docs.yml
 
 python:
-   install:
-      - method: pip
-        path: .
+  install:
+    - method: pip
+      path: .
 
 sphinx:
   builder: html
   configuration: doc/conf.py
-  fail_on_warning: false  # FIXME
+  fail_on_warning: false # FIXME

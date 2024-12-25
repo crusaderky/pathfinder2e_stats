@@ -2,8 +2,7 @@ from types import ModuleType
 
 import pytest
 
-import pathfinder2e_stats.armory as armory
-from pathfinder2e_stats import Damage, DamageList, ExpandedDamage
+from pathfinder2e_stats import Damage, DamageList, ExpandedDamage, armory
 
 mods = [
     mod
