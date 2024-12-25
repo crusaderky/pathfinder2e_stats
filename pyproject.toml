@@ -28,7 +28,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://github.com/cusaderky/pathfinder2e_stats"
 "Bug Tracker" = "https://github.com/cusaderky/pathfinder2e_stats/issues"
-Changelog = "https://github.com/cusaderky/pathfinder2e_stats/releases"
+Changelog = "https://pathfinder2e-stats.readthedocs.io/en/latest/whats-new.html"
 
 [project.readme]
 text = "Statistical tools for Pathfinder 2nd Edition"
