@@ -370,14 +370,14 @@ def test_weaknesses_array(key):
 
 @pytest.mark.parametrize("key", ["weaknesses", "resistances", "immunities"])
 def test_malformed_weaknesses(key):
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected DataArray with int or bool dtype"):
         damage(
             check(6, DC=15),
             Damage("slashing", 1, 6),
             **{key: {"fire": 0.5}},
         )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Expected DataArray with labelled dimension"):
         damage(
             check(6, DC=15),
             Damage("slashing", 1, 6),

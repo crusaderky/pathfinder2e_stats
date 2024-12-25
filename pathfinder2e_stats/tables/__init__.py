@@ -39,7 +39,7 @@ def _read_NPC_table(fname: Path) -> DataArray:
 
     dim_1 = arr.coords["dim_1"]
     if fname.name == "HP.csv":
-        arr = arr.unstack("dim_1", fill_value=1337)
+        arr = arr.unstack("dim_1", fill_value=1337)  # noqa: PD010
         # Undo alphabetical sorting
         arr = arr.sel(challenge=["High", "Moderate", "Low"])
     elif "High" in dim_1:
@@ -74,13 +74,12 @@ def _read_NPC_tables() -> Dataset:
     ds = Dataset(data_vars=dict(zip(names, vars, strict=True)))
     _ensure_var_dtypes(ds)
     # Restore priority order after align
-    ds = ds.sortby(
+    return ds.sortby(
         DataArray(
             ["Extreme", "High", "Moderate", "Low", "Terrible"],
             dims=["challenge"],
         )
     )
-    return ds
 
 
 def _read_earn_income_table() -> Dataset:

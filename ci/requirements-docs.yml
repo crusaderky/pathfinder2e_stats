@@ -12,4 +12,4 @@ dependencies:
   - jupyterlab
   - matplotlib
   - hvplot
-  - scipy  # Add violin plots to hvplot
+  - scipy # Add violin plots to hvplot

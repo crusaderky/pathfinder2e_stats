@@ -99,7 +99,7 @@ class Damage:
         def key(d: Damage) -> tuple:
             return (
                 d.splash,  # splash damage last
-                d.persistent,  # persistant damage next-to-last
+                d.persistent,  # persistent damage next-to-last
                 types_by_appearance.setdefault(d.type, len(types_by_appearance)),
                 -d.multiplier,  # Doubled damage first
                 -d.faces,  # Largest die size first
@@ -179,11 +179,10 @@ class Damage:
                 ],
                 DoS.success: [Damage(self.type, dice, self.faces)],
             }
-        else:
-            return self.copy(dice=self.dice + dice)
+        return self.copy(dice=self.dice + dice)
 
     def expand(self) -> ExpandedDamage:
-        self = self._auto_two_hands()
+        self = self._auto_two_hands()  # noqa: PLW0642
         base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
         out = {}
 
@@ -220,8 +219,8 @@ class Damage:
 
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
         """Add two damage specs together"""
-        self = self._auto_two_hands()
-        return DamageList([self]) + other
+        d = self._auto_two_hands()
+        return DamageList([d]) + other
 
     def __bool__(self) -> bool:
         """Return True if rolled damage can be more than zero; False otherwise."""
