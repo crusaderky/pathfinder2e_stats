@@ -60,7 +60,7 @@ def roll(
         dims = {}
 
     raw = DataArray(
-        np.random.randint(1, faces + 1, size=(base.size, dice, *dims.values())),
+        base.rng.integers(1, faces + 1, size=(base.size, dice, *dims.values())),
         dims=("roll", "count", *dims),
     )
     return cast(DataArray, np.maximum(0, raw.sum("count") + bonus))

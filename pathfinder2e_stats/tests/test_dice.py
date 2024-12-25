@@ -5,7 +5,7 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_identical
 
-from pathfinder2e_stats import d20, roll
+from pathfinder2e_stats import d20, roll, seed
 
 
 def test_roll():
@@ -45,9 +45,9 @@ def test_roll_floor():
     ],
 )
 def test_roll_str(s, count, faces, bonus):
-    np.random.seed(0)
+    seed(0)
     a = roll(count, faces, bonus)
-    np.random.seed(0)
+    seed(0)
     b = roll(s)
     assert_identical(a, b)
 

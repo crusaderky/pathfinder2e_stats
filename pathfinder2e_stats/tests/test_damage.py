@@ -308,7 +308,7 @@ def test_weaknesses_persistent():
 
 def test_resistances_persistent():
     """Resistances re-apply at every application of persistent damage"""
-    set_size(5_000)
+    set_size(10_000)
 
     actual = damage(
         check(6, DC=15),
