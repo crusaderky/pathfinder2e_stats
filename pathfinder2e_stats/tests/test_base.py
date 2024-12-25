@@ -3,11 +3,21 @@ from __future__ import annotations
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import level2rank, rank2level, roll, set_size
+from pathfinder2e_stats import level2rank, rank2level, roll, seed, set_size
 
 
-def test_stable_rng():
-    assert roll(1, 100)[:5].values.tolist() == [45, 48, 65, 68, 68]
+def test_seed():
+    assert roll(1, 100)[:5].values.tolist() == [86, 64, 52, 27, 31]
+    assert roll(1, 100)[:5].values.tolist() == [56, 9, 19, 88, 45]
+    seed(0)
+    assert roll(1, 100)[:5].values.tolist() == [86, 64, 52, 27, 31]
+    seed(1)
+    assert roll(1, 100)[:5].values.tolist() == [48, 52, 76, 96, 4]
+
+
+def test_seed_fixture():
+    """Test that a global pytest fixture resets the seed before each test"""
+    assert roll(1, 100)[:5].values.tolist() == [86, 64, 52, 27, 31]
 
 
 def test_set_size():

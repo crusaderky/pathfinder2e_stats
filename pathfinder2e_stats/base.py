@@ -14,6 +14,17 @@ else:
 
 size = 100_000
 
+rng = np.random.default_rng(0)
+
+
+def seed(n: int) -> None:
+    """Seed the library-global random number generator.
+    Default is 0, which means that running
+    the same code twice will produce identical results.
+    """
+    global rng  # noqa: PLW0603
+    rng = np.random.default_rng(n)
+
 
 def set_size(n: int) -> int:
     """Set the number of rolls in all simulations. Default is 100,000.

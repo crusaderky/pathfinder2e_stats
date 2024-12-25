@@ -44,6 +44,8 @@ Utilities
 
 .. autofunction:: pathfinder2e_stats.rank2level
 
+.. autofunction:: pathfinder2e_stats.seed
+
 .. autofunction:: pathfinder2e_stats.set_size
 
 
