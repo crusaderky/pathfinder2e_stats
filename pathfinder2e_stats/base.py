@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 import numpy as np
-from xarray import DataArray, where
+import xarray
+from xarray import DataArray
 
 if TYPE_CHECKING:
     _T = TypeVar("_T", int, DataArray)
@@ -35,12 +36,6 @@ def set_size(n: int) -> int:
     return prev
 
 
-def _maybe_unwrap_scalar(x: DataArray | np.ndarray | np.generic) -> Any:
-    if (isinstance(x, np.ndarray) and x.ndim == 0) or isinstance(x, np.generic):
-        return x.item()
-    return x
-
-
 def level2rank(level: _T, *, dedication: bool = False) -> _T:
     """Convert a creature's level to their rank, e.g. to determine if they're affected
     by the incapacitation trait or to counteract their abilities. It can also be used
@@ -57,13 +52,13 @@ def level2rank(level: _T, *, dedication: bool = False) -> _T:
         Return type matches the type of ``level``.
     """
     if dedication:
-        res = where(
+        res = xarray.where(
             level < 12,
             # FIXME np.clip() raises a DeprecationWarning vs. xarray
-            np.maximum(0, np.minimum(3, level // 2 - 1)),
+            DataArray(level // 2 - 1).clip(0, 3),
             level // 2 - 2,
         )
-        return _maybe_unwrap_scalar(res)
+        return res if isinstance(level, DataArray) else res.item()
 
     return (level + 1) // 2
 
@@ -89,7 +84,7 @@ def rank2level(rank: _T, *, dedication: bool = False) -> _T:
         Return type matches the type of ``rank``.
     """
     if dedication:
-        res = rank * 2 + where(rank < 4, 2, 4)
-        return _maybe_unwrap_scalar(res)
+        res = rank * 2 + xarray.where(rank < 4, 2, 4)
+        return res if isinstance(rank, DataArray) else res.item()
 
     return rank * 2

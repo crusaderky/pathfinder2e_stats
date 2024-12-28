@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from xarray import DataArray, Dataset, align, concat
+import xarray
+from xarray import DataArray, Dataset
 
 
 def _ensure_var_dtypes(ds: Dataset) -> None:
@@ -55,7 +56,7 @@ def _read_NPC_table(fname: Path) -> DataArray:
     if "mm" in arr.dims:
         mean = arr.sum("mm").expand_dims(mm=["mean"]) / 2
         mean = mean.round(0).astype(int)
-        arr = concat([arr, mean], dim="mm")
+        arr = xarray.concat([arr, mean], dim="mm")
 
     return arr
 
@@ -69,7 +70,7 @@ def _read_NPC_tables() -> Dataset:
         names.append(fname.name.removesuffix(".csv"))
         vars.append(_read_NPC_table(fname))
 
-    vars = list(align(*vars, join="outer", fill_value=0))
+    vars = list(xarray.align(*vars, join="outer", fill_value=0))
 
     ds = Dataset(data_vars=dict(zip(names, vars, strict=True)))
     _ensure_var_dtypes(ds)
@@ -98,7 +99,7 @@ NPC = _read_NPC_tables()
 # At-level opponent, everything is Moderate
 # Level +2 boss, everything is High
 SIMPLE_NPC = (
-    concat(
+    xarray.concat(
         [
             NPC.sel(challenge="Low").shift({"level": 2}, fill_value=0),
             NPC.sel(challenge="Moderate"),

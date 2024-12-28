@@ -5,7 +5,7 @@ from typing import cast
 
 import numpy as np
 import xarray
-from xarray import DataArray, Dataset, align, concat, where
+from xarray import DataArray, Dataset
 
 from pathfinder2e_stats.check import check
 from pathfinder2e_stats.damage_spec import AnyDamageSpec, ExpandedDamage
@@ -43,7 +43,7 @@ def damage(
     damages = dict(
         zip(
             damages,
-            align(*damages.values(), join="outer", copy=False, fill_value=0),
+            xarray.align(*damages.values(), join="outer", copy=False, fill_value=0),
             strict=False,
         )
     )
@@ -58,7 +58,7 @@ def damage(
     weaknesses = _parse_weaknesses(weaknesses)
     resistances = _parse_weaknesses(resistances)
     immunities = _parse_weaknesses(immunities)
-    _, weaknesses, resistances, immunities = align(
+    _, weaknesses, resistances, immunities = xarray.align(
         out, weaknesses, resistances, immunities, join="left", copy=False, fill_value=0
     )
     immunities = immunities.astype(bool)
@@ -74,7 +74,7 @@ def damage(
             damage = out[k]
             damage = damage.where(~immunities, 0)
             damage = cast(DataArray, np.maximum(0, damage - resistances))
-            damage = damage + weaknesses.where(damage > 0, 0)
+            damage = damage + xarray.where(damage > 0, weaknesses, 0)
             out[k] = damage
 
     total_damage = []
@@ -90,7 +90,7 @@ def damage(
                 k: persistent_damage_DC for k in out.damage_type.values
             }
         persistent_damage_DC = _parse_weaknesses(persistent_damage_DC)
-        _, persistent_damage_DC = align(
+        _, persistent_damage_DC = xarray.align(
             out, persistent_damage_DC, join="left", fill_value=15
         )
         out["persistent_damage_DC"] = persistent_damage_DC
@@ -144,15 +144,16 @@ def _roll_damage(
 
             damage_rolls.append(r)
 
-        r = concat(damage_rolls, dim="damage_type", join="outer", fill_value=0)
+        r = xarray.concat(damage_rolls, dim="damage_type", join="outer", fill_value=0)
         del damage_rolls
         r.coords["damage_type"] = [d.type for d in specs]
         r = r.groupby("damage_type", squeeze=False).sum()
         out.append(r)
 
-    out = list(align(*out, copy=False, join="outer", fill_value=0))
+    out = list(xarray.align(*out, copy=False, join="outer", fill_value=0))
     return sum(
-        where(check_outcome == dos, r, 0) for dos, r in zip(spec, out, strict=False)
+        xarray.where(check_outcome == dos, r, 0)
+        for dos, r in zip(spec, out, strict=False)
     )
 
 

@@ -78,18 +78,20 @@ def map_outcome(
         | DataArray(risky_surgery)
     )
     orig_outcome = outcome
-    outcome = outcome.where(
-        ~success_to_critical_success | (outcome != DoS.success),
+    outcome = xarray.where(
+        success_to_critical_success & (outcome == DoS.success),
         DoS.critical_success,
+        outcome,
     )
     outcome = outcome + incapacitation
     outcome = outcome.clip(
         xarray.where(allow_critical_failure, DoS.critical_failure, DoS.failure),
         xarray.where(allow_critical_success, DoS.critical_success, DoS.success),
     )
-    outcome = orig_outcome.where(orig_outcome == DoS.no_roll, outcome)
-    outcome = outcome.where(
+    outcome = xarray.where(orig_outcome == DoS.no_roll, orig_outcome, outcome)
+    outcome = xarray.where(
         allow_failure | (outcome != DoS.failure),
+        outcome,
         DoS.success,
     )
 
@@ -140,15 +142,14 @@ def check(
     )
     del delta
 
-    outcome = (
-        outcome.where(natural != 1, outcome - 1)
-        .where(natural != 20, outcome + 1)
-        .clip(DoS.critical_failure, DoS.critical_success)
-    )
+    outcome = xarray.where(natural == 1, outcome - 1, outcome)
+    outcome = xarray.where(natural == 20, outcome + 1, outcome)
+    outcome = outcome.clip(DoS.critical_failure, DoS.critical_success)
 
-    outcome = outcome.where(
-        ~DataArray(keen) | (natural != 19) | (outcome != DoS.success),
+    outcome = xarray.where(
+        DataArray(keen) & (natural == 19) & (outcome == DoS.success),
         DoS.critical_success,
+        outcome,
     )
 
     ds = Dataset(
@@ -181,7 +182,7 @@ def check(
         roll1 = outcome.isel(hp_reroll=1)
         # Can't use a hero point when there's already a fortune effect
         use_hero_point = (roll0 <= hero_point) & ~DataArray(fortune)
-        outcome = roll1.where(use_hero_point, roll0)
+        outcome = xarray.where(use_hero_point, roll1, roll0)
         ds.update({"outcome": outcome, "use_hero_point": use_hero_point})
 
     return map_outcome(ds, **kwargs) if kwargs else ds

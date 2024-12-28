@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Literal, TypeAlias
 
-from xarray import DataArray, concat, where
+import xarray
+from xarray import DataArray
 
 BonusType: TypeAlias = Literal[
     "untyped",
@@ -62,15 +63,15 @@ def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> Any:
     # This is a bit overcomplicated for the sake of forward compatibility with dask,
     # where we don't know without computing if it's a bonus or penalty
     TMP_DIM = "__bonus_type"
-    da = concat(values, dim=TMP_DIM, join="outer", fill_value=0)
+    da = xarray.concat(values, dim=TMP_DIM, join="outer", fill_value=0)
     da.coords[TMP_DIM] = btypes
 
     is_untyped = da.coords[TMP_DIM] == "untyped"
     is_bonus = (da > 0).any(set(da.dims) - {TMP_DIM})
 
-    untyped = where(is_untyped, da, 0)
-    bonuses = where(is_bonus & ~is_untyped, da, 0)
-    penalties = where(~is_bonus & ~is_untyped, da, 0)
+    untyped = xarray.where(is_untyped, da, 0)
+    bonuses = xarray.where(is_bonus & ~is_untyped, da, 0)
+    penalties = xarray.where(~is_bonus & ~is_untyped, da, 0)
     res = (
         untyped.sum(TMP_DIM)
         + bonuses.groupby(TMP_DIM).max().sum(TMP_DIM)
