@@ -13,7 +13,9 @@ def value_counts(
     new_dim: Hashable = "unique_value",
     normalize: bool = False,
 ) -> xarray.DataArray:
-    """See api.rst for full documentation"""
+    """pandas-style value_counts.
+
+    See api.rst for full documentation"""
 
     def _unique(a: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         values, counts = np.unique(a, axis=-1, return_counts=True)
