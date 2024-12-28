@@ -39,6 +39,47 @@ def roll(
     *,
     dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
+    """Roll the given number of dice with the given number of faces, sum them up,
+    and add an optional flat bonus/penalty.
+
+    :param dice: Number of dice to roll.
+    :param faces: Number of faces on each die.
+    :param bonus: Flat bonus/penalty to add to the roll. Default: 0
+    :param dims: Additional dimensions to create while rolling, in addition to ``roll``.
+      This is a mapping where the keys are the dimension names and the values are the
+      number of elements along them.
+
+    Alternatively to ``dice``, ``faces`` and ``bonus``, you can pass a single string
+    parameter in the format ``XdY``, ``XdY+Z``, or ``XdY-Z`, which means
+    *"roll X dice with Y faces each, sum them, then add Z"*.
+
+    :returns: A DataArray containing a random series with the total result of the roll,
+      rolled by default 100,000 times, with ``dims={"roll": 100_000, **dims}``.
+
+    **Examples:**
+
+    Approximate the mean of 2d8+4::
+
+        >>> roll("2d8+4").mean().item()
+        13.000114
+
+    Attack three different targets with a +13 to hit, rolling separately for each but
+    without increasing the MAP between them:
+
+        >>> roll(1, 20, 13, dims={"target": 3})
+        <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
+        array([[14, 33, 24],
+            ...,
+            [17, 18, 28]], shape=(100000, 3))
+        Dimensions without coordinates: roll, target
+
+    **See Also:**
+
+    - :func:`seed`
+    - :func:`set_size`
+    - :func:`d20`
+    - :func:`check`
+    """
     if isinstance(dice_or_s, str):
         if faces is not None or bonus != 0:
             raise TypeError(
@@ -72,6 +113,53 @@ def d20(
     misfortune: bool | DataArray = False,
     dims: Mapping[Hashable, int] | None = None,
 ) -> DataArray:
+    """Roll a d20.
+
+    :param fortune: if True, roll twice and keep highest.
+    :param misfortune: if True, roll twice and keep lowest.
+        fortune and misfortune cancel each other out.
+
+    ``fortune`` and/or ``misfortune`` can be DataArrays with multiple elements.
+    The result will be broadcasted depending on their dimensions.
+
+    :param dims: Additional dimensions to create while rolling, in addition to ``roll``.
+    :returns: A DataArray containing a random series with the result of the d20 roll.
+
+    **Examples:**
+
+    Measure the effect of Sure Strike on the mean of an attack roll::
+
+        >>> sure_strike = xarray.DataArray(
+        ...     [False, True], dims=["Sure Strike"],
+        ...     coords={"Sure Strike": [False, True]},
+        ... )
+        >>> d20(fortune=sure_strike).mean("roll").to_pandas()
+        Sure Strike
+        False    10.52362
+        True     13.86710
+        dtype: float64
+
+    Attack 3 targets, with increasing MAP::
+
+        >>> MAP = xarray.DataArray([0, -5, -10], dims=["target"])
+        >>> d20(dims={"target": 3}) + MAP
+        <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
+        array([[ 3, 14,  4],
+            [ 1, -1,  2],
+            ...,
+            [12, -1,  6]], shape=(100000, 3))
+        Dimensions without coordinates: roll, target
+
+    .. note::
+
+        In the last example above, the parameter ``dims={"target": 3}``
+        caused to roll separately for each target. Without it, the shape of the
+        output array would be the same (due to broadcasting against the MAP array)
+        but on each element of the series there would be a single attack roll minus
+        0, 5, and 10 respectively.
+    """
+    if fortune is True and misfortune is True:
+        return roll(1, 20, dims=dims)
     if fortune is False and misfortune is False:
         return roll(1, 20, dims=dims)
 
@@ -82,10 +170,10 @@ def d20(
     raw = roll(1, 20, dims=dims)
     return xarray.where(
         fortune & ~misfortune,
-        raw.max("__fortune"),
+        raw.max("__fortune"),  # roll with fortune
         xarray.where(
             misfortune & ~fortune,
-            raw.min("__fortune"),
-            raw.isel(__fortune=0),
+            raw.min("__fortune"),  # roll with misfortune
+            raw.isel(__fortune=0),  # roll normally (disregard second roll)
         ),
     )
