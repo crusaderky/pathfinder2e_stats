@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeVar
 
 import numpy as np
-from xarray import DataArray, where
+import xarray
+from xarray import DataArray
 
 if TYPE_CHECKING:
     _T = TypeVar("_T", int, DataArray)
@@ -57,7 +58,7 @@ def level2rank(level: _T, *, dedication: bool = False) -> _T:
         Return type matches the type of ``level``.
     """
     if dedication:
-        res = where(
+        res = xarray.where(
             level < 12,
             # FIXME np.clip() raises a DeprecationWarning vs. xarray
             np.maximum(0, np.minimum(3, level // 2 - 1)),
@@ -89,7 +90,7 @@ def rank2level(rank: _T, *, dedication: bool = False) -> _T:
         Return type matches the type of ``rank``.
     """
     if dedication:
-        res = rank * 2 + where(rank < 4, 2, 4)
+        res = rank * 2 + xarray.where(rank < 4, 2, 4)
         return _maybe_unwrap_scalar(res)
 
     return rank * 2
