@@ -49,6 +49,10 @@ def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> Any:
         btypes.append(btype)
         values.append(DataArray(value) if isinstance(value, int) else value)
 
+    # Special case needed for older xarray versions
+    if len(args) == 1:
+        return args[0][1]
+
     # This is a bit overcomplicated for the sake of forward compatibility with dask,
     # where we don't know without computing if it's a bonus or penalty
     TMP_DIM = "__bonus_type"
