@@ -49,9 +49,9 @@ def level2rank(level: _T, *, dedication: bool = False) -> _T:
     :param level:
         The creature's level
     :param dedication:
-        Set to True to return the highest spell slot rank of a character with caster
-        Dedication who took Basic, Expert and Master Spellcasting feats at levels
-        4, 12 and 18 respectively. Defaults to False.
+        Set to True to return the highest spell slot rank of a character with
+        spellcaster Dedication who took Basic, Expert and Master Spellcasting feats at
+        levels 4, 12 and 18 respectively. Defaults to False.
     :returns:
         The creature's rank or spellcaster's maximum spell rank.
         Return type matches the type of ``level``.
@@ -80,7 +80,7 @@ def rank2level(rank: _T, *, dedication: bool = False) -> _T:
     :param rank:
         The spell or effect's rank
     :param dedication:
-        Set to True to return the level a character with caster
+        Set to True to return the level a character with spellcaster
         Dedication who took Basic, Expert and Master Spellcasting feats at levels
         4, 12 and 18 respectively needs to be to gain a spell slot of this rank.
         Defaults to False.
