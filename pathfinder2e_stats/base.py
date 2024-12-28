@@ -46,19 +46,15 @@ def level2rank(level: _T, *, dedication: bool = False) -> _T:
     by the incapacitation trait or to counteract their abilities. It can also be used
     to determine a spellcaster's maximum spell rank.
 
-    Parameters
-    ----------
-    level : int | xarray.DataArray
+    :param level:
         The creature's level
-    dedication : bool, optional
-        Set to True to return the highest spell slot rank of a character with caster
-        Dedication who took Basic, Expert and Master Spellcasting feats at levels
-        4, 12 and 18 respectively.
-
-    Returns
-    -------
-    The creature's rank or spellcaster's maximum spell rank.
-    Return type matches the type of ``level``.
+    :param dedication:
+        Set to True to return the highest spell slot rank of a character with
+        spellcaster Dedication who took Basic, Expert and Master Spellcasting feats at
+        levels 4, 12 and 18 respectively. Defaults to False.
+    :returns:
+        The creature's rank or spellcaster's maximum spell rank.
+        Return type matches the type of ``level``.
     """
     if dedication:
         res = where(
@@ -81,19 +77,16 @@ def rank2level(rank: _T, *, dedication: bool = False) -> _T:
     the minimum level of a spellcaster in order to be able to cast a spell of a given
     rank.
 
-    Parameters
-    ----------
-    rank : int | xarray.DataArray
+    :param rank:
         The spell or effect's rank
-    dedication : bool, optional
-        Set to True to return the level a character with caster
+    :param dedication:
+        Set to True to return the level a character with spellcaster
         Dedication who took Basic, Expert and Master Spellcasting feats at levels
         4, 12 and 18 respectively needs to be to gain a spell slot of this rank.
-
-    Returns
-    -------
-    The creature's maximum level within the rank.
-    Return type matches the type of ``rank``.
+        Defaults to False.
+    :returns:
+        The creature's maximum level within the rank.
+        Return type matches the type of ``rank``.
     """
     if dedication:
         res = rank * 2 + where(rank < 4, 2, 4)

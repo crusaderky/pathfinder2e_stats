@@ -16,27 +16,33 @@ _BONUS_DOMAIN = frozenset(BonusType.__args__)  # type: ignore[attr-defined]
 
 
 def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> Any:
-    """Sum bonuses and penalties by type.
+    """Sum bonuses and penalties by type to calculate the total bonus/penalty.
 
     Bonuses of the same type don't stack.
-    Penalties of the same type don't stack, but separately from bonuses.
-    Untyped bonuses stack.
+    Penalties of the same type don't stack, but bonuses and penalties of the
+    same type subtract from each other.
+    Untyped bonuses and penalties always stack.
 
-    Parameters
-    ----------
-    args : (bonus type, value), ...
-        Where bonus type must be one of "untyped", "ability", "circumstance",
-        "proficiency", "status", or "item" and value must be an integer or a DataArray.
+    :param \\*args:
+        ``(bonus type, value), ...``, where bonus type must be one of:
 
-    Returns
-    -------
-    Sum of all bonuses and penalties.
-    If all values are int, return an int; otherwise return a DataArray.
+        - ``untyped``
+        - ``ability``
+        - ``circumstance``
+        - ``proficiency``
+        - ``status``
+        - ``item``
 
-    Examples
-    --------
-    >>> sum_bonuses(("status", 1), ("status", 2), ("circumstance", 3))
-    5
+        and value must be an integer or a DataArray.
+
+    :returns:
+        Sum of all bonuses and penalties.
+        If all values are int, return an int; otherwise return a DataArray.
+
+    **Examples**::
+
+        >>> sum_bonuses(("status", 1), ("status", 2), ("circumstance", 3))
+        5
     """
     if not args:
         return 0
