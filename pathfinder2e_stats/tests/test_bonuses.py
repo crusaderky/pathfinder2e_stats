@@ -36,10 +36,8 @@ from pathfinder2e_stats import sum_bonuses
 )
 def test_sum_bonuses(args, expect):
     actual = sum_bonuses(*args)
-    assert isinstance(actual, DataArray)
-    assert actual.shape == ()
-    assert actual.dtype.kind == "i"
-    assert int(actual) == expect
+    assert isinstance(actual, int)
+    assert actual == expect
 
 
 def test_sum_bonuses_bad_type():
@@ -56,6 +54,7 @@ def test_sum_bonuses_array():
         ("status", DataArray([[3], [4]], dims=["y", "x"], coords={"x": [40]})),
         ("untyped", DataArray([15, 16], dims=["y"])),
     )
+    assert isinstance(actual, DataArray)
     assert actual.dtype.kind == "i"
     assert_equal(
         actual,
@@ -65,3 +64,10 @@ def test_sum_bonuses_array():
             coords={"x": [10, 20, 30, 40]},
         ),
     )
+
+
+@pytest.mark.parametrize("x", [DataArray(1), DataArray(1, coords={"foo": "bar"})])
+def test_sum_bonuses_scalar_array(x):
+    actual = sum_bonuses(("item", x))
+    assert isinstance(actual, DataArray)
+    assert_equal(actual, x)
