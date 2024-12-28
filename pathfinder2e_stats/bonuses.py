@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Literal, TypeAlias, overload
+from typing import Any, Literal, TypeAlias
 
 from xarray import DataArray, concat, where
 
@@ -15,13 +15,7 @@ BonusType: TypeAlias = Literal[
 _BONUS_DOMAIN = frozenset(BonusType.__args__)  # type: ignore[attr-defined]
 
 
-@overload
-def sum_bonuses(*args: tuple[BonusType, int]) -> int: ...
-@overload
-def sum_bonuses(*args: tuple[BonusType, DataArray]) -> DataArray: ...
-
-
-def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> int | DataArray:
+def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> Any:
     """Sum bonuses and penalties by type.
 
     Bonuses of the same type don't stack.
