@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 
 import pandas as pd
@@ -15,18 +17,54 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
             assert var.dtype.kind in ("i", "b"), var
 
 
-def _read_PC_tables() -> Dataset:
-    data_vars = {}
-    fnames = (Path(__file__).parent / "PC").glob("*.csv")
+class PCTables(Mapping[str, Dataset]):
+    def _lazy_init(self) -> None:
+        if self.__dict__:
+            return
 
-    for fname in sorted(fnames):
-        df = pd.read_csv(fname, index_col=0).ffill().fillna(0).astype(int)
-        name = fname.name.removesuffix(".csv")
-        data_vars[name] = DataArray(df).rename({"dim_1": name + "_col"})
+        fnames = (Path(__file__).parent / "_PC").glob("*.csv")
+        for fname in sorted(fnames):
+            df = pd.read_csv(fname, index_col=0).ffill().fillna(0).astype(int)
+            ds = df.to_xarray()
+            _ensure_var_dtypes(ds)
+            name = fname.name.removesuffix(".csv")
 
-    ds = Dataset(data_vars=data_vars)
-    _ensure_var_dtypes(ds)
-    return ds
+            # Bespoke tweaks
+            try:
+                mod = importlib.import_module(f"pathfinder2e_stats.tables._PC.{name}")
+            except ModuleNotFoundError:
+                pass
+            else:
+                mod.postproc(ds)
+            self.__dict__[name] = ds
+
+        self.__dict__["level"] = next(iter(self.__dict__.values())).level
+
+    def __getattr__(self, key: str) -> Dataset:
+        self._lazy_init()
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(f"no table {key!r}") from None
+
+    def __getitem__(self, key: str) -> Dataset:
+        self._lazy_init()
+        return self.__dict__[key]
+
+    def __iter__(self) -> Iterator[str]:
+        self._lazy_init()
+        return iter(self.__dict__)
+
+    def __len__(self) -> int:
+        self._lazy_init()
+        return len(self.__dict__)
+
+    def __repr__(self) -> str:
+        self._lazy_init()
+        msg = "Available tables:"
+        for k in self:
+            msg += f"\n- {k}"
+        return msg
 
 
 def _read_NPC_table(fname: Path) -> DataArray:
@@ -64,7 +102,7 @@ def _read_NPC_table(fname: Path) -> DataArray:
 def _read_NPC_tables() -> Dataset:
     names = []
     vars = []
-    fnames = (Path(__file__).parent / "NPC").glob("*.csv")
+    fnames = (Path(__file__).parent / "_NPC").glob("*.csv")
 
     for fname in sorted(fnames):
         names.append(fname.name.removesuffix(".csv"))
@@ -92,8 +130,16 @@ def _read_earn_income_table() -> Dataset:
     return ds
 
 
-PC = _read_PC_tables()
+PC = PCTables()
 NPC = _read_NPC_tables()
+
+EARN_INCOME = _read_earn_income_table()
+# Earn income goes from level 0 to 21.
+# Monsters go from -1 to 24.
+# Level-based DCs go from 0 to 25.
+NPC["recall_knowledge"] = EARN_INCOME.DC
+DC = EARN_INCOME.DC.sel(level=(EARN_INCOME.level >= 0))
+EARN_INCOME = EARN_INCOME.sel(level=(EARN_INCOME.level >= 0) & (EARN_INCOME.level < 22))
 
 # Level -2 henchman, everything is Low
 # At-level opponent, everything is Moderate
@@ -110,10 +156,6 @@ SIMPLE_NPC = (
     .sel(level=range(1, 21), mm="mean", drop=True)
     .transpose("level", "challenge", "limited")
 )
-
-EARN_INCOME = _read_earn_income_table()
-DC = EARN_INCOME.DC
-EARN_INCOME = EARN_INCOME.sel(level=EARN_INCOME.level < 22)
 
 
 __all__ = ("DC", "EARN_INCOME", "NPC", "PC", "SIMPLE_NPC")

@@ -1,4 +1,4 @@
-level,Animal,Dragon,Elemental,Fury,Giant,Spirit,Superstition,Superstition vs casters,Bloodrager weapon,Bloodrager bleed,Bloodrager spell drained 0,Bloodrager spell drained 1,Bloodrager spell drained 2
+level,animal,dragon,elemental,fury,giant,spirit,superstition/vs=others,superstition/vs=spellcasters,bloodrager_weapon,bloodrager_bleed,bloodrager_spells/drained=0,bloodrager_spells/drained=1,bloodrager_spells/drained=2
 1,2,4,4,3,6,3,3,4,2,1,,,
 2,,,,,,,,,,,2,2,2
 3,,,,,,,,,,,,,
