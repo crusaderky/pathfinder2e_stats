@@ -45,16 +45,17 @@ def roll(
     :param dice: Number of dice to roll.
     :param faces: Number of faces on each die.
     :param bonus: Flat bonus/penalty to add to the roll. Default: 0
-    :param dims: Additional dimensions to create while rolling, in addition to ``roll``.
-      This is a mapping where the keys are the dimension names and the values are the
-      number of elements along them.
+    :param dims: Dimensions to create while rolling, in addition to ``roll``.
+        This is a mapping where the keys are the dimension names and the values are the
+        number of elements along them.
 
     Alternatively to ``dice``, ``faces`` and ``bonus``, you can pass a single string
-    parameter in the format ``XdY``, ``XdY+Z``, or ``XdY-Z`, which means
+    parameter in the format ``XdY``, ``XdY+Z``, or ``XdY-Z``, which means
     *"roll X dice with Y faces each, sum them, then add Z"*.
 
-    :returns: A DataArray containing a random series with the total result of the roll,
-      rolled by default 100,000 times, with ``dims={"roll": 100_000, **dims}``.
+    :returns: A :class:`xarray.DataArray` containing a random series with the total
+        result of the roll, rolled by default 100,000 times, with
+        ``dims={"roll": 100_000, **dims}``.
 
     **Examples:**
 
@@ -118,12 +119,13 @@ def d20(
     :param fortune: if True, roll twice and keep highest.
     :param misfortune: if True, roll twice and keep lowest.
         fortune and misfortune cancel each other out.
-
-    ``fortune`` and/or ``misfortune`` can be DataArrays with multiple elements.
-    The result will be broadcasted depending on their dimensions.
-
-    :param dims: Additional dimensions to create while rolling, in addition to ``roll``.
-    :returns: A DataArray containing a random series with the result of the d20 roll.
+        ``fortune`` and/or ``misfortune`` can be :class:`xarray.DataArray` with
+        multiple elements. The result will be broadcasted depending on their dimensions.
+    :param dims: Dimensions to create while rolling, in addition to ``roll``.
+        This is a mapping where the keys are the dimension names and the values are the
+        number of elements along them.
+    :returns: A :class:`xarray.DataArray` containing a random series with the result of
+        the d20 roll.
 
     **Examples:**
 
