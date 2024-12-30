@@ -12,16 +12,15 @@ def test_DoS_str():
     assert str(DoS.critical_success) == "Critical success"
 
 
-@pytest.mark.parametrize("k", ["evasion", "juggernaut", "resolve", "risky_surgery"])
-def test_map_outcome_success_to_crit_success(k):
+def test_map_outcome_success_to_crit_success():
     x = DataArray([-2, -1, 0, 1, 2])
     assert_equal(
-        map_outcome(x, **{k: True}),
+        map_outcome(x, evasion=True),
         DataArray([-2, -1, 0, 2, 2]),
     )
 
     assert_equal(
-        map_outcome(x, **{k: DataArray([True, False], dims=["x"])}),
+        map_outcome(x, evasion=DataArray([True, False], dims=["x"])),
         DataArray([[-2, -2], [-1, -1], [0, 0], [2, 1], [2, 2]], dims=["dim_0", "x"]),
     )
 
@@ -286,11 +285,11 @@ def test_check_fortune_array():
 
 
 def test_check_map_outcome_bool():
-    ds = check(DC=9, juggernaut=True)
+    ds = check(DC=9, evasion=True)
     assert_equal(ds.original_outcome == 2, ds.natural >= 19)
     assert_equal(ds.outcome == 2, ds.natural >= 9)
     assert np.unique(ds.outcome).tolist() == [-1, 0, 2]
-    assert ds.attrs["juggernaut"] is True
+    assert ds.attrs["evasion"] is True
 
 
 def test_check_map_outcome_int():
@@ -302,12 +301,12 @@ def test_check_map_outcome_int():
 def test_check_map_outcome_array():
     ds = check(
         DC=9,
-        juggernaut=DataArray([False, True], dims=["x"]),
+        evasion=DataArray([False, True], dims=["x"]),
         incapacitation=DataArray([-1, 0, 1], dims=["y"]),
     )
     assert ds.original_outcome.sizes == {"roll": 1000}
     assert ds.outcome.sizes == {"roll": 1000, "x": 2, "y": 3}
-    assert ds.attrs["juggernaut"] == "varies"
+    assert ds.attrs["evasion"] == "varies"
     assert ds.attrs["incapacitation"] == "varies"
 
 

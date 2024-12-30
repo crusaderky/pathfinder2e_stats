@@ -10,16 +10,15 @@ Basic rolls
 
 Checks
 ------
-.. autofunction:: pathfinder2e_stats.sum_bonuses
+.. autoclass:: pathfinder2e_stats.DoS
 
 .. autofunction:: pathfinder2e_stats.check
-
-.. autoclass:: pathfinder2e_stats.DoS
 
 .. autofunction:: pathfinder2e_stats.map_outcome
 
 .. autofunction:: pathfinder2e_stats.outcome_counts
 
+.. autofunction:: pathfinder2e_stats.sum_bonuses
 
 Damage rolls
 ------------
@@ -54,6 +53,8 @@ Xarray extensions
 When you ``import pathfinder2e_stats``, all DataArray and Dataset objects gain these
 new methods:
 
+.. _value_counts:
+
 .. function:: xarray.DataArray.value_counts(dim, *, new_dim="unique_value", normalize=False)
 
     Return the count of unique values for every point along dim, individually for
@@ -67,9 +68,9 @@ new methods:
         Name of the dimension to count the values along.
         It will be removed in the output array.
     :param new_dim:
-        Name of the new dimension in the output array; defaults to ``unique_value``
+        Name of the new dimension in the output array. Default: ``unique_value``
     :param normalize:
-        Return proportions rather than frequencies; defaults to False
+        Return proportions rather than frequencies. Default: False
     :returns:
         :class:`xarray.DataArray` with the same dimensions as the input array,
         minus dim, plus new_dim.
