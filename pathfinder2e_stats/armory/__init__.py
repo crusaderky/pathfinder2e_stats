@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import ModuleType
+from urllib.parse import quote
 
 from pathfinder2e_stats.armory import _common
 from pathfinder2e_stats.armory import bows as bows
@@ -21,10 +22,15 @@ def _build_docstrings() -> None:
                 if name == "critical_specialization":
                     continue
                 func = getattr(mod, name)
+
+                item_name = name.replace("_", " ").title()
+                srd_url = f"https://2e.aonprd.com/Search.aspx?q={quote(item_name)}"
+                msg = f"`{item_name} <{srd_url}>`_\n\n{func()}"
+
                 if not func.__doc__:
-                    func.__doc__ = str(func())
+                    func.__doc__ = msg
                 else:
-                    func.__doc__ = str(func()) + "\n\n" + func.__doc__.strip()
+                    func.__doc__ = msg + "\n\n" + func.__doc__.strip()
 
 
 _build_docstrings()
