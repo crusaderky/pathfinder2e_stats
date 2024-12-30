@@ -11,6 +11,7 @@ __all__ = (
     "brine_dragon_bile",
     "fireball",
     "force_barrage",
+    "organsight",
     "shocking_grasp",
     "thunderstrike",
 )
@@ -45,6 +46,10 @@ def force_barrage(rank: int = 1, actions: Literal[1, 2, 3] = 3) -> Damage:
     """
     bolts = (rank + 1) // 2 * actions
     return Damage("force", bolts, 4, bolts)
+
+
+def organsight(rank: int = 3) -> Damage:
+    return Damage("precision", rank + 1, 6)
 
 
 def shocking_grasp(rank: int = 1, metal: bool = False) -> Damage | ExpandedDamage:

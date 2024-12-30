@@ -1,5 +1,5 @@
-The Armory
-==========
+Armory
+======
 .. currentmodule:: pathfinder2e_stats
 
 This is a collection of commonly-tested weapons and spells.
