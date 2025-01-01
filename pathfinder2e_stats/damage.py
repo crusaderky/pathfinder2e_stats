@@ -30,11 +30,11 @@ def damage(
     damages = {
         name: _roll_damage(check_outcome.outcome, spec, dims)
         for name, spec, dims in (
-            ("direct_damage", damage_spec.filter(), None),
-            ("splash_damage", damage_spec.filter(splash=True), None),
+            ("direct_damage", damage_spec.filter("direct"), None),
+            ("splash_damage", damage_spec.filter("splash"), None),
             (
                 "persistent_damage",
-                damage_spec.filter(persistent=True),
+                damage_spec.filter("persistent"),
                 {"persistent_round": persistent_damage_rounds},
             ),
         )

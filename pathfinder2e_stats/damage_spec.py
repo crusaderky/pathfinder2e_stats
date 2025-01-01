@@ -299,13 +299,25 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
             .replace("<br>", "")
         )
 
-    def filter(self, persistent: bool = False, splash: bool = False) -> ExpandedDamage:
-        return ExpandedDamage(
-            {
-                k: [d for d in v if d.persistent is persistent and d.splash is splash]
-                for k, v in self.items()
-            }
-        )
+    def filter(
+        self, *which: Literal["direct", "persistent", "splash"]
+    ) -> ExpandedDamage:
+        which_set = set(which)
+        if unknown := which_set - {"direct", "persistent", "splash"}:
+            raise ValueError(f"Unknown filter(s): {list(unknown)}")
+
+        select_direct = "direct" in which_set
+        select_persistent = "persistent" in which_set
+        select_splash = "splash" in which_set
+
+        def match(d: Damage) -> bool:
+            if d.persistent:
+                return select_persistent
+            if d.splash:
+                return select_splash
+            return select_direct
+
+        return ExpandedDamage({k: [d for d in v if match(d)] for k, v in self.items()})
 
     def to_dict_of_str(self) -> dict[str, str]:
         return {str(k): str(DamageList(v)) for k, v in self.items()}
