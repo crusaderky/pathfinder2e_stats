@@ -5,7 +5,11 @@ from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from itertools import groupby
+from types import UnionType
 from typing import Any, Literal, TypeAlias
+
+import numpy as np
+from xarray import DataArray
 
 from pathfinder2e_stats.check import DoS
 
@@ -13,9 +17,9 @@ from pathfinder2e_stats.check import DoS
 @dataclass(frozen=True, slots=True)
 class Damage:
     type: str
-    dice: int
-    faces: int
-    bonus: int = 0
+    dice: int | DataArray
+    faces: int | DataArray
+    bonus: int | DataArray = 0
     multiplier: float = 1
     persistent: bool = False
     splash: bool = False
@@ -27,15 +31,20 @@ class Damage:
 
     def __post_init__(self) -> None:
         for k, t in self.__annotations__.items():
-            cls = eval(t)
+            assert isinstance(t, str)
             v = getattr(self, k)
-            if cls is float:
-                if type(v) not in (int, float):
+            if t == "float":
+                if not isinstance(v, (int, float)):
                     raise TypeError(f"{k} must be of type int or float; got {type(v)}")
-            elif type(v) is not cls:
+            elif t == "int | DataArray":
+                if np.asarray(v).dtype.kind not in "iu":
+                    raise TypeError(f"{k} must be of type int or integer DataArray; got {type(v)}")
+            elif not isinstance(v, eval(t)):
                 raise TypeError(f"{k} must be of type {t}; got {type(v)}")
-        if self.dice < 0:
+
+        if (np.asarray(self.dice) < 0).any():
             raise ValueError(f"dice must be non-negative; got {self.dice}")
+
         for faces in (
             self.faces,
             self.two_hands,
@@ -43,13 +52,11 @@ class Damage:
             self.fatal,
             self.fatal_aim,
         ):
-            if faces not in {0, 2, 4, 6, 8, 10, 12}:
-                raise ValueError(f"Invalid dice faces: {faces}")
-        if (self.dice == 0) != (self.faces == 0):
-            raise ValueError(
-                f"dice and faces must be both zero or both non-zero; got {self}"
-            )
-        if self.multiplier not in (0.5, 1, 2):
+            invalid_faces = set(np.unique(faces).tolist()) - {0, 2, 4, 6, 8, 10, 12}
+            if invalid_faces:
+                raise ValueError(f"Invalid dice faces: {sorted(invalid_faces)}")
+
+        if self.multiplier not in (0.5, 1, 2):  # floats can't be arguments of Literal
             raise ValueError(f"multiplier must be 0.5, 1, or 2; got {self.multiplier}")
         if self.persistent and self.splash:
             raise ValueError("Damage can't be both persistent and splash")
@@ -57,14 +64,28 @@ class Damage:
             raise ValueError("Can't have both fatal and fatal aim traits")
 
     def __repr__(self) -> str:
-        if self.dice and self.faces:
-            s = f"{self.dice}d{self.faces}"
-            if self.bonus > 0:
-                s += f"+{self.bonus}"
-            elif self.bonus < 0:
-                s += f"-{-self.bonus}"
+        dice_range = (np.min(self.dice).item(), np.max(self.dice).item())
+        faces_range = (np.min(self.faces).item(), np.max(self.faces).item())
+        bonus_range = (np.min(self.bonus).item(), np.max(self.bonus).item())
+
+        def range_str(r: tuple[int, int]) -> str:
+            if r[0] == r[1]:
+                return str(r[0])
+            return f"[{r[0]}~{r[1]}]"
+
+        if dice_range != (0, 0) and faces_range != (0, 0):
+            s = range_str(dice_range) + "d" + range_str(faces_range)
         else:
-            s = str(self.bonus)
+            s = ""
+
+        if bonus_range != (0, 0):
+            bonus_str = range_str(bonus_range)
+            if not bonus_str.startswith("-"):
+                s += "+"
+            s += bonus_str
+
+        if s == "":
+            s = "+0"
 
         if self.multiplier == 0.5:
             s = f"({s})/2"
@@ -166,7 +187,7 @@ class Damage:
     def increase_die(self) -> Damage:
         return self.copy(faces=self.faces + 2)
 
-    def vicious_swing(self, dice: int = 1) -> AnyDamageSpec:
+    def vicious_swing(self, dice: int | DataArray = 1) -> AnyDamageSpec:
         """Vicious Swing / Power Attack and similar effects
 
         Add extra weapon dice, which impact the fatal trait but
@@ -224,7 +245,11 @@ class Damage:
 
     def __bool__(self) -> bool:
         """Return True if rolled damage can be more than zero; False otherwise."""
-        return self.dice * (self.fatal or self.faces) + self.bonus + self.deadly > 0
+        max_dice = np.max(self.dice).item()
+        max_faces = np.maximum(np.max(self.faces), self.fatal).item()
+        max_bonus = np.max(self.bonus).item()
+        max_deadly = max(1, max_dice - 1) * self.deadly
+        return max_dice * max_faces + max_bonus + self.fatal + max_deadly > 0
 
 
 class DamageList(UserList[Damage]):
