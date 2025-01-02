@@ -346,19 +346,29 @@ def test_expanded_damage_filter():
         + Damage("fire", 0, 0, 1, splash=True)
         + Damage("fire", 1, 4, persistent=True)
     ).expand()
-    assert d.filter() == {
+    assert d.filter("direct") == {
         1: [Damage("fire", 1, 6)],
         2: [Damage("fire", 1, 6, 0, 2)],
     }
-    assert d.filter(persistent=True) == {
+    assert d.filter("persistent") == {
         1: [Damage("fire", 1, 4, persistent=True)],
         2: [Damage("fire", 1, 4, 0, 2, persistent=True)],
     }
-    assert d.filter(splash=True) == {
+    assert d.filter("splash") == {
         0: [Damage("fire", 0, 0, 1, splash=True)],
         1: [Damage("fire", 0, 0, 1, splash=True)],
         2: [Damage("fire", 0, 0, 1, splash=True)],
     }
+    for which in (("direct", "persistent"), ("persistent", "direct")):
+        assert d.filter(*which) == {
+            1: [Damage("fire", 1, 6), Damage("fire", 1, 4, persistent=True)],
+            2: [
+                Damage("fire", 1, 6, 0, 2),
+                Damage("fire", 1, 4, 0, 2, persistent=True),
+            ],
+        }
+    with pytest.raises(ValueError, match="misspelled"):
+        d.filter("persistent", "misspelled")
 
 
 def test_damage_bool():
