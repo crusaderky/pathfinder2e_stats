@@ -5,8 +5,7 @@ from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from itertools import groupby
-from types import UnionType
-from typing import Any, Literal, TypeAlias
+from typing import Any, Literal, TypeAlias, cast
 
 import numpy as np
 from xarray import DataArray
@@ -34,17 +33,20 @@ class Damage:
             assert isinstance(t, str)
             v = getattr(self, k)
             if t == "float":
-                if not isinstance(v, (int, float)):
+                if not isinstance(v, int | float):
                     raise TypeError(f"{k} must be of type int or float; got {type(v)}")
             elif t == "int | DataArray":
                 if np.asarray(v).dtype.kind not in "iu":
-                    raise TypeError(f"{k} must be of type int or integer DataArray; got {type(v)}")
+                    raise TypeError(
+                        f"{k} must be of type int or integer DataArray; got {type(v)}"
+                    )
             elif not isinstance(v, eval(t)):
                 raise TypeError(f"{k} must be of type {t}; got {type(v)}")
 
         if (np.asarray(self.dice) < 0).any():
             raise ValueError(f"dice must be non-negative; got {self.dice}")
 
+        VALID_FACES = {0, 2, 4, 6, 8, 10, 12}
         for faces in (
             self.faces,
             self.two_hands,
@@ -52,7 +54,9 @@ class Damage:
             self.fatal,
             self.fatal_aim,
         ):
-            invalid_faces = set(np.unique(faces).tolist()) - {0, 2, 4, 6, 8, 10, 12}
+            invalid_faces = (
+                set(cast(list[int], np.unique(faces).tolist())) - VALID_FACES
+            )
             if invalid_faces:
                 raise ValueError(f"Invalid dice faces: {sorted(invalid_faces)}")
 
@@ -80,7 +84,7 @@ class Damage:
 
         if bonus_range != (0, 0):
             bonus_str = range_str(bonus_range)
-            if not bonus_str.startswith("-"):
+            if not bonus_str.startswith("-") and s:
                 s += "+"
             s += bonus_str
 
@@ -116,6 +120,9 @@ class Damage:
     def simplify(damages: Iterable[Damage], /) -> list[Damage]:
         # Don't sort e.g. slashing + fire alphabetically
         types_by_appearance: dict[str, int] = {}
+        # Sort scalar faces by largest die size first,
+        # then vectorized faces by appearance order
+        vec_faces_by_appearance: dict[int, int] = {}
 
         def key(d: Damage) -> tuple:
             return (
@@ -123,7 +130,12 @@ class Damage:
                 d.persistent,  # persistent damage next-to-last
                 types_by_appearance.setdefault(d.type, len(types_by_appearance)),
                 -d.multiplier,  # Doubled damage first
-                -d.faces,  # Largest die size first
+                # Largest die size first; don't simplify if vectorized
+                -d.faces
+                if isinstance(d.faces, int)
+                else vec_faces_by_appearance.setdefault(
+                    int(d.faces), len(vec_faces_by_appearance)
+                ),
                 d.two_hands,
                 d.deadly,
                 d.fatal,
@@ -144,7 +156,7 @@ class Damage:
                 )
             if (
                 len(out) > 1
-                and out[-1].faces == 0
+                and not np.any(out[-1].faces)
                 and all(
                     getattr(out[-1], k) == getattr(out[-2], k)
                     for k in ("splash", "persistent", "type", "multiplier")
@@ -224,16 +236,20 @@ class Damage:
                 crit = base.copy(multiplier=2)
             out[DoS.critical_success] = [crit]
         if self.deadly:
+            deadly_dice = np.maximum(1, self.dice - 1)
+            if isinstance(deadly_dice, np.generic | np.ndarray):
+                assert deadly_dice.ndim == 0
+                deadly_dice = deadly_dice.item()
             out[DoS.critical_success].append(
-                base.copy(dice=max(1, self.dice - 1), faces=self.deadly, bonus=0)
+                base.copy(dice=deadly_dice, faces=self.deadly, bonus=0)
             )
 
         if self.basic_save:
             out[DoS.critical_failure] = out.pop(DoS.critical_success)
             out[DoS.failure] = out.pop(DoS.success)
-            if self.dice == 0 and self.bonus > 1:
+            if not np.any(self.dice) and np.any(self.bonus > 1):
                 out[DoS.success] = [base.copy(bonus=self.bonus // 2)]
-            elif self.dice > 0:
+            elif np.any(self.dice > 0):
                 out[DoS.success] = [base.copy(multiplier=0.5)]
 
         return ExpandedDamage(out)
