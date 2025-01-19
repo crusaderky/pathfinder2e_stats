@@ -142,6 +142,11 @@ def _roll_damage(
             else:
                 assert d.multiplier == 1
 
+            # Halved damage is rounded down, but can't be reduced below 1.
+            # If the combined penalties on an attack would reduce the damage to 0 or
+            # below, you still deal 1 damage.
+            r = cast(DataArray, np.maximum(1, r))
+
             damage_rolls.append(r)
 
         r = xarray.concat(damage_rolls, dim="damage_type", join="outer", fill_value=0)

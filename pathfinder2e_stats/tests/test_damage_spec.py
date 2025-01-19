@@ -121,6 +121,9 @@ def test_damage_type_simplify():
         Damage("piercing", 1, 8, multiplier=2),
         Damage("piercing", 1, 8),
         Damage("piercing", 3, 6, 3),
+        # If the combined penalties on an attack would reduce the
+        # damage to 0 or below, you still deal 1 damage.
+        Damage("force", 1, 6, -6),
         Damage("fire", 1, 4, persistent=True),
         Damage("fire", 0, 0, 1, splash=True),
     ]
@@ -369,37 +372,6 @@ def test_expanded_damage_filter():
         }
     with pytest.raises(ValueError, match="misspelled"):
         d.filter("persistent", "misspelled")
-
-
-def test_damage_bool():
-    assert bool(Damage("fire", 0, 0, 1)) is True
-    assert bool(Damage("fire", 0, 0, 0)) is False
-    assert bool(Damage("fire", 0, 0, -1)) is False
-
-    assert bool(Damage("fire", 2, 6, -11)) is True
-    assert bool(Damage("fire", 2, 6, -12)) is False
-    assert bool(Damage("fire", 2, 6, -13)) is False
-
-    assert bool(Damage("fire", 1, 6, -6)) is False
-    assert bool(Damage("fire", 1, 6, -6, deadly=8)) is True
-    assert bool(Damage("fire", 1, 6, -14, deadly=8)) is False
-    assert bool(Damage("fire", 1, 6, -15, deadly=8)) is False
-
-    assert bool(Damage("fire", 2, 6, -15, fatal=8)) is True
-    assert bool(Damage("fire", 2, 6, -16, fatal=8)) is False
-    assert bool(Damage("fire", 2, 6, -17, fatal=8)) is False
-
-
-def test_no_damage():
-    d = Damage("slashing", 1, 6, -6)
-    assert d.expand() == {}
-
-    d = Damage("slashing", 1, 6, -6) + Damage("fire", 0, 0, 0)
-    assert d == []
-    assert d.expand() == {}
-
-    d = ExpandedDamage({1: [Damage("slashing", 1, 6, -6)]})
-    assert d == {}
 
 
 def test_reduce_die():
