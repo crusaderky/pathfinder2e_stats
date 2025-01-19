@@ -6,14 +6,8 @@ from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
 __all__ = ("corrosive", "flaming", "frost", "shock", "vitalizing", "wounding")
 
 
-def _no_double_on_crit(spec: Damage) -> ExpandedDamage:
-    return ExpandedDamage({DoS.success: [spec], DoS.critical_success: [spec]})
-
-
-def vitalizing(greater: bool = False) -> ExpandedDamage:
-    return _no_double_on_crit(
-        Damage("vitality", 2 if greater else 1, 6, persistent=True)
-    )
+def vitalizing(greater: bool = False) -> Damage:
+    return Damage("vitality", 2 if greater else 1, 6, persistent=True)
 
 
 def wounding() -> Damage:
@@ -21,26 +15,28 @@ def wounding() -> Damage:
 
 
 def flaming(greater: bool = False) -> ExpandedDamage:
-    return _no_double_on_crit(Damage("fire", 1, 6)) + {
+    dmg = Damage("fire", 1, 6) + {
         DoS.critical_success: [Damage("fire", 2 if greater else 1, 10, persistent=True)]
     }
+    assert isinstance(dmg, ExpandedDamage)
+    return dmg
 
 
-def shock() -> ExpandedDamage:
+def shock() -> Damage:
     """
     .. note::
        Doesn't include damage dealt to secondary targets on a critical hit
     """
-    return _no_double_on_crit(Damage("electricity", 1, 6))
+    return Damage("electricity", 1, 6)
 
 
-def frost() -> ExpandedDamage:
-    return _no_double_on_crit(Damage("cold", 1, 6))
+def frost() -> Damage:
+    return Damage("cold", 1, 6)
 
 
-def corrosive() -> ExpandedDamage:
+def corrosive() -> Damage:
     """
     .. note::
        Doesn't include damage dealt to armor on a critical hit
     """
-    return _no_double_on_crit(Damage("acid", 1, 6))
+    return Damage("acid", 1, 6)
