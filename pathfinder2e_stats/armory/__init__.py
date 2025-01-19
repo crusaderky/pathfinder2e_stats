@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from types import ModuleType
-from urllib.parse import quote
 
 from pathfinder2e_stats.armory import _common
 from pathfinder2e_stats.armory import bows as bows
