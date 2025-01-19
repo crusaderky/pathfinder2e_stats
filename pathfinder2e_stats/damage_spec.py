@@ -210,8 +210,9 @@ class Damage:
         if self.basic_save:
             out[DoS.critical_failure] = out.pop(DoS.critical_success)
             out[DoS.failure] = out.pop(DoS.success)
-            if self.dice == 0 and self.bonus > 1:
-                out[DoS.success] = [base.copy(bonus=self.bonus // 2)]
+            if self.dice == 0 and self.bonus > 0:
+                # Minimum 1 damage on a save
+                out[DoS.success] = [base.copy(bonus=max(1, self.bonus // 2))]
             elif self.dice > 0:
                 out[DoS.success] = [base.copy(multiplier=0.5)]
 

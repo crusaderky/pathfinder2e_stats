@@ -154,6 +154,8 @@ def test_expand_bonus_only():
     assert Damage("fire", 0, 0, 1, basic_save=True).expand() == {
         -1: [Damage("fire", 0, 0, 2)],
         0: [Damage("fire", 0, 0, 1)],
+        # Halving can't reduce damage below 1
+        1: [Damage("fire", 0, 0, 1)],
     }
     assert Damage("fire", 0, 0, 5, basic_save=True).expand() == {
         -1: [Damage("fire", 0, 0, 10)],
