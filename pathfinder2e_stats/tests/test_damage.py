@@ -393,6 +393,17 @@ def test_basic_save():
     assert actual.total_damage.dtype.kind == "i"
     assert actual.total_damage[actual.outcome == -1].max() == 12
     assert actual.total_damage[actual.outcome == 0].max() == 6
-    # Halving damage can't reduce damage below 1.
+
+    # Halving damage can't reduce damage below 1
     assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [1, 2, 3]
     assert actual.total_damage[actual.outcome == 2].max() == 0
+
+
+def test_basic_save_fixed():
+    # Rounded down
+    actual = damage(check(6, DC=15), Damage("fire", 0, 0, 5, basic_save=True))
+    assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [2]
+
+    # Halving damage can't reduce damage below 1
+    actual = damage(check(6, DC=15), Damage("fire", 0, 0, 1, basic_save=True))
+    assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [1]
