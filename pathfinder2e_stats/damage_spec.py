@@ -12,6 +12,95 @@ from pathfinder2e_stats.check import DoS
 
 @dataclass(frozen=True, slots=True)
 class Damage:
+    """Damage roll specification, e.g. for a weapon or a spell.
+
+    :param str type:
+        Damage type, e.g. "fire".
+    :param int dice:
+        Number of dice to roll.
+    :param int faces:
+        Number of faces on each die.
+    :param int bonus:
+        Flat bonus to add to the roll.
+    :param bool persistent:
+        Whether the damage is persistent.
+        It is tracked separately by :func:`damage`. Default: False.
+    :param bool splash:
+        Whether the damage is splash.
+        Splash damage is applied on a simple miss and doesn't
+        double on a critical hit. It is tracked separately by
+        :func:`damage`. Default: False.
+
+    The following parameters can only be used when using :class:`Damage` on its own,
+    and never while manually building an :class:`ExpandedDamage`:
+
+    :param int two_hands:
+        Number of faces on the die when using a weapon with the ``two-hands dX`` trait
+        in two hands. Before expanding the damage, you will need to call the
+        :meth:`hands` method to clarify how many hands you're using.
+        Default: no ``two-hands`` trait.
+    :param int deadly:
+        Number of faces on the extra dice to add on a critical hit for weapons
+        with the ``deadly dX`` trait. Default: no ``deadly`` trait.
+    :param int fatal:
+        Number of faces to promote all dice to and for the extra die on critical hits
+        with a weapon with the ``fatal dX`` trait. Default: no ``fatal`` trait.
+    :param int fatal_aim:
+        Number of faces to promote all dice to and for the extra die on critical hits
+        with a weapon with the ``fatal aim dX`` trait that is being held in two hands.
+        Before expanding the damage, you will need to call the :meth:`hands`
+        method to clarify how many hands you're using.
+        Default: no ``fatal aim`` trait.
+    :param bool basic_save:
+        False (default)
+            This is a weapon or an attack spell that follows the normal rules for
+            Strikes and spell attack rolls: full damage on a success,
+            double damage on a critical success, and no damage on a failure.
+
+            This can be altered by the ``splash`` trait.
+        True
+            This is a spell with a basic saving throw: full damage on a failure,
+            double damage on a critical failure, half damage on a success
+            and no damage on a critical success.
+
+    The following parameter can only be used when manually building a
+    :class:`ExpandedDamage`:
+
+    :param float multiplier:
+        0.5, 1, or 2. Number to multiply the damage by after rolling it.
+
+    **Compact damage specification**
+
+    Basic weapons and most spells can be specified with a single :class:`Damage`.
+    e.g. a fireball::
+
+        >>> Damage("fire", 6, 6, basic_save=True)
+
+    A *+1 striking longbow*::
+
+        >>> Damage("piercing", 2, 8, deadly=10)
+
+    You can define effects such as weapons with runes by chaining :class:`Damage`
+    instances with the ``+`` operator. For example:
+
+    A *+1 striking wounding longsword*, wielded by a PC with a +4 STR modifier::
+
+        >>> Damage("slashing", 2, 8, 4) + Damage("bleed", 1, 6, persistent=True)
+
+    A weapon or spell with direct, splash and/or persistent component can be specified
+    by adding everything up with ``+``. For example, an Alchemist's Fire::
+
+        >>> (Damage("fire", 1, 8)
+        ... + Damage("fire", 0, 0, 1, persistent=True)
+        ... + Damage("fire", 0, 0, 1, splash=True))
+
+    **Complex cases**
+
+    Some damage profiles follow neither the general rule for weapons and attack spells
+    nor the rule for basic saving throws. To define them, you need to use
+    :class:`ExpandedDamage` instead.
+    """
+
     type: str
     dice: int
     faces: int
@@ -26,6 +115,7 @@ class Damage:
     basic_save: bool = False
 
     def __post_init__(self) -> None:
+        """Data validation"""
         for k, t in self.__annotations__.items():
             cls = eval(t)
             v = getattr(self, k)
@@ -93,6 +183,19 @@ class Damage:
 
     @staticmethod
     def simplify(damages: Iterable[Damage], /) -> list[Damage]:
+        """Attempt to reduce multiple Damage instances to a shorter form.
+
+        Only compatible damage types are combined; e.g. slashing + fire will
+        remain separate, as will direct fire damage and splash fire damage.
+
+        e.g. ::
+
+            >>> Damage.simplify([Damage("fire", 1, 6), Damage("fire", 1, 6, 4)])
+            Damage(type="fire", dice=2, faces=6, bonus=4)
+
+        This method is typically called automatically.
+
+        """
         # Don't sort e.g. slashing + fire alphabetically
         types_by_appearance: dict[str, int] = {}
 
@@ -135,11 +238,27 @@ class Damage:
         return out
 
     def copy(self, **kwargs: Any) -> Damage:
+        r"""Create a deep copy of this instance, changing one or more parameters.
+
+        :param \*\*kwargs:
+            Any of the :class:`Damage` parameters.
+
+        e.g. a longsword with `Inventive Offensive
+        <https://2e.aonprd.com/Feats.aspx?ID=989>`_ adding ``deadly d6``::
+
+            >>> Damage("slashing", 1, 8).copy(deadly=6)
+            Damage(type="slashing", dice=1, faces=8, deadly=6)
+        """
         kwargs2 = {k: getattr(self, k) for k in self.__annotations__}
         kwargs2.update(kwargs)
         return Damage(**kwargs2)
 
     def hands(self, hands: Literal[1, 2]) -> Damage:
+        """Specify how many hands are used to wield the weapon.
+
+        You should always call this method explicitly for weapons with
+        either the ``two-hands`` or the ``fatal aim`` traits.
+        """
         if hands not in (1, 2) or hands is True:
             raise ValueError("Must use 1 or 2 hands to wield")
         if self.two_hands:
@@ -161,16 +280,56 @@ class Damage:
         return self
 
     def reduce_die(self) -> Damage:
+        """Reduce the damage die size by 1 step.
+
+        e.g. a +1 Striking Maul with `Grasping Reach
+        <https://2e.aonprd.com/Feats.aspx?ID=4493>`_::
+
+            >>> Damage("bludgeoning", 2, 12).reduce_die()
+            Damage(type="bludgeoning", dice=2, faces=10)
+        """
         return self.copy(faces=self.faces - 2)
 
     def increase_die(self) -> Damage:
+        """Increase the damage die size by 1 step.
+
+        e.g. a Dagger with `Deadly Simplicity
+        <https://2e.aonprd.com/Feats.aspx?ID=4642>`_::
+
+            >>> Damage("piercing", 1, 4).increase_die()
+            Damage(type="piercing", dice=1, faces=6)
+        """
         return self.copy(faces=self.faces + 2)
 
     def vicious_swing(self, dice: int = 1) -> AnyDamageSpec:
-        """Vicious Swing / Power Attack and similar effects
+        """`Vicious Swing <https://2e.aonprd.com/Feats.aspx?ID=4775>`_,
+        a.k.a. Power Attack, and similar effects.
 
         Add extra weapon dice, which impact the fatal trait but
-        not the deadly trait
+        not the deadly trait.
+
+        :param int dice:
+            Number of extra weapon dice to add. Default: 1
+        :returns:
+            :class:`Damage` or :class:`ExpandedDamage`
+
+        **Note**
+
+        This is not the same as just adding a damage die. Observe the difference:
+
+        - A +2 Striking Glaive with Vicious Swing, which deals 3d8
+          damage on a hit and an extra d8 on a critical hit::
+
+          >>> Damage("slashing", 2, 8, deadly=8).vicious_swing()
+          **Critical success:** (3d8)x2 slashing plus 1d8 slashing
+          **Success:** 3d8 slashing
+
+        - A +2 Greater Striking Glaive, which deals 3d8 damage on a hit
+          and an extra 2d8 on a critical hit::
+
+          >>> Damage("slashing", 3, 8, deadly=8).expand()
+          **Critical success:** (3d8)x2 slashing plus 2d8 slashing
+          **Success:** 3d8 slashing
         """
         if self.deadly:
             return self.expand() + {
@@ -182,6 +341,16 @@ class Damage:
         return self.copy(dice=self.dice + dice)
 
     def expand(self) -> ExpandedDamage:
+        """Convert this :class:`Damage` instance to an
+        :class:`ExpandedDamage`.
+
+        This resolves the ``two-hands``, ``deadly``, ``fatal``, and ``fatal_aim``
+        traits, as well as applying the success profile for weapon strikes
+        (``basic_save=False``), spells with a basic saving throw (``basic_save=True``),
+        and splash damage.
+
+        You typically don't need to call this method explicitly.
+        """
         self = self._auto_two_hands()  # noqa: PLW0642
         base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
         out = {}
@@ -225,6 +394,12 @@ class Damage:
 
 
 class DamageList(UserList[Damage]):
+    """Output of the addition of :class:`Damage`.
+
+    This class is never used directly; it is returned by applying
+    the ``+`` operator to two or more :class:`Damage` objects.
+    """
+
     @property
     def basic_save(self) -> bool:
         return self[0].basic_save
@@ -249,6 +424,98 @@ class DamageList(UserList[Damage]):
 
 
 class ExpandedDamage(UserDict[DoS, list[Damage]]):
+    """Expanded damage specification.
+
+    This can be either generated by calling :meth:`Damage.expand` or
+    by manually building a complex damage profile, which doesn't
+    need to respect the rules for weapon strikes or basic saving throws.
+
+    :param data:
+        A :class:`Damage`, a sequence of :class:`Damage`, or
+        a mapping of :class:`DoS` to lists of :class:`Damage`.
+
+        In the latter case, you need to explicitly specify what happens
+        on each roll outcome; you cannot use the ``basic_save``, ``deadly``,
+        ``fatal``, or ``fatal_aim`` attributes.
+        Omitted outcomes deal no damage.
+
+    You can also initialize this class by adding a plain dict of ``{DoS:[Damage]}``
+    to a :class:`Damage` object.
+
+    **Examples**
+
+    A `Flaming rune <https://2e.aonprd.com/Equipment.aspx?ID=2838>`_ adds 1d6 fire
+    to your weapon, with an additional 1d10 persistent fire on a critical hit.
+    The 1d6 can be expressed with a simple :class:`Damage`, but the extra effect
+    on the critical hit can't.
+
+    A *+1 Striking Flaming Rapier* can be defined as::
+
+        >>> Damage("piercing", 2, 6, deadly=8) + Damage("fire", 1, 6) + {
+        ...     DoS.critical_success: [
+        ...         Damage("fire", 1, 10, persistent=True)
+        ...     ]
+        ... }
+        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
+        plus (1d6)x2 fire plus 1d10 persistent fire
+        **Success:** 2d6 piercing plus 1d6 fire
+
+    Above we implicitly initialized a :class:`ExpandedDamage` by auto-expanding a
+    ``deadly`` trait by adding a dict to a :class:`Damage` object.
+    The above is equivalent to::
+
+        >>> rapier = ExpandedDamage({
+        ...     DoS.success: [Damage("piercing", 2, 6)],
+        ...     DoS.critical_success: [
+        ...         Damage("piercing", 2, 6, multiplier=2),
+        ...         Damage("piercing", 1, 8),
+        ... })
+        >>> flaming = ExpandedDamage({
+        ...     DoS.success: [Damage("fire", 1, 6)],
+        ...     DoS.critical_success: [
+        ...         Damage("fire", 1, 6, multiplier=2),
+        ...         Damage("fire", 1, 10, persistent=True),
+        ...     ],
+        ... })
+        >>> rapier + flaming
+        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
+        plus (1d6)x2 fire plus 1d10 persistent fire
+        **Success:** 2d6 piercing plus 1d6 fire
+
+    Which is the same as writing::
+
+        >>> ExpandedDamage({
+        ...     DoS.success: [
+        ...         Damage("piercing", 2, 6),
+        ...         Damage("fire", 1, 6)],
+        ...     ],
+        ...     DoS.critical_success: [
+        ...         Damage("piercing", 2, 6, multiplier=2),
+        ...         Damage("piercing", 1, 8),
+        ...         Damage("fire", 1, 6, multiplier=2),
+        ...         Damage("fire", 1, 10, persistent=True),
+        ...     ],
+        ... })
+        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
+        plus (1d6)x2 fire plus 1d10 persistent fire
+        **Success:** 2d6 piercing plus 1d6 fire
+
+    What if the reapier was used for a swashbuckler's finisher, which adds 2d6
+    precision damage also on a failure (but not a critical failure)?
+
+        >>> p = Damage("precision", 2, 6)
+        >>> finisher = ExpandedDamage({
+        ...     DoS.failure: [p],
+        ...     DoS.success: [p],
+        ...     DoS.critical_success: [p.copy(multiplier=2)],
+        ... })
+        >>> rapier + flaming + finisher
+        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
+        plus (1d6)x2 fire plus (2d6)x2 precision plus 1d10 persistent fire
+        **Success:** 2d6 piercing plus 1d6 fire plus 2d6 precision
+        **Failure:** 2d6 precision
+    """
+
     def __init__(
         self,
         data: AnyDamageSpec | None = None,
@@ -271,6 +538,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
 
     @staticmethod
     def sum(items: Iterable[AnyDamageSpec]) -> ExpandedDamage:
+        """Sum multiple :class:`Damage` or :class:`ExpandedDamage` objects together."""
         out: dict[DoS, list[Damage]] = {}
         for item in items:
             item = ExpandedDamage(item)
@@ -298,6 +566,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     def filter(
         self, *which: Literal["direct", "persistent", "splash"]
     ) -> ExpandedDamage:
+        """Select only direct and/or persistent and/or splash damage."""
         which_set = set(which)
         if unknown := which_set - {"direct", "persistent", "splash"}:
             raise ValueError(f"Unknown filter(s): {list(unknown)}")
@@ -316,6 +585,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         return ExpandedDamage({k: [d for d in v if match(d)] for k, v in self.items()})
 
     def to_dict_of_str(self) -> dict[str, str]:
+        """Pretty-print as a dict"""
         return {str(k): str(DamageList(v)) for k, v in self.items()}
 
 
