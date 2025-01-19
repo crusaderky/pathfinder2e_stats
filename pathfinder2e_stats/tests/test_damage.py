@@ -37,27 +37,16 @@ def test_damage_simple():
 
 
 def test_no_damage():
+    """We can only assume that a damage of 0d0+0 was meant to have a positive
+    bonus which was then negated by a penalty.
+
+    However, if the combined penalties on an attack would reduce the damage to
+    0 or below, you still deal 1 damage.
+    """
     actual = damage(check(16, DC=21), Damage("slashing", 0, 0, 0))
     assert actual.total_damage.sizes == {"roll": 1000}
-    assert actual.total_damage.sum() == 0
-    assert "initial_damage" not in actual
-    assert "splash_damage" not in actual
-    assert "persistent_damage" not in actual
-
-
-@pytest.mark.parametrize("bonus", [0, 1])
-def test_no_damage_consistent_shape(bonus):
-    actual = damage(
-        check(
-            16,
-            DC=DataArray([20, 22, 24], dims=["target"]),
-            dims={"foo": 2},
-        ),
-        Damage("slashing", 0, 0, bonus),
-    )
-    assert actual.total_damage.sizes == {"roll": 1000, "target": 3, "foo": 2}
-    assert actual.total_damage.min() == 0
-    assert actual.total_damage.max() == bonus * 2
+    assert actual.total_damage.max() == 1
+    assert "direct_damage" in actual
 
 
 def test_splash_damage():
@@ -217,6 +206,13 @@ def test_multiple_persistent_damage_DCs(DC):
     assert 1.5 < means[2] < 1.8  # fire
 
 
+def test_minimum_damage():
+    """If a penalty to damage would reduce it to 0, it still deals 1"""
+    actual = damage(check(6, DC=15), Damage("slashing", 1, 6, -2))
+    assert actual.total_damage[actual.outcome == 1].max() == 4
+    assert actual.total_damage[actual.outcome == 1].min() == 1
+
+
 @pytest.mark.parametrize(
     "immunities",
     [
@@ -253,22 +249,26 @@ def test_immunities(immunities):
 def test_weaknesses():
     actual = damage(
         check(6, DC=15),
-        Damage("fire", 0, 0, 1),
+        Damage("fire", 1, 6, basic_save=True),
         weaknesses={"fire": 10},
     )
-    # Weaknesses don't double on a crit
-    assert np.unique(actual.total_damage).tolist() == [0, 11, 12]
+    # Weaknesses don't double on a crit fail
+    assert actual.total_damage[actual.outcome == -1].max() == 22
+    # Weaknesses don't halve on a success
+    assert actual.total_damage[actual.outcome == 1].max() == 13
 
 
 def test_resistances():
     actual = damage(
         check(6, DC=15),
-        Damage("fire", 1, 6),
+        Damage("fire", 1, 6, basic_save=True),
         resistances={"fire": 5},
     )
-    assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [0, 1]
-    # Resistances don't double on a crit
-    assert actual.total_damage[actual.outcome == 2].max() == 7
+    assert np.unique(actual.total_damage[actual.outcome == 0]).tolist() == [0, 1]
+    # Resistances don't double on a crit fail
+    assert actual.total_damage[actual.outcome == -1].max() == 7
+    # Resistances don't halve on a success
+    assert actual.total_damage[actual.outcome == 1].max() == 0
 
 
 def test_weaknesses_splash():
@@ -388,10 +388,11 @@ def test_malformed_weaknesses(key):
 
 def test_basic_save():
     """Halving the damage on a basic save rounds down to integer"""
-    actual = damage(check(6, DC=15), Damage("fire", 1, 4, basic_save=True))
+    actual = damage(check(6, DC=15), Damage("fire", 1, 6, basic_save=True))
     assert actual.direct_damage.dtype.kind == "i"
     assert actual.total_damage.dtype.kind == "i"
-    assert actual.total_damage[actual.outcome == -1].max() == 8
-    assert actual.total_damage[actual.outcome == 0].max() == 4
-    assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [0, 1, 2]
+    assert actual.total_damage[actual.outcome == -1].max() == 12
+    assert actual.total_damage[actual.outcome == 0].max() == 6
+    # Halving damage can't reduce damage below 1.
+    assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [1, 2, 3]
     assert actual.total_damage[actual.outcome == 2].max() == 0

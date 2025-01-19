@@ -132,7 +132,7 @@ class Damage:
                 # Sum flat bonus to dice
                 out[-2:] = [out[-2].copy(bonus=out[-2].bonus + out[-1].bonus)]
 
-        return [o for o in out if bool(o)]
+        return out
 
     def copy(self, **kwargs: Any) -> Damage:
         kwargs2 = {k: getattr(self, k) for k in self.__annotations__}
@@ -222,10 +222,6 @@ class Damage:
         d = self._auto_two_hands()
         return DamageList([d]) + other
 
-    def __bool__(self) -> bool:
-        """Return True if rolled damage can be more than zero; False otherwise."""
-        return self.dice * (self.fatal or self.faces) + self.bonus + self.deadly > 0
-
 
 class DamageList(UserList[Damage]):
     @property
@@ -266,7 +262,6 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         else:
             data = {DoS(k): list(v) for k, v in data.items()}
 
-        data = {k: [vi for vi in v if bool(vi)] for k, v in data.items()}
         data = {k: v for k, v in data.items() if v}
         self.data = dict(sorted(data.items(), reverse=True))  # success > failure
 
