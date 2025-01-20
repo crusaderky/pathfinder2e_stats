@@ -66,14 +66,15 @@ def check(
 
     :param bonus: The bonus or penalty to add to the d20 roll.
     :param DC: The Difficulty Class to compare the result to.
-    :param keen: Set to True to Strike with a weapon inscribed with a `Keen rune`_.
+    :param keen: Set to True to Strike with a weapon inscribed with a
+        :prd_equipment:`Keen <2843>` rune.
         Attacks with this weapon are a critical hit on a 19 on the die as long as that
         result is a success. This property has no effect on a 19 if the result would be
         a failure. Default: False.
     :param fortune: Set to True to roll twice and keep highest, e.g. when under the
-        effect of `Sure Strike`_. Default: False.
+        effect of :prd_spells:`Sure Strike <1709>`. Default: False.
     :param misfortune: Set to True to roll twice and keep lowest, e.g. when under the
-        effect of `Ill Omen`_. Default: False.
+        effect of :prd_spells:`Ill Omen <1566>`. Default: False.
         Fortune and misfortune cancel each other out.
     :param hero_point: Set to a :class:`DoS` value to spend a hero point if the outcome
         is equal to or less than the given value. e.g.
@@ -179,10 +180,6 @@ def check(
         unique_value
         False    0.64898
         True     0.35102
-
-    .. _Keen rune: https://2e.aonprd.com/Equipment.aspx?ID=2843
-    .. _Sure Strike: https://2e.aonprd.com/Spells.aspx?ID=1709
-    .. _Ill Omen: https://2e.aonprd.com/Spells.aspx?ID=1566
     """
     dims = dict(dims) if dims else {}
     if hero_point is not False:
@@ -305,7 +302,8 @@ def map_outcome(
 
     **Examples:**
 
-    Cast a 5th rank `Calm`_ spell (DC30) and catch in the area three targets:
+    Cast a 5th rank :prd_spells:`Calm <1458>` spell (DC30) and catch in the
+    area three targets:
 
     - A level 8 creature;
     - A level 11 creature, who therefore benefits from the spell's incapacitation
@@ -322,8 +320,6 @@ def map_outcome(
         ...       dims=targets.sizes,  # targets rolls independently
         ...       evasion=targets.evasion,
         ...       incapacitation=rank2level(spell_rank) < targets.level)
-
-    .. _Calm: https://2e.aonprd.com/Spells.aspx?ID=1458
     """
     if isinstance(outcome, Dataset):
         outcome = outcome.rename({"outcome": "original_outcome"})
