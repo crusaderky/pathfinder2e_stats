@@ -60,5 +60,6 @@ Time required: about an hour.
 14g.  The next day, test the conda-forge release
         conda search pathfinder2e_stats
         conda create -n pathfinder2e_stats-test pathfinder2e_stats
+        conda activate pathfinder2e_stats-test
         conda list
-        python -m 'import pathfinder2e_stats'
+        python -c 'import pathfinder2e_stats'
