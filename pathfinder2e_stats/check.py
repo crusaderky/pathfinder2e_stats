@@ -4,6 +4,7 @@ from collections.abc import Hashable, Iterable, Mapping
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
+import numpy as np
 import xarray
 from xarray import DataArray, Dataset
 
@@ -53,6 +54,7 @@ def check(
     *,
     DC: int | DataArray,
     keen: bool | DataArray = False,
+    perfected_form: bool | DataArray = False,
     fortune: bool | DataArray = False,
     misfortune: bool | DataArray = False,
     hero_point: DoS | int | Literal[False] | DataArray = False,
@@ -71,6 +73,9 @@ def check(
         Attacks with this weapon are a critical hit on a 19 on the die as long as that
         result is a success. This property has no effect on a 19 if the result would be
         a failure. Default: False.
+    :param perfected_form: Level 19 monk feature. On your first Strike of your turn, if
+        you roll lower than 10, you can treat the attack roll as a 10.
+        This is a fortune effect. Disabled when fortune=True. Default: False.
     :param fortune: Set to True to roll twice and keep highest, e.g. when under the
         effect of :prd_spells:`Sure Strike <1709>`. Default: False.
     :param misfortune: Set to True to roll twice and keep lowest, e.g. when under the
@@ -182,12 +187,25 @@ def check(
         True     0.35102
     """
     dims = dict(dims) if dims else {}
-    if hero_point is not False:
+    hp_reroll_coord = ["original"]
+    if perfected_form is not False:
         dims["hp_reroll"] = 2
+        hp_reroll_coord.append("perfected form")
+    if hero_point is not False:
+        dims["hp_reroll"] = dims.get("hp_reroll", 1) + 1
+        hp_reroll_coord.append("hero point")
         if isinstance(hero_point, int):
             hero_point = DoS(hero_point)
 
     natural = d20(fortune=fortune, misfortune=misfortune, dims=dims)
+
+    if perfected_form is not False or hero_point is not False:
+        natural.coords["hp_reroll"] = hp_reroll_coord
+    if perfected_form is not False:
+        natural = xarray.where(
+            natural.coords["hp_reroll"] == "perfected form", 10, natural
+        )
+
     delta = natural + bonus - DC
 
     assert DoS.failure.value == 0
@@ -231,16 +249,36 @@ def check(
                 if isinstance(hero_point, DataArray)
                 else False
             ),
+            "perfected_form": perfected_form
+            if isinstance(perfected_form, bool)
+            else "varies",
             "legend": {dos.value: str(dos) for dos in DoS.__members__.values()},
         },
     )
-    if hero_point is not False:
-        roll0 = outcome.isel(hp_reroll=0)
-        roll1 = outcome.isel(hp_reroll=1)
-        # Can't use a hero point when there's already a fortune effect
-        use_hero_point = (roll0 <= hero_point) & ~DataArray(fortune)
-        outcome = xarray.where(use_hero_point, roll1, roll0)
-        ds.update({"outcome": outcome, "use_hero_point": use_hero_point})
+
+    if hero_point is not False or perfected_form is not False:
+        # Hero point, Perfected Form and fortune effects that apply before the roll
+        # (e.g. Sure Strike) are mutually exclusive.
+        nfortune = ~DataArray(fortune)
+
+        cur_outcome = outcome.sel(hp_reroll="original", drop=True)
+        if perfected_form is not False:
+            use_perfected_form = DataArray(perfected_form) & nfortune
+            pf_outcome = outcome.sel(hp_reroll="perfected form", drop=True)
+            cur_outcome = xarray.where(
+                use_perfected_form,
+                np.maximum(pf_outcome, cur_outcome),
+                cur_outcome,
+            )
+
+        if hero_point is not False:
+            use_hero_point = (cur_outcome <= hero_point) & nfortune
+            hp_outcome = outcome.sel(hp_reroll="hero point", drop=True)
+            cur_outcome = xarray.where(use_hero_point, hp_outcome, cur_outcome)
+            ds["use_hero_point"] = use_hero_point
+
+        ds["outcome"] = cur_outcome
+    assert "hp_reroll" not in ds["outcome"].dims
 
     return map_outcome(ds, **kwargs) if kwargs else ds
 

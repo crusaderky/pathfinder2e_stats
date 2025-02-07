@@ -5,7 +5,7 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts
+from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, set_size
 
 
 def test_DoS_str():
@@ -161,6 +161,7 @@ def test_check_basic():
     assert ds.attrs == {
         "fortune": False,
         "hero_point": False,
+        "perfected_form": False,
         "keen": False,
         "legend": {
             -2: "No roll",
@@ -327,7 +328,7 @@ def test_chain_check_map_outcome():
         (1, "success", 20),
     ],
 )
-def test_heropoint(hp, attr, lt):
+def test_hero_point(hp, attr, lt):
     ds = check(+5, DC=20, hero_point=hp)
     assert ds.attrs["hero_point"] == attr
     assert ds.outcome.shape == (1000,)
@@ -340,16 +341,25 @@ def test_heropoint(hp, attr, lt):
         assert ds.use_hero_point.shape == (1000,)
         assert ds.use_hero_point.dtype == bool
 
-        assert_equal(ds.use_hero_point, ds.natural[:, 0] < lt)
+        assert_equal(
+            ds.use_hero_point,
+            ds.natural.sel(hp_reroll="original", drop=True) < lt,
+        )
 
         ds_roll0 = ds.sel(roll=~ds.use_hero_point)
-        assert_equal(ds_roll0.outcome >= 1, ds_roll0.natural[:, 0] >= 15)
+        assert_equal(
+            ds_roll0.outcome >= 1,
+            ds_roll0.natural.sel(hp_reroll="original", drop=True) >= 15,
+        )
 
         ds_roll1 = ds.sel(roll=ds.use_hero_point)
-        assert_equal(ds_roll1.outcome >= 1, ds_roll1.natural[:, 1] >= 15)
+        assert_equal(
+            ds_roll1.outcome >= 1,
+            ds_roll1.natural.sel(hp_reroll="hero point", drop=True) >= 15,
+        )
 
 
-def test_heropoint_with_fortune():
+def test_hero_point_with_fortune():
     """Hero point is a fortune effect; can't use it when there's another already,
     e.g. Sure Strike
     """
@@ -379,7 +389,52 @@ def test_heropoint_with_fortune():
     assert 0.7 < ds.use_hero_point.mean() < 0.8
 
 
-def test_heropoint_with_fortune_array():
+def test_perfected_form():
+    # Inconsequential, if you take 10 it's still a critical failure
+    ds = check(+0, DC=20, perfected_form=True)
+    assert ds.attrs["perfected_form"] is True
+    assert ds.outcome.shape == (1000,)
+    assert ds.outcome.min() == DoS.critical_failure
+    assert ds.outcome.max() == DoS.critical_success
+
+    # Can discard roll and take 19, but keep roll if better
+    ds = check(+9, DC=20, perfected_form=True)
+    assert ds.outcome.min() == DoS.failure
+    assert ds.outcome.max() == DoS.critical_success
+
+    # Can discard roll and take 20, but keep roll if better
+    ds = check(+10, DC=20, perfected_form=True)
+    assert ds.outcome.min() == DoS.success
+    assert ds.outcome.max() == DoS.critical_success
+
+    # Can forgo roll and take 30
+    ds = check(+20, DC=20, perfected_form=True)
+    assert ds.outcome.min() == DoS.critical_success
+
+
+def test_perfected_form_with_fortune():
+    """Disable Perfected Form if fortune is active"""
+    set_size(2000)  # With fortune there's a 1/400 chance of crit fail
+    ds = check(+10, DC=20, perfected_form=True, fortune=True)
+    assert ds.outcome.min() == DoS.critical_failure
+    assert ds.outcome.max() == DoS.critical_success
+
+
+def test_perfected_form_with_hero_point():
+    # Don't use HP when Perfected Form is enough to get the outcome you want.
+    ds = check(+10, DC=20, perfected_form=True, hero_point=DoS.failure)
+    assert ds.outcome.min() == DoS.success
+    assert ds.outcome.max() == DoS.critical_success
+    assert not ds.use_hero_point.any()
+
+    # When you do use HP, it disables Perfected Form so you can actually get worse.
+    ds = check(+10, DC=20, perfected_form=True, hero_point=DoS.success)
+    assert ds.outcome.min() == DoS.critical_failure
+    assert ds.outcome.max() == DoS.critical_success
+    assert ds.use_hero_point.any()
+
+
+def test_hero_point_with_fortune_array():
     ds = check(
         DC=11,
         hero_point=DataArray(
@@ -397,6 +452,25 @@ def test_heropoint_with_fortune_array():
     assert 0.45 < ds.use_hero_point.sel(hp=0, f=False).mean() < 0.55
     assert 0.93 < ds.use_hero_point.sel(hp=1, f=False).mean() < 0.97
     assert ds.use_hero_point.sel(hp=2, f=False).all()
+
+
+def test_perfected_form_with_fortune_array():
+    set_size(2000)  # With fortune there's a 1/400 chance of crit fail
+    ds = check(
+        DC=10,
+        perfected_form=DataArray([False, True], dims=["pf"]),
+        fortune=DataArray([False, True], dims=["f"]),
+    )
+    assert ds.attrs["perfected_form"] == "varies"
+    assert ds.attrs["fortune"] == "varies"
+    assert ds.outcome.sizes == {"roll": 2000, "f": 2, "pf": 2}
+    # Fortune overrides Perfected Form
+    assert ds.outcome.isel(f=1, pf=0).min() == DoS.critical_failure
+    assert ds.outcome.isel(f=1, pf=0).max() == DoS.critical_success
+    assert ds.outcome.isel(f=1, pf=1).min() == DoS.critical_failure
+    assert ds.outcome.isel(f=1, pf=1).max() == DoS.critical_success
+    assert ds.outcome.isel(f=0, pf=1).min() == DoS.success
+    assert ds.outcome.isel(f=0, pf=1).max() == DoS.critical_success
 
 
 def test_check_array_input():
