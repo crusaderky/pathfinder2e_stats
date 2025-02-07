@@ -7,3 +7,4 @@ Jupyter Notebooks
    exacting_strike.nbconvert
    add_injury_to_insult.nbconvert
    bloodrager.nbconvert
+   godbreaker.nbconvert
