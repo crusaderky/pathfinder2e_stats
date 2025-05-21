@@ -6,21 +6,9 @@ This is a collection of commonly-tested weapons and spells.
 
 Note that this will always be incomplete. Feel free to open a PR to add more, but do expect to have to manually write your own damage profiles using :func:`Damage` for less common weapons and spells.
 
-Swords
-------
-.. automodule:: pathfinder2e_stats.armory.swords
-   :members:
-   :undoc-members:
-
-Knives
-------
-.. automodule:: pathfinder2e_stats.armory.knives
-   :members:
-   :undoc-members:
-
-Picks
------
-.. automodule:: pathfinder2e_stats.armory.picks
+Axes
+----
+.. automodule:: pathfinder2e_stats.armory.axes
    :members:
    :undoc-members:
 
@@ -39,6 +27,30 @@ Crossbows
 Darts
 -----
 .. automodule:: pathfinder2e_stats.armory.darts
+   :members:
+   :undoc-members:
+
+Hammers
+-------
+.. automodule:: pathfinder2e_stats.armory.hammers
+   :members:
+   :undoc-members:
+
+Knives
+------
+.. automodule:: pathfinder2e_stats.armory.knives
+   :members:
+   :undoc-members:
+
+Picks
+-----
+.. automodule:: pathfinder2e_stats.armory.picks
+   :members:
+   :undoc-members:
+
+Swords
+------
+.. automodule:: pathfinder2e_stats.armory.swords
    :members:
    :undoc-members:
 
