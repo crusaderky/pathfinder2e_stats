@@ -76,7 +76,7 @@ Build the documentation in ``build/html`` using pixi:
 .. code-block:: bash
 
     pixi run docs
-   
+
 Build the documentation and open it in your browser:
 
 .. code-block:: bash

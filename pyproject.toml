@@ -82,6 +82,7 @@ exclude_lines = [
 ignore-words-list = [
     "Mot",
 ]
+exclude-file = ["pixi.lock"]
 
 [tool.ruff]
 exclude = [".eggs"]
