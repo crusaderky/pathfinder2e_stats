@@ -38,10 +38,10 @@ jobs:
         with:
           pixi-version: v0.47.0
           cache: true
-          environments: ${{ matrix.environment }}
+          environments: tests-${{ matrix.environment }}
 
       - name: pytest with coverage
-        run: pixi run -e ${{ matrix.environment }} coverage
+        run: pixi run -e tests-${{ matrix.environment }} coverage
 
       - name: codecov.io
         uses: codecov/codecov-action@v3
