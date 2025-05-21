@@ -193,7 +193,6 @@ nbconvert-pp = { cmd = "mv notebooks/*.nbconvert.ipynb doc/notebooks/", descript
 sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", description = "Run Sphinx"}
 docs = { depends-on = ["nbconvert", "nbconvert-pp", "sphinx-build"], description = "Build docs"}
 open-docs = { cmd = "open build/html/index.html", depends-on = ["docs"], description = "Open the generated docs"}
-export-docs-env = { cmd = "doc/requirements-export.sh", description = "Export the conda environment for readthedocs"}
 
 [tool.pixi.feature.jupyter.dependencies]
 jupyterlab = "*"
