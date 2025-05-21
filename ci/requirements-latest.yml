@@ -1,7 +1,0 @@
-name: pathfinder2e_stats
-channels:
-  - conda-forge
-dependencies:
-  - pytest
-  - pytest-cov
-  - xarray

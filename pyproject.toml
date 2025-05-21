@@ -82,6 +82,7 @@ exclude_lines = [
 ignore-words-list = [
     "Mot",
 ]
+exclude-file = ["pixi.lock"]
 
 [tool.ruff]
 exclude = [".eggs"]
@@ -149,3 +150,76 @@ warn_unreachable = true
 [[tool.mypy.overrides]]
 module = ["*.tests.*"]
 disallow_untyped_defs = false
+
+[tool.pixi.project]
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
+
+[tool.pixi.dependencies]
+python = ">=3.10"
+xarray = ">=2023.1.0"
+numpy = ">=1.24"
+pandas = ">=1.5"
+
+[tool.pixi.pypi-dependencies]
+pathfinder2e-stats = { path = ".", editable = true }
+
+[tool.pixi.feature.lint.dependencies]
+pre-commit = "*"
+
+[tool.pixi.feature.lint.tasks]
+pre-commit-install = { cmd = "pre-commit install", description = "Install pre-commit"}
+pre-commit = { cmd = "pre-commit run --all-files", description = "Run pre-commit"}
+lint = { depends-on = ["pre-commit"] }
+
+[tool.pixi.feature.tests.dependencies]
+pytest = "*"
+pytest-cov = "*"
+
+[tool.pixi.feature.tests.tasks]
+tests = { cmd = "pytest -v", description = "Run tests"}
+tests-cov = { cmd="pytest -v -ra --cov --cov-report=xml --cov-report=term --durations=20", description = "Run tests with coverage"}
+coverage = { cmd = "coverage html", depends-on = ["tests-cov"], description = "Generate test coverage html report"}
+open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"] , description = "Open test coverage report"}
+
+[tool.pixi.feature.docs.dependencies]
+sphinx = "*"
+sphinx_rtd_theme = "*"
+nbsphinx = "*"
+
+[tool.pixi.feature.docs.tasks]
+nbconvert = { cmd = "jupyter nbconvert --execute --to notebook ../notebooks/*.ipynb", cwd = "doc", description = "Convert notebooks to html"}
+nbconvert-pp = { cmd = "mv notebooks/*.nbconvert.ipynb doc/notebooks/", description = "Move notebooks HTML files"}
+sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", description = "Run Sphinx"}
+docs = { depends-on = ["nbconvert", "nbconvert-pp", "sphinx-build"], description = "Build docs"}
+open-docs = { cmd = "open build/html/index.html", depends-on = ["docs"] , description = "Open the generated docs"}
+
+[tool.pixi.feature.jupyter.dependencies]
+jupyterlab = "*"
+matplotlib = "*"
+hvplot = "*"
+scipy = "*" # Add violin plots to hvplot
+
+[tool.pixi.feature.jupyter.tasks]
+jupyter = { cmd = "jupyter lab" , description = "Launch Jupyter Lab"}
+
+[tool.pixi.feature.py310.dependencies]
+python = "~=3.10.0"
+
+[tool.pixi.feature.py313.dependencies]
+python = "~=3.13.0"
+
+[tool.pixi.feature.mindeps.dependencies]
+python = "~=3.10.0"
+xarray = "==2023.1.0"
+numpy = "==1.24.0"
+pandas = "==1.5.0"
+
+[tool.pixi.environments]
+default = { features = ["py313"], solve-group = "py313" }
+lint = { features = ["py313", "lint"], solve-group = "py313" }
+docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }
+tests = { features = ["py313", "tests"], solve-group = "py313" }
+tests-mindeps = { features = ["tests", "mindeps"] }
+tests-py310 = { features = ["py310", "tests"] }
+tests-py313 = { features = ["py313", "tests"], solve-group = "py313" } # alias of tests
