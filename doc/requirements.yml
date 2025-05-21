@@ -1,3 +1,4 @@
+# Note: this file must be kept in sync with pyproject.toml
 name: pathfinder2e_stats-docs
 channels:
   - conda-forge

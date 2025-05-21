@@ -17,25 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Conda Environment
-        uses: conda-incubator/setup-miniconda@v3
+      - uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          miniforge-version: latest
-          use-mamba: true
-          environment-file: ci/requirements-docs.yml
-          activate-environment: pathfinder2e_stats-docs
-
-      - name: Show conda options
-        run: conda config --show
-
-      - name: conda info
-        run: conda info
-
-      - name: conda list
-        run: conda list
+          pixi-version: v0.47.0
+          cache: true
+          environments: docs
 
       - name: Build docs
-        run: cd doc && make
+        run: pixi run -e docs docs
 
       - uses: actions/upload-artifact@v4
         with:

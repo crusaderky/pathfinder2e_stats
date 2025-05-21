@@ -10,7 +10,7 @@ build:
       - mv notebooks/*.nbconvert.ipynb doc/notebooks/
 
 conda:
-  environment: ci/requirements-docs.yml
+  environment: doc/requirements.yml
 
 python:
   install:
