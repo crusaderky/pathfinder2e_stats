@@ -34,6 +34,9 @@ jobs:
           - mindeps
           - py310
           - py313
+        include:
+          - os: ubuntu-latest
+            environment: nogil
 
     steps:
       - name: Checkout
@@ -48,7 +51,12 @@ jobs:
           environments: tests-${{ matrix.environment }}
 
       - name: pytest with coverage
+        if: matrix.environment != 'nogil'
         run: pixi run -e tests-${{ matrix.environment }} coverage
+
+      - name: Free-threading test
+        if: matrix.environment == 'nogil'
+        run: pixi run tests-nogil
 
       - name: codecov.io
         if: matrix.os != 'macos-13'
