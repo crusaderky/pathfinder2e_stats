@@ -182,6 +182,9 @@ tests-cov = { cmd="pytest -v -ra --cov --cov-report=xml --cov-report=term --dura
 coverage = { cmd = "coverage html", depends-on = ["tests-cov"], description = "Generate test coverage html report"}
 open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"] , description = "Open test coverage report"}
 
+[tool.pixi.feature.nogil.tasks]
+tests-nogil = { cmd = "pytest -v --parallel-threads=4", env = {PYTHON_GIL = "0",  PYTEST_RUN_PARALLEL_VERBOSE = "1" }, description = "Stress test thread safety without the GIL"}
+
 [tool.pixi.feature.docs.dependencies]
 sphinx = "*"
 sphinx_rtd_theme = "*"
@@ -210,6 +213,17 @@ python = "~=3.10.0"
 [tool.pixi.feature.py313.dependencies]
 python = "~=3.13.0"
 
+[tool.pixi.feature.nogil.dependencies]
+python-freethreading = "~=3.13.0"
+pytest = "*"
+pytest-run-parallel = "*"
+
+[tool.pixi.feature.nogil.pypi-dependencies]
+# https://github.com/pandas-dev/pandas/issues/59057
+# https://github.com/pandas-dev/pandas/issues/60972
+pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+xarray = "*"
+
 [tool.pixi.feature.mindeps.dependencies]
 python = "~=3.10.0"
 xarray = "==2023.1.0"
@@ -224,3 +238,4 @@ tests = { features = ["py313", "tests"], solve-group = "py313" }
 tests-mindeps = { features = ["tests", "mindeps"] }
 tests-py310 = { features = ["py310", "tests"] }
 tests-py313 = { features = ["py313", "tests"], solve-group = "py313" } # alias of tests
+tests-nogil = { features = ["nogil"], no-default-feature = true }
