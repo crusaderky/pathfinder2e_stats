@@ -4946,7 +4946,6 @@ packages:
   - pkg:pypi/coverage?source=hash-mapping
   size: 404932
   timestamp: 1748049058593
-<<<<<<< HEAD
 - conda: https://prefix.dev/conda-forge/noarch/cpython-3.13.3-py313hd8ed1ab_1.conda
   noarch: generic
   sha256: 02147913b77a10f32b3aa6940af4003c86c3323401caae44da8f5f7f68650453
@@ -4958,8 +4957,6 @@ packages:
   purls: []
   size: 47939
   timestamp: 1744663487710
-=======
->>>>>>> origin/main
 - conda: https://prefix.dev/conda-forge/noarch/cpython-3.13.3-py313hd8ed1ab_101.conda
   noarch: generic
   sha256: 28baf119fd50412aae5dc7ef5497315aa40f9515ffa4ce3e4498f6b557038412
@@ -11061,13 +11058,8 @@ packages:
   timestamp: 1733271352153
 - pypi: ./
   name: pathfinder2e-stats
-<<<<<<< HEAD
-  version: 0.1.dev70+g3f85dd2
+  version: 0.1.dev72+gba34895.d20250602
   sha256: d96bd22b5f2ec26b87013316d2df65b26f4c85f7166ce2a92029d2ee14bfb7f3
-=======
-  version: 0.1.dev71+g4665a73
-  sha256: b850751a0c6d743e233a5427524d3d4860ba7e683d1a86a4e49351bf35b89406
->>>>>>> origin/main
   requires_dist:
   - xarray>=2023.1.0
   - numpy>=1.24
@@ -12977,14 +12969,11 @@ packages:
   - pkg:pypi/setuptools?source=hash-mapping
   size: 748788
   timestamp: 1748804951958
-<<<<<<< HEAD
 - pypi: https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl
   name: six
   version: 1.17.0
   sha256: 4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274
   requires_python: '>=2.7,!=3.0.*,!=3.1.*,!=3.2.*'
-=======
->>>>>>> origin/main
 - conda: https://prefix.dev/conda-forge/noarch/six-1.17.0-pyhd8ed1ab_0.conda
   sha256: 41db0180680cc67c3fa76544ffd48d6a5679d96f4b71d7498a759e94edc9a2db
   md5: a451d576819089b0d672f18768be0f65
