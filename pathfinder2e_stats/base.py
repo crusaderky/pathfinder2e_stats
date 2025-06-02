@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import threading
 from typing import TYPE_CHECKING, TypeVar
 
 import numpy as np
@@ -16,25 +15,17 @@ else:
 
 size = 100_000
 
-_state = threading.local()
-
-
-def rng() -> np.random.Generator:
-    """Get the library-global, thread-local random number generator."""
-    try:
-        return _state.rng
-    except AttributeError:
-        _state.rng = np.random.default_rng(0)
-        return _state.rng
+rng = np.random.default_rng(0)
 
 
 def seed(n: int) -> None:
-    """Seed the library-global, thread-local random number generator.
+    """Seed the library-global random number generator.
 
     Default is 0, which means that running the same code twice will produce
     identical results.
     """
-    _state.rng = np.random.default_rng(n)
+    global rng  # noqa: PLW0603
+    rng = np.random.default_rng(n)
 
 
 def set_size(n: int) -> int:
