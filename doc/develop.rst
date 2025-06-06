@@ -31,19 +31,19 @@ Test using pixi:
 
 .. code-block:: bash
 
-   pixi run -e tests tests
+   pixi run tests
 
 Test with coverage:
 
 .. code-block:: bash
 
-   pixi run -e tests coverage
+   pixi run coverage
 
 Test with coverage and open HTML report in your browser:
 
 .. code-block:: bash
 
-   pixi run -e tests open-coverage
+   pixi run open-coverage
 
 Code Formatting
 ---------------
