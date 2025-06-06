@@ -36,6 +36,8 @@ jobs:
           - py313
         include:
           - os: ubuntu-latest
+            environment: upstream
+          - os: ubuntu-latest
             environment: nogil
 
     steps:
@@ -48,11 +50,11 @@ jobs:
         with:
           pixi-version: v0.47.0
           cache: true
-          environments: tests-${{ matrix.environment }}
+          environments: ${{ matrix.environment }}
 
       - name: pytest with coverage
         if: matrix.environment != 'nogil'
-        run: pixi run -e tests-${{ matrix.environment }} coverage
+        run: pixi run -e ${{ matrix.environment }} coverage
 
       - name: Free-threading test
         if: matrix.environment == 'nogil'
