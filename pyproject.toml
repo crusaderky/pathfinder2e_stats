@@ -162,9 +162,6 @@ numpy = ">=1.24"
 pandas = ">=1.5"
 xarray = ">=2023.1.0"
 
-[tool.pixi.pypi-dependencies]
-pathfinder2e-stats = { path = ".", editable = true }
-
 [tool.pixi.feature.lint.dependencies]
 pre-commit = "*"
 
@@ -187,15 +184,17 @@ open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"] , d
 tests-nogil = { cmd = "pytest -v --parallel-threads=4", env = {PYTHON_GIL = "0",  PYTEST_RUN_PARALLEL_VERBOSE = "1" }, description = "Stress test thread safety without the GIL"}
 
 [tool.pixi.feature.docs.dependencies]
+pip = "*"
 sphinx = "*"
 sphinx_rtd_theme = "*"
 nbsphinx = "*"
 
 [tool.pixi.feature.docs.tasks]
+install-for-docs = { cmd = "python -m pip install ." }
 nbconvert = { cmd = "jupyter nbconvert --execute --to notebook notebooks/*.ipynb", description = "Convert notebooks to html"}
 nbconvert-pp = { cmd = "mv notebooks/*.nbconvert.ipynb doc/notebooks/", description = "Move notebooks HTML files"}
 sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", description = "Run Sphinx"}
-docs = { depends-on = ["nbconvert", "nbconvert-pp", "sphinx-build"], description = "Build docs"}
+docs = { depends-on = ["install-for-docs", "nbconvert", "nbconvert-pp", "sphinx-build"], description = "Build docs"}
 open-docs = { cmd = "open build/html/index.html", depends-on = ["docs"], description = "Open the generated docs"}
 
 [tool.pixi.feature.jupyter.dependencies]
