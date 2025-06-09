@@ -12086,8 +12086,8 @@ packages:
   timestamp: 1733271352153
 - pypi: ./
   name: pathfinder2e-stats
-  version: 0.1.dev72+g6d0a5d4.d20250609
-  sha256: c9905d56d8bd6e5b3be0868ffb3d01309d58c0bd89f7db7a3198e174306450f2
+  version: 0.1.dev74+g16b5652.d20250609
+  sha256: a6206dde4dca1a126bb1d879715222e2501afcfc2b7f01dec748e1a65d42c04c
   requires_dist:
   - numpy>=1.24
   - pandas>=1.5
