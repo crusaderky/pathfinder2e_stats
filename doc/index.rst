@@ -5,11 +5,11 @@ pathfinder2e_stats: Statistical tools for Pathfinder 2nd edition
    :maxdepth: 1
 
    installing
-   develop
-   whats-new
    api
    armory
    notebooks/index
+   develop
+   whats-new
 
 License
 -------

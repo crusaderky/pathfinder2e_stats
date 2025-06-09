@@ -86,9 +86,9 @@ def damage(
         total_damage.append(out["splash_damage"] * (splash_damage_targets - 1))
     if "persistent_damage" in out:
         if isinstance(persistent_damage_DC, int):
-            persistent_damage_DC = {
-                k: persistent_damage_DC for k in out.damage_type.values
-            }
+            persistent_damage_DC = dict.fromkeys(
+                out.damage_type.values, persistent_damage_DC
+            )
         persistent_damage_DC = _parse_weaknesses(persistent_damage_DC)
         _, persistent_damage_DC = xarray.align(
             out, persistent_damage_DC, join="left", fill_value=15
@@ -169,7 +169,7 @@ def _parse_weaknesses(a: Collection[str] | DataArray | None) -> DataArray:
         a = DataArray([], dims=["damage_type"], coords={"damage_type": []}).astype(int)
     else:
         if not isinstance(a, Mapping):
-            a = {k: True for k in a}  # immunities
+            a = dict.fromkeys(a, True)  # immunities
         a = DataArray(
             list(a.values()),
             dims=["damage_type"],

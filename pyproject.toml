@@ -219,6 +219,18 @@ numpy = "==1.24.0"
 pandas = "==1.5.0"
 xarray = "==2023.1.0"
 
+[tool.pixi.feature.dist.dependencies]
+python-build = "*"
+twine = "*"
+
+[tool.pixi.feature.dist.tasks]
+dist-clear = { cmd = "rm -rf dist build" }
+sdist = { cmd = "python -m build --sdist", description = "Build source distribution"}
+wheel = { cmd = "python -m build --wheel", description = "Build wheel distribution"}
+twine-check = { cmd = "python -m twine check dist/*" }
+dist = { depends-on = ["dist-clear", "sdist", "wheel", "twine-check"] }
+twine-upload = { depends-on = ["dist"], cmd = "python -m twine upload dist/*" }
+
 [tool.pixi.feature.upstream.pypi-dependencies]
 # TODO python 3.14 prereleases?
 numpy = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
@@ -237,7 +249,8 @@ xarray = "*"
 
 [tool.pixi.environments]
 default = { features = ["py313", "docs", "tests", "jupyter"], solve-group = "py313" }
-lint = { features = ["py313", "lint"], solve-group = "py313" }
+dist = { features = ["py313", "dist"], no-default-feature = true }
+lint = { features = ["py313", "lint"], no-default-feature = true }
 docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }
 mindeps = { features = ["mindeps", "tests"] }
 py310 = { features = ["py310", "tests"] }
