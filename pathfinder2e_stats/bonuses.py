@@ -41,10 +41,10 @@ def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> Any:
         If all values are int, return an int; otherwise return a
         :class:`xarray.DataArray`.
 
-    **Examples**::
+    **Examples**:
 
-        >>> sum_bonuses(("status", 1), ("status", 2), ("circumstance", 3))
-        5
+    >>> sum_bonuses(("status", 1), ("status", 2), ("circumstance", 3))
+    5
     """
     if not args:
         return 0

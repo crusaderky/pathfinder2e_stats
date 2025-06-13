@@ -25,6 +25,7 @@ def flaming(greater: bool = False) -> ExpandedDamage:
 def shock() -> Damage:
     """
     .. note::
+
        Doesn't include damage dealt to secondary targets on a critical hit
     """
     return Damage("electricity", 1, 6)
@@ -37,6 +38,7 @@ def frost() -> Damage:
 def corrosive() -> Damage:
     """
     .. note::
+
        Doesn't include damage dealt to armor on a critical hit
     """
     return Damage("acid", 1, 6)

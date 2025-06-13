@@ -59,20 +59,29 @@ def roll(
 
     **Examples:**
 
-    Approximate the mean of 2d8+4::
+    .. only:: doctest
 
-        >>> roll("2d8+4").mean().item()
-        13.000114
+        >>> from pathfinder2e_stats import seed
+        >>> seed(0)
+
+    Approximate the mean of 2d8+4:
+
+    >>> roll("2d8+4").mean().item()
+    12.9984
 
     Attack three different targets with a +13 to hit, rolling separately for each but
     without increasing the MAP between them:
 
-        >>> roll(1, 20, 13, dims={"target": 3})
-        <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
-        array([[14, 33, 24],
-            ...,
-            [17, 18, 28]], shape=(100000, 3))
-        Dimensions without coordinates: roll, target
+    >>> roll(1, 20, 13, dims={"target": 3})
+    <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
+    array([[18, 26, 26],
+           [18, 33, 25],
+           [29, 29, 32],
+           ...,
+           [33, 29, 30],
+           [19, 26, 27],
+           [24, 20, 28]], shape=(100000, 3))
+    Dimensions without coordinates: roll, target
 
     **See Also:**
 
@@ -129,28 +138,36 @@ def d20(
 
     **Examples:**
 
-    Measure the effect of Sure Strike on the mean of an attack roll::
+    .. only:: doctest
 
-        >>> sure_strike = xarray.DataArray(
-        ...     [False, True], dims=["Sure Strike"],
-        ...     coords={"Sure Strike": [False, True]},
-        ... )
-        >>> d20(fortune=sure_strike).mean("roll").to_pandas()
-        Sure Strike
-        False    10.52362
-        True     13.86710
-        dtype: float64
+        >>> from pathfinder2e_stats import seed
+        >>> seed(0)
 
-    Attack 3 targets, with increasing MAP::
+    Measure the effect of Sure Strike on the mean of an attack roll:
 
-        >>> MAP = xarray.DataArray([0, -5, -10], dims=["target"])
-        >>> d20(dims={"target": 3}) + MAP
-        <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
-        array([[ 3, 14,  4],
-            [ 1, -1,  2],
-            ...,
-            [12, -1,  6]], shape=(100000, 3))
-        Dimensions without coordinates: roll, target
+    >>> sure_strike = xarray.DataArray(
+    ...     [False, True], dims=["Sure Strike"],
+    ...     coords={"Sure Strike": [False, True]},
+    ... )
+    >>> d20(fortune=sure_strike).mean("roll").to_pandas()
+    Sure Strike
+    False    10.50545
+    True     13.83809
+    dtype: float64
+
+    Attack 3 targets, with increasing MAP:
+
+    >>> MAP = xarray.DataArray([0, -5, -10], dims=["target"])
+    >>> d20(dims={"target": 3}) + MAP
+    <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
+    array([[ 5,  8,  3],
+           [ 5, 15,  2],
+           [16, 11,  9],
+           ...,
+           [20, 11,  7],
+           [ 6,  8,  4],
+           [11,  2,  5]], shape=(100000, 3))
+    Dimensions without coordinates: roll, target
 
     .. note::
 

@@ -60,6 +60,9 @@ jobs:
         if: matrix.environment == 'nogil'
         run: pixi run tests-nogil
 
+      - name: doctests
+        run: pixi run -e ${{ matrix.environment }} doctests
+
       - name: codecov.io
         if: matrix.os != 'macos-13'
         uses: codecov/codecov-action@v3

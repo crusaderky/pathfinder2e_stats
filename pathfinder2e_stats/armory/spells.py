@@ -39,7 +39,6 @@ def fireball(rank: int = 3) -> Damage:
 def force_barrage(rank: int = 1, actions: Literal[1, 2, 3] = 3) -> Damage:
     """
     .. note::
-       No attack roll or save!
 
        This assumes that all force bolts are directed against a single target.
        Assumes no resistance.
