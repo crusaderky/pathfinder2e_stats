@@ -58,7 +58,7 @@ def level2rank(level: _T, *, dedication: bool = False) -> _T:
         levels 4, 12 and 18 respectively. Defaults to False.
     :returns:
         The creature's rank or spellcaster's maximum spell rank.
-        Return type matches the type of ``level``.
+        Return type matches the type of `level`.
     """
     if dedication:
         res = xarray.where(
@@ -90,7 +90,7 @@ def rank2level(rank: _T, *, dedication: bool = False) -> _T:
         Defaults to False.
     :returns:
         The creature's maximum level within the rank.
-        Return type matches the type of ``rank``.
+        Return type matches the type of `rank`.
     """
     if dedication:
         res = rank * 2 + xarray.where(rank < 4, 2, 4)

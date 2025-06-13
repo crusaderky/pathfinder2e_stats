@@ -23,6 +23,244 @@ def damage(
     persistent_damage_DC: int | Mapping[str, int] | DataArray = 15,
     splash_damage_targets: int = 2,
 ) -> Dataset:
+    """Roll for damage.
+
+    :param check_outcome:
+        The outcome of the check that caused the damage.
+        This must be the return value of :func:`check`, typically either
+        for an attack roll or for a saving throw (but it could also be
+        a skill check).
+    :param damage_spec:
+        The damage specification to use for rolling damage.
+        This must be a :class:`~pathfinder2e_stats.Damage`,
+        :class:`~pathfinder2e_stats.ExpandedDamage`, a
+        dict representing an :class:`~pathfinder2e_stats.ExpandedDamage`, or
+        a combination thereof using the `+` operator.
+    :param weaknesses:
+        Optional weaknesses to apply to the damage, in the format
+        ``{damage type: value}``, where the damage type may or may not match
+        :attr:`Damage.type <pathfinder2e_stats.Damage.type>`; e.g. ``{"fire": 5}``.
+
+        You may alternatively pass a :class:`~xarray.DataArray` with int dtype,
+        a ``damage_type`` dimension with associated coordinate, and optional
+        dimensions matching different targets.
+
+        e.g.:
+
+        >>> weaknesses = xarray.DataArray(
+        ...     [[5, 5, 0], [0, 10, 10]], dims=["target", "damage_type"],
+        ...     coords={"target": ["assassin vine", "zombie  brute"],
+        ...             "damage_type": ["fire", "slashing", "vitality"]})
+
+    :param resistances:
+        Optional resistances to apply to the damage, in the same format as `weaknesses`.
+    :param immunities:
+        Optional immunities to apply to the damage, in the format
+        ``[damage type, ...]`` or ``{damage type: bool}``; e.g.
+        ``["fire"]`` or ``{"fire": True}``.
+
+        .. note::
+
+           Living creatures are not immune to vitality by default.
+           If you want to simulate e.g. a :func:`~armory.runes.vitalizing`
+           weapon against a living target, you must explicitly set
+           ``immunities={"vitality": True}``.
+
+        You may alternatively pass a :class:`~xarray.DataArray` with bool dtype and
+        otherwise the same format as `weaknesses`.
+        Continuing from the example above:
+
+        >>> immunities = xarray.DataArray(
+        ...     [[True, False], [False, True]],
+        ...     dims=["target", "damage_type"],
+        ...     coords={"target": ["assassin vine", "zombie  brute"],
+        ...             "damage_type": ["vitality", "void"]})
+
+    :param int persistent_damage_rounds:
+        The number of rounds for which persistent
+        damage should be applied at most, beyond which one expects that either the
+        target was defeated or the encounter ended (and the persistent damage alone is
+        assumed not to be life threatening). Default: 3 rounds.
+    :param persistent_damage_DC:
+        The DC of the flat check to end persistent damage.
+        This may be an integer between 2 and 20, a dict mapping damage types to DCs,
+        or a :class:`~xarray.DataArray` with the same format as `weaknesses`.
+        Default: DC15.
+    :param int splash_damage_targets:
+        The number of targets affected by splash damage,
+        including the main target. When calculating total damage, splash damage will be
+        multiplied by this number. Default: 2 targets (main + 1 secondary target).
+    :returns:
+        A shallow copy of `check_outcome` with additional variables for the damage:
+
+        damage_type
+            Coordinate matching each damage type.
+            Always one-dimensional even when there is a single damage type.
+        direct_damage
+            The direct damage dealt to the target, grouped by damage type.
+            Has dimensions ``("roll", "damage_type")`` plus whatever additional
+            dimensions ``check.outcome`` has.
+            For each point it contains a roll of the `damage_spec` matching the
+            check outcome, so in case of critical hit it is typically doubled
+            (unless the damage spec specifies otherwise) etc.
+            There is only one roll per outcome per `roll`, so e.g. in case of
+            multiple targets the damage is rolled only once.
+            Only present if there is any direct damage in the `damage_spec`.
+        splash_damage
+            The splash damage dealt to each target, with the same dimensions as
+            `direct_damage`.
+            Only present if there is any splash damage in the `damage_spec`.
+        persistent_damage
+            The persistent damage dealt, grouped by damage type, with dimensions
+            ``("roll", "damage_type", "persistent_round")``.
+            `persistent_round` has size equal to `persistent_damage_rounds` and no
+            associated coordinate. Element 0 is the damage received at the end of
+            the target's first round after the damage is applied, and so on.
+            This is rolled before the flat check to end damage so it is always
+            populated even after a successful check.
+            Only present if there is any persistent damage in the `damage_spec`.
+        persistent_damage_DC
+            As the parameter.
+            Only present if there is any persistent damage in the `damage_spec`.
+        persistent_damage_check
+            Outcome of the flat check to end persistent damage at the end of each
+            round, with dimensions ``("roll", "damage_type", "persistent_round")``.
+            Only present if there is any persistent damage in the `damage_spec`.
+        apply_persistent_damage
+            True if persistent damage is applied at the end of the target's
+            round; False if there was a successful check on a previous round.
+        total_damage
+            An approximation of total damage dealt to the target(s), assuming that
+
+            - there are `splash_damage_targets` targets affected by splash damage;
+            - the target doesn't expire before the end of the persistent damage rounds;
+            - there is no assistance to end persistent damage earlier.
+
+            Total damage is calculated as::
+
+                total_damage = (
+                    direct_damage
+                    + splash_damage * splash_damage_targets
+                    + where(apply_persistent_damage, persistent_damage, 0)
+                            .sum("persistent_round")
+                ).sum("damage_type")
+
+        The dataset also includes a new attribute:
+
+        damage_spec
+            String representation of the `damage_spec` parameter.
+
+    **Examples:**
+
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import seed, Damage
+        >>> seed(0)
+
+    Strike an AC17 enemy with a Longsword (+8 to hit, 1d8+4 damage):
+
+    >>> spec = Damage("slashing", 1, 8, 4)
+    >>> attack_roll = check(8, DC=17)
+    >>> damage(attack_roll, spec)
+    <xarray.Dataset> Size: 3MB
+    Dimensions:        (roll: 100000, damage_type: 1)
+    Coordinates:
+      * damage_type    (damage_type) <U8 32B 'slashing'
+    Dimensions without coordinates: roll
+    Data variables:
+        bonus          int64 8B 8
+        DC             int64 8B 17
+        natural        (roll) int64 800kB 18 13 11 6 7 1 2 1 ... 4 15 3 14 13 1 1 4
+        outcome        (roll) int64 800kB 1 1 1 0 0 -1 0 -1 0 ... 0 1 0 1 1 -1 -1 0
+        direct_damage  (roll, damage_type) int64 800kB 6 9 10 0 0 0 ... 0 8 8 0 0 0
+        total_damage   (roll) int64 800kB 6 9 10 0 0 0 0 0 0 ... 0 0 6 0 8 8 0 0 0
+    Attributes:
+        keen:            False
+        fortune:         False
+        misfortune:      False
+        hero_point:      False
+        perfected_form:  False
+        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
+        damage_spec:     {'Critical success': '(1d8+4)x2 slashing', 'Success': '1...
+
+    Strike with an :prd_equipment:`Alchemist's Fire <3287>`:
+
+    >>> spec = (Damage("fire", 1, 8)
+    ... + Damage("fire", 0, 0, 1, persistent=True)
+    ... + Damage("fire", 0, 0, 1, splash=True))
+    >>> attack_roll = check(8, DC=17)
+    >>> damage(attack_roll, spec)
+    <xarray.Dataset> Size: 9MB
+    Dimensions:                  (roll: 100000, damage_type: 1, persistent_round: 3)
+    Coordinates:
+      * damage_type              (damage_type) <U4 16B 'fire'
+    Dimensions without coordinates: roll, persistent_round
+    Data variables:
+        bonus                    int64 8B 8
+        DC                       int64 8B 17
+        natural                  (roll) int64 800kB 10 5 7 1 12 15 ... 2 4 15 11 9
+        outcome                  (roll) int64 800kB 1 0 0 -1 1 1 1 ... 0 1 0 0 1 1 1
+        direct_damage            (roll, damage_type) int64 800kB 9 1 1 0 ... 1 4 8 5
+        splash_damage            (roll, damage_type) int64 800kB 1 1 1 0 ... 1 1 1 1
+        persistent_damage        (roll, damage_type, persistent_round) int64 2MB ...
+        persistent_damage_DC     (damage_type) int64 8B 15
+        persistent_damage_check  (roll, damage_type, persistent_round) int64 2MB ...
+        apply_persistent_damage  (roll, damage_type, persistent_round) bool 300kB ...
+        total_damage             (roll) int64 800kB 12 2 2 0 13 13 ... 13 2 2 8 10 9
+    Attributes:
+        keen:                   False
+        fortune:                False
+        misfortune:             False
+        hero_point:             False
+        perfected_form:         False
+        legend:                 {-2: 'No roll', -1: 'Critical failure', 0: 'Failu...
+        damage_spec:            {'Critical success': '(1d8)x2 fire plus 2 persist...
+        splash_damage_targets:  2
+
+    Engulf three targets in a :prd_spells:`Fireball <1530>` with DC21 basic reflex save.
+    The targets have respectively Reflex bonus +11, +13, and +15.
+    The last target also has resistance 5 to fire:
+
+    >>> spec = Damage("fire", 6, 6, basic_save=True)
+    >>> reflex_bonus = xarray.DataArray([11, 13, 15], dims=["target"])
+    >>> resistances = xarray.DataArray(
+    ...     [[0, 0, 5]], dims=["damage_type", "target"],
+    ...     coords={"damage_type": ["fire"]})
+    >>> # Use dims={"target": 3} to roll separately for each target
+    >>> saving_throw = check(reflex_bonus, DC=21, dims={"target": 3})
+    >>> dmg = damage(saving_throw, spec, resistances=resistances)
+    >>> dmg
+    <xarray.Dataset> Size: 10MB
+    Dimensions:        (target: 3, roll: 100000, damage_type: 1)
+    Coordinates:
+      * damage_type    (damage_type) <U4 16B 'fire'
+    Dimensions without coordinates: target, roll
+    Data variables:
+        bonus          (target) int64 24B 11 13 15
+        DC             int64 8B 21
+        natural        (roll, target) int64 2MB 4 2 12 19 3 9 7 ... 16 4 15 11 13 11
+        outcome        (roll, target) int64 2MB 0 0 1 1 0 1 0 0 ... 0 1 1 0 1 1 1 1
+        direct_damage  (roll, target, damage_type) int64 2MB 23 23 7 11 ... 4 9 9 4
+        resistances    (damage_type, target) int64 24B 0 0 5
+        total_damage   (roll, target) int64 2MB 23 23 7 11 16 6 25 ... 9 25 4 9 9 4
+    Attributes:
+        keen:            False
+        fortune:         False
+        misfortune:      False
+        hero_point:      False
+        perfected_form:  False
+        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
+        damage_spec:     {'Success': '(6d6)/2 fire', 'Failure': '6d6 fire', 'Crit...
+
+    How much damage did each target take, on average?
+
+    >>> dmg.total_damage.mean("roll").to_pandas()
+        target
+    0    15.60207
+    1    13.54554
+    2     7.68219
+    Name: total_damage, dtype: float64
+    """
     out = check_outcome.copy(deep=False)
     damage_spec = ExpandedDamage(damage_spec)
     out.attrs["damage_spec"] = damage_spec.to_dict_of_str()

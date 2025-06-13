@@ -42,18 +42,23 @@ def roll(
     """Roll the given number of dice with the given number of faces, sum them up,
     and add an optional flat bonus/penalty.
 
-    :param dice: Number of dice to roll.
-    :param faces: Number of faces on each die.
-    :param bonus: Flat bonus/penalty to add to the roll. Default: 0
-    :param dims: Dimensions to create while rolling, in addition to ``roll``.
+    :param int dice:
+        Number of dice to roll.
+    :param int faces:
+        Number of faces on each die.
+    :param int bonus:
+        Flat bonus/penalty to add to the roll. Default: 0
+    :param dims:
+        Dimensions to create while rolling, in addition to ``roll``.
         This is a mapping where the keys are the dimension names and the values are the
         number of elements along them.
 
-    Alternatively to ``dice``, ``faces`` and ``bonus``, you can pass a single string
+    Alternatively to `dice`, `faces` and `bonus`, you can pass a single string
     parameter in the format ``XdY``, ``XdY+Z``, or ``XdY-Z``, which means
     *"roll X dice with Y faces each, sum them, then add Z"*.
 
-    :returns: A :class:`xarray.DataArray` containing a random series with the total
+    :returns:
+        A :class:`~xarray.DataArray` containing a random series with the total
         result of the roll, rolled by default 100,000 times, with
         ``dims={"roll": 100_000, **dims}``.
 
@@ -130,15 +135,20 @@ def d20(
 ) -> DataArray:
     """Roll a d20.
 
-    :param fortune: if True, roll twice and keep highest.
-    :param misfortune: if True, roll twice and keep lowest.
-        fortune and misfortune cancel each other out.
-        ``fortune`` and/or ``misfortune`` can be :class:`xarray.DataArray` with
+    :param fortune:
+        Set to True to roll twice and keep highest. Default: False.
+    :param misfortune:
+        Set to True to roll twice and keep lowest.
+        `fortune` and `misfortune` cancel each other out.
+        `fortune` and/or `misfortune` can be :class:`~xarray.DataArray` with
         multiple elements. The result will be broadcasted depending on their dimensions.
-    :param dims: Dimensions to create while rolling, in addition to ``roll``.
+        Default: False.
+    :param dims:
+        Dimensions to create while rolling, in addition to `roll`.
         This is a mapping where the keys are the dimension names and the values are the
         number of elements along them.
-    :returns: A :class:`xarray.DataArray` containing a random series with the result of
+    :returns:
+        A :class:`~xarray.DataArray` containing a random series with the result of
         the d20 roll.
 
     **Examples:**
@@ -179,7 +189,7 @@ def d20(
         In the last example above, the parameter ``dims={"target": 3}``
         caused to roll separately for each target. Without it, the shape of the
         output array would be the same (due to broadcasting against the ``MAP`` array)
-        but on each element along the ``roll`` dimension there would be a single attack
+        but on each element along the `roll` dimension there would be a single attack
         roll minus 0, 5, and 10 respectively.
     """
     if fortune is True and misfortune is True:
