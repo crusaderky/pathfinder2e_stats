@@ -65,7 +65,7 @@ def roll(
         >>> seed(0)
 
     Approximate the mean of 1d6:
-    
+
     >>> roll("1d6").mean().item()
     3.49798
 
