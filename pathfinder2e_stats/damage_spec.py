@@ -72,27 +72,32 @@ class Damage:
     **Compact damage specification**
 
     Basic weapons and most spells can be specified with a single :class:`Damage`.
-    e.g. a fireball::
+    e.g. a :prd_spells:`Fireball <1530>`:
 
-        >>> Damage("fire", 6, 6, basic_save=True)
+    >>> Damage("fire", 6, 6, basic_save=True)
+    6d6 fire, with a basic saving throw
 
-    A *+1 striking longbow*::
+    A *+1 striking longbow*:
 
-        >>> Damage("piercing", 2, 8, deadly=10)
+    >>> Damage("piercing", 2, 8, deadly=10)
+    2d8 piercing deadly d10
 
     You can define effects such as weapons with runes by chaining :class:`Damage`
     instances with the ``+`` operator. For example:
 
-    A *+1 striking wounding longsword*, wielded by a PC with a +4 STR modifier::
+    A *+1 striking wounding longsword*, wielded by a PC with a +4 STR modifier:
 
-        >>> Damage("slashing", 2, 8, 4) + Damage("bleed", 1, 6, persistent=True)
+    >>> Damage("slashing", 2, 8, 4) + Damage("bleed", 1, 6, persistent=True)
+    2d8+4 slashing plus 1d6 persistent bleed
 
     A weapon or spell with direct, splash and/or persistent component can be specified
-    by adding everything up with ``+``. For example, an Alchemist's Fire::
+    by adding everything up with ``+``. For example, an
+    :prd_equipment:`Alchemist's Fire <3287>`:
 
-        >>> (Damage("fire", 1, 8)
-        ... + Damage("fire", 0, 0, 1, persistent=True)
-        ... + Damage("fire", 0, 0, 1, splash=True))
+    >>> (Damage("fire", 1, 8)
+    ... + Damage("fire", 0, 0, 1, persistent=True)
+    ... + Damage("fire", 0, 0, 1, splash=True))
+    1d8 fire plus 1 persistent fire plus 1 fire splash
 
     **Complex cases**
 
@@ -188,13 +193,12 @@ class Damage:
         Only compatible damage types are combined; e.g. slashing + fire will
         remain separate, as will direct fire damage and splash fire damage.
 
-        e.g. ::
-
-            >>> Damage.simplify([Damage("fire", 1, 6), Damage("fire", 1, 6, 4)])
-            Damage(type="fire", dice=2, faces=6, bonus=4)
-
         This method is typically called automatically.
 
+        **Example:**
+
+        >>> Damage.simplify([Damage("fire", 1, 6), Damage("fire", 1, 6, 4)])
+        [2d6+4 fire]
         """
         # Don't sort e.g. slashing + fire alphabetically
         types_by_appearance: dict[str, int] = {}
@@ -244,10 +248,10 @@ class Damage:
             Any of the :class:`Damage` parameters.
 
         e.g. a longsword with :prd_feats:`Inventive Offensive <989>`
-        adding ``deadly d6``::
+        adding ``deadly d6``:
 
-            >>> Damage("slashing", 1, 8).copy(deadly=6)
-            Damage(type="slashing", dice=1, faces=8, deadly=6)
+        >>> Damage("slashing", 1, 8).copy(deadly=6)
+        1d8 slashing deadly d6
         """
         kwargs2 = {k: getattr(self, k) for k in self.__annotations__}
         kwargs2.update(kwargs)
@@ -282,20 +286,20 @@ class Damage:
     def reduce_die(self) -> Damage:
         """Reduce the damage die size by 1 step.
 
-        e.g. a +1 Striking Maul with :prd_feats:`Grasping Reach <4493>`::
+        e.g. a +1 Striking Maul with :prd_feats:`Grasping Reach <4493>`:
 
-            >>> Damage("bludgeoning", 2, 12).reduce_die()
-            Damage(type="bludgeoning", dice=2, faces=10)
+        >>> Damage("bludgeoning", 2, 12).reduce_die()
+        2d10 bludgeoning
         """
         return self.copy(faces=self.faces - 2)
 
     def increase_die(self) -> Damage:
         """Increase the damage die size by 1 step.
 
-        e.g. a Dagger with :prd_feats:`Deadly Simplicity <4642>`::
+        e.g. a Dagger with :prd_feats:`Deadly Simplicity <4642>`:
 
-            >>> Damage("piercing", 1, 4).increase_die()
-            Damage(type="piercing", dice=1, faces=6)
+        >>> Damage("piercing", 1, 4).increase_die()
+        1d6 piercing
         """
         return self.copy(faces=self.faces + 2)
 
@@ -315,18 +319,18 @@ class Damage:
         This is not the same as just adding a damage die. Observe the difference:
 
         - A +2 Striking Glaive with Vicious Swing, which deals 3d8
-          damage on a hit and an extra d8 on a critical hit::
+          damage on a hit and an extra d8 on a critical hit:
 
-            >>> Damage("slashing", 2, 8, deadly=8).vicious_swing()
-            **Critical success:** (3d8)x2 slashing plus 1d8 slashing
-            **Success:** 3d8 slashing
+          >>> Damage("slashing", 2, 8, deadly=8).vicious_swing()
+          **Critical success:** (3d8)x2 slashing plus 1d8 slashing
+          **Success:** 3d8 slashing
 
         - A +2 Greater Striking Glaive, which deals 3d8 damage on a hit
-          and an extra 2d8 on a critical hit::
+          and an extra 2d8 on a critical hit:
 
-            >>> Damage("slashing", 3, 8, deadly=8).expand()
-            **Critical success:** (3d8)x2 slashing plus 2d8 slashing
-            **Success:** 3d8 slashing
+          >>> Damage("slashing", 3, 8, deadly=8).expand()
+          **Critical success:** (3d8)x2 slashing plus 2d8 slashing
+          **Success:** 3d8 slashing
         """
         if self.deadly:
             return self.expand() + {
@@ -393,7 +397,7 @@ class Damage:
 class DamageList(UserList[Damage]):
     """Output of the addition of :class:`Damage`.
 
-    This class is never used directly; it is returned by applying
+    This class should never be initialised directly; it is returned by applying
     the ``+`` operator to two or more :class:`Damage` objects.
     """
 
@@ -445,71 +449,71 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     additional 1d10 persistent fire on a critical hit. The 1d6 can be expressed with a
     simple :class:`Damage`, but the extra effect on the critical hit can't.
 
-    A *+1 Striking Flaming Rapier* can be defined as::
+    A *+1 Striking Flaming Rapier* can be defined as:
 
-        >>> Damage("piercing", 2, 6, deadly=8) + Damage("fire", 1, 6) + {
-        ...     DoS.critical_success: [
-        ...         Damage("fire", 1, 10, persistent=True)
-        ...     ]
-        ... }
-        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
-        plus (1d6)x2 fire plus 1d10 persistent fire
-        **Success:** 2d6 piercing plus 1d6 fire
+    >>> Damage("piercing", 2, 6, deadly=8) + Damage("fire", 1, 6) + {
+    ...     DoS.critical_success: [Damage("fire", 1, 10, persistent=True)]
+    ... }
+    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    plus 1d10 persistent fire
+    **Success:** 2d6 piercing plus 1d6 fire
 
-    Above we implicitly initialized a :class:`ExpandedDamage` by auto-expanding a
+    Above we implicitly initialized an :class:`ExpandedDamage` by auto-expanding the
     ``deadly`` trait by adding a dict to a :class:`Damage` object.
-    The above is equivalent to::
+    The above is equivalent to:
 
-        >>> rapier = ExpandedDamage({
-        ...     DoS.success: [Damage("piercing", 2, 6)],
-        ...     DoS.critical_success: [
-        ...         Damage("piercing", 2, 6, multiplier=2),
-        ...         Damage("piercing", 1, 8),
-        ... })
-        >>> flaming = ExpandedDamage({
-        ...     DoS.success: [Damage("fire", 1, 6)],
-        ...     DoS.critical_success: [
-        ...         Damage("fire", 1, 6, multiplier=2),
-        ...         Damage("fire", 1, 10, persistent=True),
-        ...     ],
-        ... })
-        >>> rapier + flaming
-        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
-        plus (1d6)x2 fire plus 1d10 persistent fire
-        **Success:** 2d6 piercing plus 1d6 fire
+    >>> rapier = ExpandedDamage({
+    ...     DoS.success: [Damage("piercing", 2, 6)],
+    ...     DoS.critical_success: [
+    ...         Damage("piercing", 2, 6, multiplier=2),
+    ...         Damage("piercing", 1, 8),
+    ...     ],
+    ... })
+    >>> flaming = ExpandedDamage({
+    ...     DoS.success: [Damage("fire", 1, 6)],
+    ...     DoS.critical_success: [
+    ...         Damage("fire", 1, 6, multiplier=2),
+    ...         Damage("fire", 1, 10, persistent=True),
+    ...     ],
+    ... })
+    >>> rapier + flaming
+    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    plus 1d10 persistent fire
+    **Success:** 2d6 piercing plus 1d6 fire
 
-    Which is the same as writing::
+    Which is the same as writing:
 
-        >>> ExpandedDamage({
-        ...     DoS.success: [
-        ...         Damage("piercing", 2, 6),
-        ...         Damage("fire", 1, 6)],
-        ...     ],
-        ...     DoS.critical_success: [
-        ...         Damage("piercing", 2, 6, multiplier=2),
-        ...         Damage("piercing", 1, 8),
-        ...         Damage("fire", 1, 6, multiplier=2),
-        ...         Damage("fire", 1, 10, persistent=True),
-        ...     ],
-        ... })
-        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
-        plus (1d6)x2 fire plus 1d10 persistent fire
-        **Success:** 2d6 piercing plus 1d6 fire
+    >>> ExpandedDamage({
+    ...     DoS.success: [
+    ...         Damage("piercing", 2, 6),
+    ...         Damage("fire", 1, 6),
+    ...     ],
+    ...     DoS.critical_success: [
+    ...         Damage("piercing", 2, 6, multiplier=2),
+    ...         Damage("piercing", 1, 8),
+    ...         Damage("fire", 1, 6, multiplier=2),
+    ...         Damage("fire", 1, 10, persistent=True),
+    ...     ],
+    ... })
+    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    plus 1d10 persistent fire
+    **Success:** 2d6 piercing plus 1d6 fire
 
-    What if the reapier was used for a swashbuckler's finisher, which adds 2d6
-    precision damage also on a failure (but not a critical failure)?
+    What if the reapier was used for a swashbuckler's
+    :prd_actions:`Confident Finisher <2818>`, which adds 2d6
+    precision damage, and half as much on a failure?
 
-        >>> p = Damage("precision", 2, 6)
-        >>> finisher = ExpandedDamage({
-        ...     DoS.failure: [p],
-        ...     DoS.success: [p],
-        ...     DoS.critical_success: [p.copy(multiplier=2)],
-        ... })
-        >>> rapier + flaming + finisher
-        **Critical success:** (2d6)x2 piercing plus 1d8 piercing
-        plus (1d6)x2 fire plus (2d6)x2 precision plus 1d10 persistent fire
-        **Success:** 2d6 piercing plus 1d6 fire plus 2d6 precision
-        **Failure:** 2d6 precision
+    >>> p = Damage("precision", 2, 6)
+    >>> finisher = {
+    ...     DoS.failure: [p.copy(multiplier=0.5)],
+    ...     DoS.success: [p],
+    ...     DoS.critical_success: [p.copy(multiplier=2)],
+    ... }
+    >>> rapier + flaming + finisher
+    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    plus (2d6)x2 precision plus 1d10 persistent fire
+    **Success:** 2d6 piercing plus 1d6 fire plus 2d6 precision
+    **Failure:** (2d6)/2 precision
     """
 
     def __init__(

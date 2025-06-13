@@ -43,8 +43,9 @@ extlinks = {
     "issue": ("https://github.com/crusaderky/pathfinder2e_stats/issues/%s", "#"),
     "pull": ("https://github.com/crusaderky/pathfinder2e_stats/pull/%s", "#"),
     "prd": ("https://2e.aonprd.com/Search.aspx?q=%s", "%s"),
-    "prd_feats": ("https://2e.aonprd.com/Feats.aspx?ID=%s", None),
+    "prd_actions": ("https://2e.aonprd.com/Actions.aspx?ID=%s", None),
     "prd_equipment": ("https://2e.aonprd.com/Equipment.aspx?ID=%s", None),
+    "prd_feats": ("https://2e.aonprd.com/Feats.aspx?ID=%s", None),
     "prd_spells": ("https://2e.aonprd.com/Spells.aspx?ID=%s", None),
 }
 

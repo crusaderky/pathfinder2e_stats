@@ -66,6 +66,9 @@ def check(
     This can be used to simulate an attack roll, skill check, saving throw, etc. -
     basically anything other than a damage roll (but see :func:`damage`).
 
+    All parameters can be either scalars or :class:`xarray.DataArray`.
+    Providing array parameters will cause all the outputs to be broadcasted accordingly.
+
     :param bonus: The bonus or penalty to add to the d20 roll.
     :param DC: The Difficulty Class to compare the result to.
     :param keen: Set to True to Strike with a weapon inscribed with a
@@ -107,84 +110,96 @@ def check(
         debugging and data tracking. For the same reason, ``attrs`` contains a wealth
         of useful information regarding the check.
 
-    **All inputs can be either scalars or** :class:`xarray.DataArray`.
-    Providing array inputs will cause all the outputs to be broadcasted accordingly.
-
     **Examples:**
 
-    Strike an enemy with AC18 with a +10 weapon::
+    .. only:: doctest
 
-        >>> check(10, DC=18)
-        <xarray.Dataset> Size: 2MB
-        Dimensions:  (roll: 100000)
-        Dimensions without coordinates: roll
-        Data variables:
-            bonus    int64 8B 10
-            DC       int64 8B 18
-            natural  (roll) int64 800kB 10 12 3 19 9 5 1 19 12 ... 7 6 2 2 16 5 12 10 11
-            outcome  (roll) int64 800kB 1 1 0 2 1 0 -1 2 1 1 1 ... 1 0 0 0 0 0 1 0 1 1 1
-        Attributes:
-            keen:        False
-            fortune:     False
-            misfortune:  False
-            hero_point:  False
-            legend:      {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'Su...
+        >>> from pathfinder2e_stats import seed
+        >>> seed(0)
+
+    Strike an enemy with AC18 with a +10 weapon:
+
+    >>> check(10, DC=18)
+    <xarray.Dataset> Size: 2MB
+    Dimensions:  (roll: 100000)
+    Dimensions without coordinates: roll
+    Data variables:
+        bonus    int64 8B 10
+        DC       int64 8B 18
+        natural  (roll) int64 800kB 18 13 11 6 7 1 2 1 4 17 ... 8 4 15 3 14 13 1 1 4
+        outcome  (roll) int64 800kB 2 1 1 0 0 -1 0 -1 0 1 ... -1 1 0 1 0 1 1 -1 -1 0
+    Attributes:
+        keen:            False
+        fortune:         False
+        misfortune:      False
+        hero_point:      False
+        perfected_form:  False
+        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
 
     Strike three times in sequence, with MAP, and test how it works out differently
-    against a henchman with AC16 or a boss with AC20::
+    against a henchman with AC16 or a boss with AC20:
 
-        >>> MAP = xarray.DataArray([0, -5, -10], dims=["strike"])
-        >>> targets = xarray.DataArray(
-        ...     [16, 20],
-        ...     dims=["target"],
-        ...     coords={"target": ["henchman", "boss"]})
-        >>> check(10 + MAP, DC = targets, dims=MAP.sizes)
-        <xarray.Dataset> Size: 7MB
-        Dimensions:  (strike: 3, target: 2, roll: 100000)
-        Coordinates:
-        * target   (target) <U4 32B 'henchman' 'boss'
-        Dimensions without coordinates: strike, roll
-        Data variables:
-            bonus    (strike) int64 24B 10 5 0
-            DC       (target) int64 16B 16 20
-            natural  (roll, strike) int64 2MB 1 20 11 18 5 7 19 3 ... 14 15 11 12 4 5 15
-            outcome  (roll, strike, target) int64 5MB -1 -1 2 2 0 0 2 ... 0 0 0 0 -1 0 0
+    >>> MAP = xarray.DataArray([0, -5, -10], dims=["strike"])
+    >>> targets = xarray.DataArray(
+    ...     [16, 20],
+    ...     dims=["target"],
+    ...     coords={"target": ["henchman", "boss"]})
+    >>> check(10 + MAP, DC = targets, dims=MAP.sizes)
+    <xarray.Dataset> Size: 7MB
+    Dimensions:  (strike: 3, target: 2, roll: 100000)
+    Coordinates:
+      * target   (target) <U8 64B 'henchman' 'boss'
+    Dimensions without coordinates: strike, roll
+    Data variables:
+        bonus    (strike) int64 24B 10 5 0
+        DC       (target) int64 16B 16 20
+        natural  (roll, strike) int64 2MB 10 12 3 19 9 5 1 19 ... 6 2 15 2 4 15 11 9
+        outcome  (roll, strike, target) int64 5MB 1 1 1 0 -1 -1 2 ... 1 1 1 0 0 -1
+    Attributes:
+        keen:            False
+        fortune:         False
+        misfortune:      False
+        hero_point:      False
+        perfected_form:  False
+        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
 
     Note the parameter ``dims=MAP.sizes``. This causes :func:`check` to roll
     independently for each value of MAP, but to reuse the same roll against different
     targets. This is reflected by the dimensionality of the ``natural`` and the
     ``outcome`` arrays.
 
-    Study the roll above::
+    Study the roll above:
 
-        >>> c = pf2.check(10 + MAP, DC = targets)
-        >>> (
-        ...     pf2.outcome_counts(c)
-        ...     .stack(row=["target", "strike"])
-        ...     .round(2).T.to_pandas() * 100.0
-        ... )
-        outcome        Critical success  Success  Failure  Critical failure
-        target strike
-        mook   0                   25.0     50.0     20.0               5.0
-               1                    5.0     44.9     45.2               4.9
-               2                    5.1     19.9     45.1              29.9
-        boss   0                    5.1     49.9     40.0               5.0
-               1                    5.0     25.0     45.0              25.0
-               2                    5.1      0.0     45.2              49.8
+    >>> c = check(10 + MAP, DC = targets)
+    >>> (
+    ...     outcome_counts(c)
+    ...     .stack(row=["target", "strike"])
+    ...     .round(2).T.to_pandas() * 100.0
+    ... )
+    outcome          Critical success  Success  Failure  Critical failure
+    target   strike
+    henchman 0                   25.0     50.0     20.0               5.0
+             1                    5.0     45.0     45.0               5.0
+             2                    5.0     20.0     45.0              30.0
+    boss     0                    5.0     50.0     40.0               5.0
+             1                    5.0     25.0     45.0              25.0
+             2                    5.0      0.0     45.0              50.0
 
     Roll a DC20 reflex save with a +12 bonus, evasion (which converts a success into a
-    critical success), and spend a hero point on failure or critical failure::
+    critical success), and spend a hero point on failure or critical failure:
 
-        >>> c = check(12, DC=20, hero_point=DoS.failure, evasion=True)
-        >>> outcome_counts(c).to_pandas()
-        outcome
-        Critical success    0.87726
-        Failure             0.10500
-        Critical failure    0.01774
-        >>> c.use_hero_point.value_counts("roll", normalize=True).to_pandas()
-        unique_value
-        False    0.64898
-        True     0.35102
+    >>> c = check(12, DC=20, hero_point=DoS.failure, evasion=True)
+    >>> outcome_counts(c).to_pandas()
+    outcome
+    Critical success    0.87670
+    Failure             0.10561
+    Critical failure    0.01769
+    Name: outcome, dtype: float64
+    >>> c.use_hero_point.value_counts("roll", normalize=True).to_pandas()
+    unique_value
+    False    0.65106
+    True     0.34894
+    Name: use_hero_point, dtype: float64
     """
     dims = dict(dims) if dims else {}
     hp_reroll_coord = ["original"]
@@ -303,6 +318,8 @@ def map_outcome(
     This function is typically called indirectly, through the keyword arguments of
     :func:`check`.
 
+    All parameters can either be scalars or :class:`xarray.DataArray`.
+
     :param outcome: Either the :class:`xarray.Dataset` returned by :func:`check` or just
         its ``outcome`` variable
     :param map_: An arbitrary ``{from: to, ...}`` or ``[(from, to), ...]`` mapping of
@@ -336,9 +353,12 @@ def map_outcome(
         If ``outcome`` is a :class:`xarray.DataArray`, return a new DataArray with
         the mapped outcomes.
 
-    **All parameters can either be scalars or** :class:`xarray.DataArray`.
-
     **Examples:**
+
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import rank2level, seed
+        >>> seed(0)
 
     Cast a 5th rank :prd_spells:`Calm <1458>` spell (DC30) and catch in the
     area three targets:
@@ -346,18 +366,36 @@ def map_outcome(
     - A level 8 creature;
     - A level 11 creature, who therefore benefits from the spell's incapacitation
       trait;
-    - A level 9 cleric, who benefits from the *Resolute Faith* class feature::
+    - A level 9 cleric, who benefits from the *Resolute Faith* class feature:
 
-        >>> spell_rank = 5
-        >>> targets = xarray.Dataset({
-        ...     "level": ("target", [8, 11, 9]),
-        ...     "bonus": ("target", [16, 21, 24]),
-        ...     "evasion": ("target", [False, False, True])})
-        >>> check(targets.bonus,
-        ...       DC=30,
-        ...       dims=targets.sizes,  # targets rolls independently
-        ...       evasion=targets.evasion,
-        ...       incapacitation=rank2level(spell_rank) < targets.level)
+      >>> spell_rank = 5
+      >>> targets = xarray.Dataset({
+      ...     "level": ("target", [8, 11, 9]),
+      ...     "bonus": ("target", [16, 21, 24]),
+      ...     "evasion": ("target", [False, False, True])})
+      >>> check(targets.bonus,
+      ...       DC=30,
+      ...       dims=targets.sizes,  # targets rolls independently
+      ...       evasion=targets.evasion,
+      ...       incapacitation=rank2level(spell_rank) < targets.level)
+      <xarray.Dataset> Size: 7MB
+      Dimensions:           (target: 3, roll: 100000)
+      Dimensions without coordinates: target, roll
+      Data variables:
+          bonus             (target) int64 24B 16 21 24
+          DC                int64 8B 30
+          natural           (roll, target) int64 2MB 18 13 11 6 7 1 ... 10 9 11 12 12
+          original_outcome  (roll, target) int64 2MB 1 1 1 0 0 -1 -1 ... -1 1 1 0 1 1
+          outcome           (roll, target) int64 2MB 1 2 2 0 1 -1 -1 ... -1 2 2 0 2 2
+      Attributes:
+          keen:            False
+          evasion:         varies
+          incapacitation:  varies
+          fortune:         False
+          misfortune:      False
+          hero_point:      False
+          perfected_form:  False
+          legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
     """
     if isinstance(outcome, Dataset):
         outcome = outcome.rename({"outcome": "original_outcome"})
@@ -432,13 +470,17 @@ def outcome_counts(
     `value_counts`_
 
     **Examples:**
-    ::
 
-        >>> outcome_counts(check(12, DC=20))
-        <xarray.DataArray 'outcome' (outcome: 4)> Size: 32B
-        array([0.14827, 0.50276, 0.29844, 0.05053])
-        Coordinates:
-        * outcome  (outcome) <U16 256B 'Critical success' ... 'Critical failure'
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import seed
+        >>> seed(0)
+
+    >>> outcome_counts(check(12, DC=20))
+    <xarray.DataArray 'outcome' (outcome: 4)> Size: 32B
+    array([0.14827, 0.50276, 0.29844, 0.05053])
+    Coordinates:
+      * outcome  (outcome) <U16 256B 'Critical success' ... 'Critical failure'
     """
     if isinstance(outcome, Dataset):
         outcome = outcome.outcome
