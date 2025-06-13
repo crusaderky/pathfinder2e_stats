@@ -46,9 +46,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: prefix-dev/setup-pixi@v0.8.8
+      - uses: prefix-dev/setup-pixi@v0.8.10
         with:
-          pixi-version: v0.47.0
+          pixi-version: v0.48.1
           cache: true
           environments: ${{ matrix.environment }}
 
@@ -67,5 +67,5 @@ jobs:
         run: pixi run -e ${{ matrix.environment }} doctests
 
       - name: codecov.io
-        if: matrix.os != 'macos-13'
+        if: matrix.os != 'macos-13' && matrix.environment != 'nogil'
         uses: codecov/codecov-action@v3
