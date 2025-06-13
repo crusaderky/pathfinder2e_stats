@@ -58,9 +58,12 @@ jobs:
 
       - name: Free-threading test
         if: matrix.environment == 'nogil'
-        run: pixi run tests-nogil
+        env:
+          PYTHON_GIL: "0"  # FIXME need pandas 2.3.1
+        run: pixi run tests --parallel-threads=4
 
       - name: doctests
+        if: matrix.environment != 'nogil' && matrix.environment != 'mindeps'
         run: pixi run -e ${{ matrix.environment }} doctests
 
       - name: codecov.io

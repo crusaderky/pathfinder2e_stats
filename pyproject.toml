@@ -184,9 +184,6 @@ tests-cov = { cmd="pytest -v -ra --cov --cov-report=xml --cov-report=term --dura
 coverage = { cmd = "coverage html", depends-on = ["tests-cov"], description = "Generate test coverage html report"}
 open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"] , description = "Open test coverage report"}
 
-[tool.pixi.feature.nogil.tasks]
-tests-nogil = { cmd = "pytest -v --parallel-threads=4", env = {PYTHON_GIL = "0",  PYTEST_RUN_PARALLEL_VERBOSE = "1" }, description = "Stress test thread safety without the GIL"}
-
 [tool.pixi.feature.docs.dependencies]
 pip = "*"
 sphinx = "*"
