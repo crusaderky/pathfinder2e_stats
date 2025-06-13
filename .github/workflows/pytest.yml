@@ -59,7 +59,7 @@ jobs:
       - name: Free-threading test
         if: matrix.environment == 'nogil'
         env:
-          PYTHON_GIL: "0"  # FIXME need pandas 2.3.1
+          PYTHON_GIL: "0" # FIXME need pandas 2.3.1
         run: pixi run -e nogil tests --parallel-threads=4
 
       - name: doctests
