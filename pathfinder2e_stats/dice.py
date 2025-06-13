@@ -64,23 +64,28 @@ def roll(
         >>> from pathfinder2e_stats import seed
         >>> seed(0)
 
-    Approximate the mean of 2d8+4:
+    Approximate the mean of 1d6:
+    
+    >>> roll("1d6").mean().item()
+    3.49798
 
-    >>> roll("2d8+4").mean().item()
-    12.9984
+    Figure out what's the probability to get at least 10 when rolling 2d8+4:
 
-    Attack three different targets with a +13 to hit, rolling separately for each but
-    without increasing the MAP between them:
+    >>> (roll("2d8+4") >= 10).mean().item()
+    0.84486
 
-    >>> roll(1, 20, 13, dims={"target": 3})
+    Attack three times with a +13 to hit, rolling separately for each attack but
+    without increasing MAP:
+
+    >>> roll("d20+13", dims={"target": 3})
     <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
-    array([[18, 26, 26],
-           [18, 33, 25],
-           [29, 29, 32],
+    array([[23, 18, 20],
+           [14, 25, 28],
+           [31, 20, 19],
            ...,
-           [33, 29, 30],
-           [19, 26, 27],
-           [24, 20, 28]], shape=(100000, 3))
+           [14, 20, 15],
+           [32, 16, 24],
+           [19, 31, 22]], shape=(100000, 3))
     Dimensions without coordinates: roll, target
 
     **See Also:**
@@ -155,27 +160,27 @@ def d20(
     True     13.83809
     dtype: float64
 
-    Attack 3 targets, with increasing MAP:
+    Attack three times with a +13 to hit and increasing MAP:
 
     >>> MAP = xarray.DataArray([0, -5, -10], dims=["target"])
-    >>> d20(dims={"target": 3}) + MAP
+    >>> d20(dims={"target": 3}) + 13 + MAP
     <xarray.DataArray (roll: 100000, target: 3)> Size: 2MB
-    array([[ 5,  8,  3],
-           [ 5, 15,  2],
-           [16, 11,  9],
+    array([[18, 21, 16],
+           [18, 28, 15],
+           [29, 24, 22],
            ...,
-           [20, 11,  7],
-           [ 6,  8,  4],
-           [11,  2,  5]], shape=(100000, 3))
+           [33, 24, 20],
+           [19, 21, 17],
+           [24, 15, 18]], shape=(100000, 3))
     Dimensions without coordinates: roll, target
 
     .. note::
 
         In the last example above, the parameter ``dims={"target": 3}``
         caused to roll separately for each target. Without it, the shape of the
-        output array would be the same (due to broadcasting against the MAP array)
-        but on each element of the series there would be a single attack roll minus
-        0, 5, and 10 respectively.
+        output array would be the same (due to broadcasting against the ``MAP`` array)
+        but on each element along the ``roll`` dimension there would be a single attack
+        roll minus 0, 5, and 10 respectively.
     """
     if fortune is True and misfortune is True:
         return roll(1, 20, dims=dims)
