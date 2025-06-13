@@ -407,3 +407,20 @@ def test_basic_save_fixed():
     # Halving damage can't reduce damage below 1
     actual = damage(check(6, DC=15), Damage("fire", 0, 0, 1, basic_save=True))
     assert np.unique(actual.total_damage[actual.outcome == 1]).tolist() == [1]
+
+
+def test_multiple_targets():
+    """In case of multiple targets, damage is rolled only once."""
+    set_size(50)
+    actual = damage(
+        check(6, DC=15, dims={"target": 100}),  # That's a lot of pixies! :)
+        Damage("fire", 6, 6, basic_save=True),
+    ).total_damage.values
+    for i in range(50):
+        u = np.unique(actual[i])
+        assert u.size == 4  # Different targets get the same damage for each outcome
+        assert u[0] == 0  # Critical success
+        # FIXME roll only once and then double/halve
+        # https://github.com/crusaderky/pathfinder2e_stats/issues/77
+        # assert u[1] == u[2] // 2  # Success halves damage
+        # assert u[3] == u[2] * 2  # Critical failure doubles damage

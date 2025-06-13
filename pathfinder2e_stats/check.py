@@ -66,48 +66,61 @@ def check(
     This can be used to simulate an attack roll, skill check, saving throw, etc. -
     basically anything other than a damage roll (but see :func:`damage`).
 
-    All parameters can be either scalars or :class:`xarray.DataArray`.
+    All parameters can be either scalars or :class:`~xarray.DataArray`.
     Providing array parameters will cause all the outputs to be broadcasted accordingly.
 
-    :param bonus: The bonus or penalty to add to the d20 roll.
-    :param DC: The Difficulty Class to compare the result to.
-    :param keen: Set to True to Strike with a weapon inscribed with a
+    :param bonus:
+        The bonus or penalty to add to the d20 roll.
+    :param DC:
+        The Difficulty Class to compare the result to.
+    :param keen:
+        Set to True to Strike with a weapon inscribed with a
         :prd_equipment:`Keen <2843>` rune.
         Attacks with this weapon are a critical hit on a 19 on the die as long as that
         result is a success. This property has no effect on a 19 if the result would be
         a failure. Default: False.
-    :param perfected_form: Level 19 monk feature. On your first Strike of your turn, if
+    :param perfected_form:
+        Level 19 monk feature. On your first Strike of your turn, if
         you roll lower than 10, you can treat the attack roll as a 10.
         This is a fortune effect. Disabled when fortune=True. Default: False.
-    :param fortune: Set to True to roll twice and keep highest, e.g. when under the
+    :param fortune:
+        Set to True to roll twice and keep highest, e.g. when under the
         effect of :prd_spells:`Sure Strike <1709>`. Default: False.
-    :param misfortune: Set to True to roll twice and keep lowest, e.g. when under the
+    :param misfortune:
+        Set to True to roll twice and keep lowest, e.g. when under the
         effect of :prd_spells:`Ill Omen <1566>`. Default: False.
         Fortune and misfortune cancel each other out.
-    :param hero_point: Set to a :class:`DoS` value to spend a hero point if the outcome
+    :param hero_point:
+        Set to a :class:`DoS` value to spend a hero point if the outcome
         is equal to or less than the given value. e.g.
         ``hero_point=DoS.critical_failure`` rerolls only critical failures, whereas
         ``hero_point=DoS.failure`` rerolls anything less than a success.
         Hero points are a fortune effect, so they can't be used when fortune is True.
-    :param dims: Additional dimensions to create while rolling, in addition to ``roll``.
+    :param dims:
+        Additional dimensions to create while rolling, in addition to `roll`.
         This is a mapping where the keys are the dimension names and the values are the
         number of elements along them.
-    :param kwargs: If kwargs are specified, call :func:`map_outcome` before returning
-        the output.
+    :param kwargs:
+        If kwargs are specified, call :func:`map_outcome` before returning the output.
+    :returns:
+        A :class:`~xarray.Dataset` containing the following variables:
 
-    :returns: A :class:`xarray.Dataset` containing the following variables:
+        bonus
+            As the parameter
+        DC
+            As the parameter
+        natural
+            The result of the natural d20 roll before adding the bonus
+        use_hero_point
+            Whether a hero point was used to reroll the outcome.
+        original_outcome
+            The outcome of the check before any modifications by :func:`map_outcome`.
+            Only present if any parameters to the function are specified.
+        outcome
+            The final outcome of the check
 
-        - ``bonus``: As the parameter
-        - ``DC``: As the parameter
-        - ``natural``: The result of the natural d20 roll before adding the bonus
-        - ``use_hero_point``: Whether a hero point was used to reroll the outcome.
-        - ``original_outcome``: The outcome of the check before any modifications
-          by :func:`map_outcome`. Only present if any parameters to the function
-          are specified.
-        - ``outcome``: The final outcome of the check
-
-        All data variables other than ``outcome`` are only returned for the purpose of
-        debugging and data tracking. For the same reason, ``attrs`` contains a wealth
+        All data variables other than `outcome` are only returned for the purpose of
+        debugging and data tracking. For the same reason, `attrs` contains a wealth
         of useful information regarding the check.
 
     **Examples:**
@@ -165,8 +178,8 @@ def check(
 
     Note the parameter ``dims=MAP.sizes``. This causes :func:`check` to roll
     independently for each value of MAP, but to reuse the same roll against different
-    targets. This is reflected by the dimensionality of the ``natural`` and the
-    ``outcome`` arrays.
+    targets. This is reflected by the dimensionality of the `natural` and the
+    `outcome` arrays.
 
     Study the roll above:
 
@@ -318,15 +331,17 @@ def map_outcome(
     This function is typically called indirectly, through the keyword arguments of
     :func:`check`.
 
-    All parameters can either be scalars or :class:`xarray.DataArray`.
+    All parameters can either be scalars or :class:`~xarray.DataArray`.
 
-    :param outcome: Either the :class:`xarray.Dataset` returned by :func:`check` or just
-        its ``outcome`` variable
-    :param map_: An arbitrary ``{from: to, ...}`` or ``[(from, to), ...]`` mapping of
+    :param outcome:
+        Either the :class:`~xarray.Dataset` returned by :func:`check` or
+        just its `outcome` variable.
+    :param map_:
+        An arbitrary ``{from: to, ...}`` or ``[(from, to), ...]`` mapping of
         outcomes. Both from and to must be :class:`DoS` values or their int equivalents.
         This is applied *after* all other rules. Default: no bespoke mapping.
-    :param evasion: Set to True to convert a success into a critical success.
-        Default: False.
+    :param evasion:
+        Set to True to convert a success into a critical success. Default: False.
 
         .. note::
 
@@ -334,23 +349,26 @@ def map_outcome(
             such as juggernaut, bravery, risky surgery, etc. Each class has a different
             name for them, most times purely for the sake of flavour.
 
-    :param incapacitation: Set to True when an incapacitation effect is applied to
-       a creature whose level is more than twice the effect rank. If True, all
-       outcomes are improved by one notch. Default: False.
+    :param incapacitation:
+        Set to True when an incapacitation effect is applied to
+        a creature whose level is more than twice the effect rank. If True, all
+        outcomes are improved by one notch. Default: False.
 
-       See also :func:`level2rank` and :func:`rank2level`.
-    :param allow_critical_failure: Set to False if there is no critical failure effect.
-        If False, all critical failures are mapped to simple failures.
-        Default: True.
-    :param allow_failure: Set to False if there is no failure effect.
+        See also :func:`level2rank` and :func:`rank2level`.
+    :param allow_critical_failure:
+        Set to False if there is no critical failure effect.
+        If False, all critical failures are mapped to simple failures. Default: True.
+    :param allow_failure:
+        Set to False if there is no failure effect.
         If False, all failures will be mapped to success. Default: True.
-    :param allow_critical_success: Set to False if there is no critical
-        success effect. If False, all critical successes will be mapped to simple
-        successes. Default: True.
-    :returns: If ``outcome`` is the :class:`xarray.Dataset` returned by :func:`check`,
-        return a shallow copy of it with the ``outcome`` variable replaced and the
-        previous outcome stored in ``original_outcome``.
-        If ``outcome`` is a :class:`xarray.DataArray`, return a new DataArray with
+    :param allow_critical_success:
+        Set to False if there is no critical success effect. If False, all critical
+        successes will be mapped to simple successes. Default: True.
+    :returns:
+        If `outcome` is the :class:`~xarray.Dataset` returned by :func:`check`,
+        return a shallow copy of it with the `outcome` variable replaced and the
+        previous outcome stored in `original_outcome`.
+        If `outcome` is a :class:`~xarray.DataArray`, return a new DataArray with
         the mapped outcomes.
 
     **Examples:**
@@ -452,19 +470,23 @@ def outcome_counts(
 ) -> DataArray:
     """Count the occurrences of each outcome in a check.
 
-    :param outcome: Either the :class:`xarray.Dataset` returned by :func:`check` or
+    :param outcome:
+        Either the :class:`~xarray.Dataset` returned by :func:`check` or
         :func:`map_outcome` or just their ``outcome`` variable.
-    :param dim: The dimension to reduce when counting the outcomes.
+    :param dim:
+        The dimension to reduce when counting the outcomes.
         Default: ``roll``.
-    :param new_dim: The name of the new dimension containing all
+    :param new_dim:
+        The name of the new dimension containing all
         outcome values. Default: ``outcome``.
         The new dimension is sorted from critical success to critical failure and
         contains only the values that actually occurred.
-    :param normalize: If True, normalize the counts so that they add
+    :param normalize:
+        If True, normalize the counts so that they add
         up to 1. If False, return the raw counts. Default: True.
     :returns:
-        A :class:`xarray.DataArray` containing the counts of each outcome, with
-        the same dimensions as the input, minus ``dim``, plus ``new_dim``.
+        A :class:`~xarray.DataArray` containing the counts of each outcome, with
+        the same dimensions as the input, minus `dim`, plus `new_dim`.
 
     **See also:**
     `value_counts`_

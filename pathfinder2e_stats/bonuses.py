@@ -34,12 +34,12 @@ def sum_bonuses(*args: tuple[BonusType, int | DataArray]) -> Any:
         - ``status``
         - ``item``
 
-        and value must be an integer or a :class:`xarray.DataArray`.
+        and value must be an integer or a :class:`~xarray.DataArray`.
 
     :returns:
         Sum of all bonuses and penalties.
         If all values are int, return an int; otherwise return a
-        :class:`xarray.DataArray`.
+        :class:`~xarray.DataArray`.
 
     **Examples**:
 

@@ -38,10 +38,10 @@ class Damage:
         Number of faces on the die when using a weapon with the ``two-hands dX`` trait
         in two hands. Before expanding the damage, you will need to call the
         :meth:`hands` method to clarify how many hands you're using.
-        Default: no ``two-hands`` trait.
+        Default: no `two-hands` trait.
     :param int deadly:
         Number of faces on the extra dice to add on a critical hit for weapons
-        with the ``deadly dX`` trait. Default: no ``deadly`` trait.
+        with the ``deadly dX`` trait. Default: no `deadly` trait.
     :param int fatal:
         Number of faces to promote all dice to and for the extra die on critical hits
         with a weapon with the ``fatal dX`` trait. Default: no ``fatal`` trait.
@@ -50,14 +50,14 @@ class Damage:
         with a weapon with the ``fatal aim dX`` trait that is being held in two hands.
         Before expanding the damage, you will need to call the :meth:`hands`
         method to clarify how many hands you're using.
-        Default: no ``fatal aim`` trait.
+        Default: no `fatal aim` trait.
     :param bool basic_save:
         False (default)
             This is a weapon or an attack spell that follows the normal rules for
             Strikes and spell attack rolls: full damage on a success,
             double damage on a critical success, and no damage on a failure.
 
-            This can be altered by the ``splash`` trait.
+            This can be altered by the `splash` trait.
         True
             This is a spell with a basic saving throw: full damage on a failure,
             double damage on a critical failure, half damage on a success
@@ -261,7 +261,7 @@ class Damage:
         """Specify how many hands are used to wield the weapon.
 
         You should always call this method explicitly for weapons with
-        either the ``two-hands`` or the ``fatal aim`` traits.
+        either the `two-hands` or the `fatal aim` traits.
         """
         if hands not in (1, 2) or hands is True:
             raise ValueError("Must use 1 or 2 hands to wield")
@@ -345,7 +345,7 @@ class Damage:
         """Convert this :class:`Damage` instance to an
         :class:`ExpandedDamage`.
 
-        This resolves the ``two-hands``, ``deadly``, ``fatal``, and ``fatal_aim``
+        This resolves the `two-hands`, `deadly`, `fatal`, and `fatal_aim`
         traits, as well as applying the success profile for weapon strikes
         (``basic_save=False``), spells with a basic saving throw (``basic_save=True``),
         and splash damage.
@@ -436,8 +436,8 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         a mapping of :class:`DoS` to lists of :class:`Damage`.
 
         In the latter case, you need to explicitly specify what happens
-        on each roll outcome; you cannot use the ``basic_save``, ``deadly``,
-        ``fatal``, or ``fatal_aim`` attributes.
+        on each roll outcome; you cannot use the `basic_save`, `deadly`,
+        `fatal`, or `fatal_aim` attributes.
         Omitted outcomes deal no damage.
 
     You can also initialize this class by adding a plain dict of ``{DoS:[Damage]}``
@@ -459,7 +459,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     **Success:** 2d6 piercing plus 1d6 fire
 
     Above we implicitly initialized an :class:`ExpandedDamage` by auto-expanding the
-    ``deadly`` trait by adding a dict to a :class:`Damage` object.
+    `deadly` trait by adding a dict to a :class:`Damage` object.
     The above is equivalent to:
 
     >>> rapier = ExpandedDamage({

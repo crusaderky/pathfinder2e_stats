@@ -61,7 +61,7 @@ new methods:
     each other dimension.
 
     This is conceptually the same as calling :meth:`pandas.Series.value_counts`
-    individually for every series of a :class:`pandas.DataFrame` and then merging the
+    individually for every series of a :class:`~pandas.DataFrame` and then merging the
     output.
 
     :param dim:
@@ -72,5 +72,5 @@ new methods:
     :param normalize:
         Return proportions rather than frequencies. Default: False
     :returns:
-        :class:`xarray.DataArray` with the same dimensions as the input array,
+        :class:`~xarray.DataArray` with the same dimensions as the input array,
         minus dim, plus new_dim.
