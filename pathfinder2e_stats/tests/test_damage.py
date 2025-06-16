@@ -111,7 +111,7 @@ def test_persistent_damage():
     assert actual.total_damage[actual.outcome == 1].min() == 1
     assert actual.total_damage[actual.outcome == 2].min() == 2
     assert 16 < actual.total_damage[actual.outcome == 1].max() <= 18
-    assert 32 < actual.total_damage[actual.outcome == 2].max() <= 36
+    assert 30 < actual.total_damage[actual.outcome == 2].max() <= 36
 
 
 def test_persistent_damage_DC20():
@@ -415,17 +415,60 @@ def test_multiple_targets():
     """
     set_size(50)
     actual = damage(
-        check(6, DC=15, dims={"target": 100}),  # That's a lot of pixies! :)
+        check(6, DC=15, dims={"target": 1000}),  # That's a lot of pixies! :)
         Damage("fire", 6, 6, basic_save=True),
+    )
+    d = actual.total_damage.values
+    assert d.shape == (50, 1000)
+    assert np.unique(d).size > 10
+    for i in range(d.shape[0]):
+        u = np.unique(d[i])
+        assert u.size == 4, u  # Different targets get the same damage for each outcome
+        assert u[0] == 0, u  # Critical success
+        assert u[1] == u[2] // 2, u  # Success halves damage
+        assert u[3] == u[2] * 2, u  # Critical failure doubles damage
+
+
+def test_multiple_targets_splash():
+    """In case of multiple targets, damage is rolled only once.
+    This includes when there is no multiplier.
+    """
+    set_size(50)
+    actual = damage(
+        check(6, DC=15, dims={"target": 1000}),
+        Damage("fire", 6, 6, splash=True),
     ).total_damage.values
-    for i in range(50):
+    assert actual.shape == (50, 1000)
+    assert np.unique(actual).size > 10
+    for i in range(actual.shape[0]):
         u = np.unique(actual[i])
-        assert u.size == 4  # Different targets get the same damage for each outcome
-        assert u[0] == 0  # Critical success
-        # FIXME roll only once and then double/halve
-        # https://github.com/crusaderky/pathfinder2e_stats/issues/77
-        # assert u[1] == u[2] // 2  # Success halves damage
-        # assert u[3] == u[2] * 2  # Critical failure doubles damage
+        assert u.size == 2, u  # Different targets get the same damage for each outcome
+        assert u[0] == 0, u  # Critical failure
+        assert u[1] > 0, u  # Failure, success, critical success
+
+
+def test_multiple_targets_type():
+    """In case of multiple targets, damage is rolled only once. However,
+    identical damage dice with different types are rolled separately.
+    """
+    set_size(50)
+    actual = damage(
+        check(6, DC=15, dims={"target": 1000}),
+        Damage("fire", 10, 12, splash=True) + Damage("cold", 10, 12, splash=True),
+    )
+    d = actual.splash_damage.values
+    assert d.shape == (50, 1000, 2)
+    assert np.unique(d).size > 10
+    for i in range(d.shape[0]):
+        u_fire = np.unique(d[i, :, 0])
+        u_cold = np.unique(d[i, :, 1])
+        assert u_fire.size == 2
+        assert u_cold.size == 2
+        assert u_fire[0] == 0
+        assert u_fire[1] > 0
+        assert u_cold[0] == 0
+        assert u_cold[1] > 0
+        assert u_fire[1] != u_cold[1]
 
 
 def test_damage_hash():

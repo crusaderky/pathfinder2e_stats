@@ -8,7 +8,7 @@ import xarray
 from xarray import DataArray, Dataset
 
 from pathfinder2e_stats.check import check
-from pathfinder2e_stats.damage_spec import AnyDamageSpec, ExpandedDamage
+from pathfinder2e_stats.damage_spec import AnyDamageSpec, Damage, ExpandedDamage
 from pathfinder2e_stats.dice import roll
 
 
@@ -154,7 +154,7 @@ def damage(
 
     .. only:: doctest
 
-        >>> from pathfinder2e_stats import seed, Damage
+        >>> from pathfinder2e_stats import seed
         >>> seed(0)
 
     Strike an AC17 enemy with a Longsword (+8 to hit, 1d8+4 damage):
@@ -172,8 +172,8 @@ def damage(
         DC             int64 8B 17
         natural        (roll) int64 800kB 18 13 11 6 7 1 2 1 ... 4 15 3 14 13 1 1 4
         outcome        (roll) int64 800kB 1 1 1 0 0 -1 0 -1 0 ... 0 1 0 1 1 -1 -1 0
-        direct_damage  (roll, damage_type) int64 800kB 6 9 10 0 0 0 ... 0 8 8 0 0 0
-        total_damage   (roll) int64 800kB 6 9 10 0 0 0 0 0 0 ... 0 0 6 0 8 8 0 0 0
+        direct_damage  (roll, damage_type) int64 800kB 8 9 5 0 0 0 ... 0 11 6 0 0 0
+        total_damage   (roll) int64 800kB 8 9 5 0 0 0 0 0 0 ... 0 0 5 0 11 6 0 0 0
     Attributes:
         keen:            False
         fortune:         False
@@ -198,16 +198,16 @@ def damage(
     Data variables:
         bonus                    int64 8B 8
         DC                       int64 8B 17
-        natural                  (roll) int64 800kB 10 5 7 1 12 15 ... 2 4 15 11 9
-        outcome                  (roll) int64 800kB 1 0 0 -1 1 1 1 ... 0 1 0 0 1 1 1
-        direct_damage            (roll, damage_type) int64 800kB 9 1 1 0 ... 1 4 8 5
-        splash_damage            (roll, damage_type) int64 800kB 1 1 1 0 ... 1 1 1 1
+        natural                  (roll) int64 800kB 5 13 13 5 20 ... 10 9 11 12 12
+        outcome                  (roll) int64 800kB 0 1 1 0 2 1 1 ... 0 0 1 1 1 1 1
+        direct_damage            (roll, damage_type) int64 800kB 1 3 4 1 ... 3 7 6 5
+        splash_damage            (roll, damage_type) int64 800kB 1 1 1 1 ... 1 1 1 1
         persistent_damage        (roll, damage_type, persistent_round) int64 2MB ...
         persistent_damage_DC     (damage_type) int64 8B 15
         persistent_damage_check  (roll, damage_type, persistent_round) int64 2MB ...
         apply_persistent_damage  (roll, damage_type, persistent_round) bool 300kB ...
-        total_damage             (roll) int64 800kB 12 2 2 0 13 13 ... 13 2 2 8 10 9
-    Attributes:
+        total_damage             (roll) int64 800kB 2 7 6 2 18 11 ... 2 6 7 11 9 9
+        Attributes:
         keen:                   False
         fortune:                False
         misfortune:             False
@@ -238,11 +238,11 @@ def damage(
     Data variables:
         bonus          (target) int64 24B 11 13 15
         DC             int64 8B 21
-        natural        (roll, target) int64 2MB 4 2 12 19 3 9 7 ... 16 4 15 11 13 11
-        outcome        (roll, target) int64 2MB 0 0 1 1 0 1 0 0 ... 0 1 1 0 1 1 1 1
-        direct_damage  (roll, target, damage_type) int64 2MB 23 23 7 11 ... 4 9 9 4
+        natural        (roll, target) int64 2MB 13 4 9 11 12 7 5 ... 12 2 3 7 11 4 1
+        outcome        (roll, target) int64 2MB 1 0 1 1 1 1 0 1 ... 0 1 0 0 1 1 0 -1
+        direct_damage  (roll, target, damage_type) int64 2MB 15 30 10 11 ... 6 13 21
         resistances    (damage_type, target) int64 24B 0 0 5
-        total_damage   (roll, target) int64 2MB 23 23 7 11 16 6 25 ... 9 25 4 9 9 4
+        total_damage   (roll, target) int64 2MB 15 30 10 11 11 6 ... 12 12 1 6 13 21
     Attributes:
         keen:            False
         fortune:         False
@@ -256,9 +256,9 @@ def damage(
 
     >>> dmg.total_damage.mean("roll").to_pandas()
         target
-    0    15.60207
-    1    13.54554
-    2     7.68219
+    0    15.65510
+    1    13.47350
+    2     7.64498
     Name: total_damage, dtype: float64
     """
     out = check_outcome.copy(deep=False)
@@ -365,16 +365,27 @@ def damage(
 def _roll_damage(
     check_outcome: DataArray, spec: ExpandedDamage, dims: Mapping[Hashable, int] | None
 ) -> DataArray:
+    # Only roll once and then double/halve instead of rolling separately for each
+    # outcome. This matters in case of multiple targets receiving the same damage.
+    cache: dict[Damage, xarray.DataArray] = {}
+
     out = []
     for specs in spec.values():
         damage_rolls = []
         for d in specs:
-            r = roll(d.dice, d.faces, d.bonus, dims=dims)
+            # Don't include multiplier in the cache key
+            # Note: this includes in the cache type, persistent, and splash
+            key = d.copy(multiplier=1)
+            try:
+                r = cache[key]
+            except KeyError:
+                r = roll(d.dice, d.faces, d.bonus, dims=dims)
+                cache[key] = r
 
             if d.multiplier == 2:
-                r *= 2
+                r = r * 2
             elif d.multiplier == 0.5:
-                r //= 2
+                r = r // 2
             else:
                 assert d.multiplier == 1
 
