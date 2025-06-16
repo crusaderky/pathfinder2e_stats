@@ -376,6 +376,14 @@ def test_expanded_damage_filter():
         d.filter("persistent", "misspelled")
 
 
+def test_expanded_damage_simplify():
+    s1 = {0: [Damage("fire", 1, 6, 1), Damage("fire", 0, 0, 1)]}
+    s2 = ExpandedDamage(s1)
+    assert s2 == s1
+    s3 = s2.simplify()
+    assert s3 == {0: [Damage("fire", 1, 6, 2)]}
+
+
 def test_reduce_die():
     d = Damage("slashing", 1, 4, 3)
     d2 = d.reduce_die()

@@ -409,9 +409,11 @@ class DamageList(UserList[Damage]):
         return " plus ".join(str(el) for el in self)
 
     def expand(self) -> ExpandedDamage:
+        """Convert :class:`DamageList` to :class:`ExpandedDamage`."""
         return ExpandedDamage.sum(self)
 
     def simplify(self) -> DamageList:
+        """See :meth:`Damage.simplify`."""
         return DamageList(Damage.simplify(self))
 
     def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:  # type: ignore[override]
@@ -583,6 +585,10 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
             return select_direct
 
         return ExpandedDamage({k: [d for d in v if match(d)] for k, v in self.items()})
+
+    def simplify(self) -> ExpandedDamage:
+        """See :meth:`Damage.simplify`."""
+        return ExpandedDamage({k: DamageList(v).simplify() for k, v in self.items()})
 
     def to_dict_of_str(self) -> dict[str, str]:
         """Pretty-print as a dict"""
