@@ -447,6 +447,25 @@ def test_multiple_targets_splash():
         assert u[1] > 0, u  # Failure, success, critical success
 
 
+def test_multiple_targets_deadly():
+    """If you hit multiple targets with a deadly weapon, roll the base damage
+    only once for all, then double it, then roll the deadly die.
+    """
+    set_size(50)
+    actual = damage(
+        check(6, DC=15, dims={"target": 1000}),
+        Damage("slashing", 2, 12, deadly=6),
+    ).total_damage.values
+    assert actual.shape == (50, 1000)
+    assert np.unique(actual).size > 10
+    for i in range(actual.shape[0]):
+        u = np.unique(actual[i])
+        assert u.size == 3, u  # Different targets get the same damage for each outcome
+        assert u[0] == 0, u  # Critical failure
+        assert u[2] >= u[1] * 2 + 1
+        assert u[2] <= u[1] * 2 + 6
+
+
 def test_multiple_targets_type():
     """In case of multiple targets, damage is rolled only once. However,
     identical damage dice with different types are rolled separately.
