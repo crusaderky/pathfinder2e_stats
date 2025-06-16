@@ -410,7 +410,9 @@ def test_basic_save_fixed():
 
 
 def test_multiple_targets():
-    """In case of multiple targets, damage is rolled only once."""
+    """In case of multiple targets, damage is rolled only once and then
+    multiplied/halved.
+    """
     set_size(50)
     actual = damage(
         check(6, DC=15, dims={"target": 100}),  # That's a lot of pixies! :)
@@ -424,3 +426,17 @@ def test_multiple_targets():
         # https://github.com/crusaderky/pathfinder2e_stats/issues/77
         # assert u[1] == u[2] // 2  # Success halves damage
         # assert u[3] == u[2] * 2  # Critical failure doubles damage
+
+
+def test_damage_hash():
+    d = {
+        Damage("fire", 1, 8),
+        Damage("fire", 1, 8),
+        Damage("slashing", 1, 8),
+        Damage("fire", 1, 8, two_hands=12),
+    }
+    assert d == {
+        Damage("fire", 1, 8),
+        Damage("slashing", 1, 8),
+        Damage("fire", 1, 8, two_hands=12),
+    }

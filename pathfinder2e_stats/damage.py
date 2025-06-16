@@ -265,16 +265,13 @@ def damage(
     damage_spec = ExpandedDamage(damage_spec)
     out.attrs["damage_spec"] = damage_spec.to_dict_of_str()
 
+    pers_dims: dict[Hashable, int] = {"persistent_round": persistent_damage_rounds}
     damages = {
         name: _roll_damage(check_outcome.outcome, spec, dims)
         for name, spec, dims in (
             ("direct_damage", damage_spec.filter("direct"), None),
             ("splash_damage", damage_spec.filter("splash"), None),
-            (
-                "persistent_damage",
-                damage_spec.filter("persistent"),
-                {"persistent_round": persistent_damage_rounds},
-            ),
+            ("persistent_damage", damage_spec.filter("persistent"), pers_dims),
         )
         if spec
     }
@@ -361,17 +358,18 @@ def damage(
     else:
         out["total_damage"] = xarray.zeros_like(out["outcome"])
 
+    out["damage_type"] = out["damage_type"].astype("U")
     return out
 
 
 def _roll_damage(
-    check_outcome: DataArray, spec: ExpandedDamage, dims: dict[str, int] | None
+    check_outcome: DataArray, spec: ExpandedDamage, dims: Mapping[Hashable, int] | None
 ) -> DataArray:
     out = []
     for specs in spec.values():
         damage_rolls = []
         for d in specs:
-            r = roll(d.dice, d.faces, d.bonus, dims=cast(Mapping[Hashable, int], dims))
+            r = roll(d.dice, d.faces, d.bonus, dims=dims)
 
             if d.multiplier == 2:
                 r *= 2
