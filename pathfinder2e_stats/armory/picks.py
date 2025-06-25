@@ -29,8 +29,9 @@ def critical_specialization(
     The weapon viciously pierces the target, who takes 2 additional damage per weapon
     damage die.
 
-    **Grievious rune:** The extra damage from the critical specialization effect
-    increases to 4 per weapon damage die.
+    :prd_equipment:`Grievous <2841>` rune:
+    The extra damage from the critical specialization effect increases to 4 per
+    weapon damage die.
     """
     bonus = dice * (4 if grievous else 2)
     return ExpandedDamage({DoS.critical_success: [Damage(type, 0, 0, bonus)]})

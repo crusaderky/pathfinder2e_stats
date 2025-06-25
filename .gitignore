@@ -55,8 +55,9 @@ dask-worker-space/
 # Sync tools
 Icon*
 
+# Jupyter Notebooks temporary files
 .ipynb_checkpoints
-*.nbconvert.ipynb
+doc/notebooks/*.ipynb
 
 doc/_build
 Untitled.ipynb

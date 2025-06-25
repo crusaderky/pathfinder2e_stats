@@ -20,7 +20,8 @@ def critical_specialization(
     The target takes 1d6 persistent bleed damage. You gain an item bonus to this
     bleed damage equal to the weapon's item bonus to attack rolls.
 
-    **Grievous rune:** The base persistent bleed damage increases to 2d6.
+    :prd_equipment:`Grievous <2841>` rune:
+    The base persistent bleed damage increases to 2d6.
     """
     bleed = Damage("bleed", 2 if grievous else 1, 6, item_attack_bonus, persistent=True)
     return ExpandedDamage({DoS.critical_success: [bleed]})

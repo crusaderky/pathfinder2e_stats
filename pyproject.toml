@@ -179,7 +179,7 @@ pytest-cov = "*"
 
 [tool.pixi.feature.tests.tasks]
 tests = { cmd = "pytest -v", description = "Run tests"}
-doctests = { cmd = "pytest -v --doctest-modules pathfinder2e_stats/*.py pathfinder2e_stats/armory ", description = "Run doctests"}  # FIXME fail to import pathfinder2e.tables
+doctests = { cmd = "pytest -v --doctest-glob='*.rst' --doctest-modules pathfinder2e_stats/*.py pathfinder2e_stats/armory doc", description = "Run doctests"}  # FIXME fail to import pathfinder2e.tables
 tests-cov = { cmd="pytest -v -ra --cov --cov-report=xml --cov-report=term --durations=20", description = "Run tests with coverage"}
 coverage = { cmd = "coverage html", depends-on = ["tests-cov"], description = "Generate test coverage html report"}
 open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"] , description = "Open test coverage report"}
@@ -192,10 +192,9 @@ nbsphinx = "*"
 
 [tool.pixi.feature.docs.tasks]
 install-for-docs = { cmd = "python -m pip install ." }
-nbconvert = { cmd = "jupyter nbconvert --execute --to notebook notebooks/*.ipynb", description = "Convert notebooks to html"}
-nbconvert-pp = { cmd = "mv notebooks/*.nbconvert.ipynb doc/notebooks/", description = "Move notebooks HTML files"}
+nbconvert = { cmd = "jupyter nbconvert --execute --to notebook --output-dir=doc/notebooks/ notebooks/*.ipynb", description = "Convert notebooks to html"}
 sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", description = "Run Sphinx"}
-docs = { depends-on = ["install-for-docs", "nbconvert", "nbconvert-pp", "sphinx-build"], description = "Build docs"}
+docs = { depends-on = ["install-for-docs", "nbconvert", "sphinx-build"], description = "Build docs"}
 open-docs = { cmd = "open build/html/index.html", depends-on = ["docs"], description = "Open the generated docs"}
 
 [tool.pixi.feature.jupyter.dependencies]
