@@ -1,10 +1,12 @@
-Demo Notebooks
-==============
+Advanced Tutorials
+==================
 
-`Here <https://github.com/crusaderky/pathfinder2e_stats/tree/main/notebooks>`_
-you can find a collection of demo Jupyter notebooks.
-Below there is a pre-rendered version for your convenience.
+If you've finished :doc:`getting_started`, we can start dissecting some actual complex
+problems. Below there are a few examples.
 
+These notebooks are all `available here
+<https://github.com/crusaderky/pathfinder2e_stats/tree/main/notebooks>`_
+so that you may run and tweak them yourself.
 
 .. toctree::
    :maxdepth: 1

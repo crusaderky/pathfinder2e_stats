@@ -178,7 +178,7 @@ html_last_updated_fmt = today_fmt
 # Custom sidebar templates, maps document names to template names.
 html_sidebars: dict = {
     "installing": [],
-    "getting-started": [],
+    "notebooks/getting_started": [],
     "api": [],
     "armory": [],
     "develop": [],
