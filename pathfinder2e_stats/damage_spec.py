@@ -303,7 +303,7 @@ class Damage:
         """
         return self.copy(faces=self.faces + 2)
 
-    def vicious_swing(self, dice: int = 1) -> DamageLike:
+    def vicious_swing(self, dice: int = 1) -> Damage | ExpandedDamage:
         """:prd_feats:`Vicious Swing <4775>`, a.k.a. Power Attack, and similar effects.
 
         Add extra weapon dice, which impact the fatal trait but
@@ -333,7 +333,7 @@ class Damage:
           **Success:** 3d8 slashing
         """
         if self.deadly:
-            return self.expand() + {
+            return self + {
                 DoS.critical_success: [
                     Damage(self.type, dice, self.fatal or self.faces, multiplier=2)
                 ],
