@@ -192,7 +192,7 @@ myst-nb = "*"
 
 [tool.pixi.feature.docs.tasks]
 copy-nbs = "cp notebooks/*.ipynb doc/notebooks/"
-sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", env={ "PYTHONPATH" = "$PIXI_PROJECT_ROOT" }, description = "Run Sphinx"}
+sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", env={ PYTHONPATH = "$PIXI_PROJECT_ROOT" }, description = "Run Sphinx"}
 docs = { depends-on = ["copy-nbs", "sphinx-build"], description = "Build docs"}
 open-docs = { cmd = "open build/html/index.html", depends-on = ["docs"], description = "Open the generated docs"}
 
@@ -204,7 +204,7 @@ scipy = "*" # Add violin plots to hvplot
 
 [tool.pixi.feature.jupyter.tasks]
 ipython = { cmd = "ipython" , description = "Launch IPython"}
-jupyter = { cmd = "jupyter lab" , env={ "PYTHONPATH" = "$PIXI_PROJECT_ROOT" }, description="Launch Jupyter Lab"}
+jupyter = { cmd = "jupyter lab" , env={ PYTHONPATH = "$PIXI_PROJECT_ROOT" }, description="Launch Jupyter Lab"}
 
 [tool.pixi.feature.py310.dependencies]
 python = "~=3.10.0"
