@@ -1,27 +1,24 @@
 API Reference
 =============
 
-Basic rolls
------------
+Basic dice rolls
+----------------
 .. autofunction:: pathfinder2e_stats.roll
-
 .. autofunction:: pathfinder2e_stats.d20
 
-
-Checks
-------
+Degrees of Success
+------------------
 .. autoclass:: pathfinder2e_stats.DoS
 
+Rolling checks
+--------------
 .. autofunction:: pathfinder2e_stats.check
-
 .. autofunction:: pathfinder2e_stats.map_outcome
-
 .. autofunction:: pathfinder2e_stats.outcome_counts
-
 .. autofunction:: pathfinder2e_stats.sum_bonuses
 
-Damage rolls
-------------
+Damage profiles
+---------------
 .. autoclass:: pathfinder2e_stats.Damage
     :members:
     :undoc-members:
@@ -34,19 +31,16 @@ Damage rolls
     :members:
     :undoc-members:
 
+Rolling for damage
+------------------
 .. autofunction:: pathfinder2e_stats.damage
-
 
 Utilities
 ---------
 .. autofunction:: pathfinder2e_stats.level2rank
-
 .. autofunction:: pathfinder2e_stats.rank2level
-
 .. autofunction:: pathfinder2e_stats.seed
-
 .. autofunction:: pathfinder2e_stats.set_size
-
 
 Xarray extensions
 -----------------
