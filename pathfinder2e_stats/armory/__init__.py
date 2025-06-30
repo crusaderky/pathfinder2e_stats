@@ -6,6 +6,7 @@ from pathfinder2e_stats.armory import _common
 from pathfinder2e_stats.armory import axes as axes
 from pathfinder2e_stats.armory import bows as bows
 from pathfinder2e_stats.armory import cantrips as cantrips
+from pathfinder2e_stats.armory import class_features as class_features
 from pathfinder2e_stats.armory import crossbows as crossbows
 from pathfinder2e_stats.armory import darts as darts
 from pathfinder2e_stats.armory import hammers as hammers

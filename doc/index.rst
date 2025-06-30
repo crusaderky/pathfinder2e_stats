@@ -70,6 +70,7 @@ Table of contents
    getting-started
    api
    armory
+   tables
    notebooks/index
    develop
    whats-new

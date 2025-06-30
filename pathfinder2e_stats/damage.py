@@ -8,13 +8,13 @@ import xarray
 from xarray import DataArray, Dataset
 
 from pathfinder2e_stats.check import check
-from pathfinder2e_stats.damage_spec import AnyDamageSpec, Damage, ExpandedDamage
+from pathfinder2e_stats.damage_spec import Damage, DamageLike, ExpandedDamage
 from pathfinder2e_stats.dice import roll
 
 
 def damage(
     check_outcome: Dataset,
-    damage_spec: AnyDamageSpec,
+    damage_spec: DamageLike,
     *,
     weaknesses: Mapping[str, int] | DataArray | None = None,
     resistances: Mapping[str, int] | DataArray | None = None,

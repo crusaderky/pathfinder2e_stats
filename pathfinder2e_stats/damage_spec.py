@@ -5,7 +5,7 @@ from collections import UserDict, UserList
 from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Literal, TypeAlias
+from typing import Any, Literal, TypeAlias, overload
 
 from pathfinder2e_stats.check import DoS
 
@@ -303,7 +303,7 @@ class Damage:
         """
         return self.copy(faces=self.faces + 2)
 
-    def vicious_swing(self, dice: int = 1) -> AnyDamageSpec:
+    def vicious_swing(self, dice: int = 1) -> DamageLike:
         """:prd_feats:`Vicious Swing <4775>`, a.k.a. Power Attack, and similar effects.
 
         Add extra weapon dice, which impact the fatal trait but
@@ -388,7 +388,14 @@ class Damage:
 
         return ExpandedDamage(out)
 
-    def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:
+    @overload
+    def __add__(self, other: Damage) -> DamageList: ...
+    @overload
+    def __add__(self, other: Iterable[Damage]) -> DamageList: ...
+    @overload
+    def __add__(self, other: ExpandedDamageLike) -> ExpandedDamage: ...
+
+    def __add__(self, other: DamageLike) -> DamageList | ExpandedDamage:
         """Add two damage specs together"""
         d = self._auto_two_hands()
         return DamageList([d]) + other
@@ -416,14 +423,19 @@ class DamageList(UserList[Damage]):
         """See :meth:`Damage.simplify`."""
         return DamageList(Damage.simplify(self))
 
-    def __add__(self, other: AnyDamageSpec) -> DamageList | ExpandedDamage:  # type: ignore[override]
+    @overload  # type: ignore[override]
+    def __add__(self, other: Damage | Iterable[Damage]) -> DamageList: ...
+    @overload
+    def __add__(self, other: ExpandedDamageLike) -> ExpandedDamage: ...
+
+    def __add__(self, other: DamageLike) -> DamageList | ExpandedDamage:
         if isinstance(other, Damage):
             other = [other]
         if not isinstance(other, Mapping):
             return DamageList([*self, *other]).simplify()
         return self.expand() + other
 
-    __iadd__ = __add__  # type: ignore[assignment]
+    __iadd__ = __add__
 
 
 class ExpandedDamage(UserDict[DoS, list[Damage]]):
@@ -520,7 +532,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
 
     def __init__(
         self,
-        data: AnyDamageSpec | None = None,
+        data: DamageLike | None = None,
         /,
     ):
         if data is None:
@@ -535,11 +547,11 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         data = {k: v for k, v in data.items() if v}
         self.data = dict(sorted(data.items(), reverse=True))  # success > failure
 
-    def __add__(self, other: AnyDamageSpec) -> ExpandedDamage:
+    def __add__(self, other: DamageLike) -> ExpandedDamage:
         return ExpandedDamage.sum([self, other])
 
     @staticmethod
-    def sum(items: Iterable[AnyDamageSpec]) -> ExpandedDamage:
+    def sum(items: Iterable[DamageLike]) -> ExpandedDamage:
         """Sum multiple :class:`Damage` or :class:`ExpandedDamage` objects together."""
         out: dict[DoS, list[Damage]] = {}
         for item in items:
@@ -595,10 +607,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         return {str(k): str(DamageList(v)) for k, v in self.items()}
 
 
-AnyDamageSpec: TypeAlias = (
-    Damage
-    | Iterable[Damage]
-    | ExpandedDamage
-    | Mapping[int, Collection[Damage]]
-    | Mapping[DoS, Collection[Damage]]
+ExpandedDamageLike: TypeAlias = (
+    ExpandedDamage | Mapping[int, Collection[Damage]] | Mapping[DoS, Collection[Damage]]
 )
+DamageLike: TypeAlias = Damage | Iterable[Damage] | ExpandedDamageLike
