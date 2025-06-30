@@ -76,7 +76,7 @@ show_missing = true
 exclude_lines = [
     "pragma: nocover",
     "pragma: no cover",
-    "TYPE_CHECKING",
+    "if TYPE_CHECKING:",
     "except ImportError",
     "@overload",
     '@(abc\.)?abstractmethod',
@@ -105,6 +105,7 @@ ignore = [
   "PLC0414",  # Import alias does not rename original package
   "PLR0912",  # Too many branches
   "PLR0913",  # Too many arguments in function definition
+  "PLR0915",  # Too many statements
   "PLR2004",  # Magic value used in comparison, consider replacing `123` with a constant variable
   "PLW2901",  # for loop variable overwritten by assignment target
   "SIM108",   # Use ternary operator instead of if-else block

@@ -41,7 +41,6 @@ class PCTables(Mapping[str, Dataset]):
         self.__dict__["level"] = next(iter(self.__dict__.values())).level
 
     def __getattr__(self, key: str) -> Dataset:
-        self._lazy_init()
         try:
             return self[key]
         except KeyError:

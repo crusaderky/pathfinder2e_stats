@@ -1,9 +1,19 @@
 from __future__ import annotations
 
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import level2rank, rank2level, roll, seed, set_size
+from pathfinder2e_stats import level2rank, rank2level, rng, roll, seed, set_size
+
+
+def assert_seed0():
+    """Assert that the random number generator was seeded to zero
+    just before calling this function.
+    """
+    assert roll(1, 100)[:5].values.tolist() == [86, 64, 52, 27, 31]
 
 
 def test_seed():
@@ -17,7 +27,31 @@ def test_seed():
 
 def test_seed_fixture():
     """Test that a global pytest fixture resets the seed before each test"""
-    assert roll(1, 100)[:5].values.tolist() == [86, 64, 52, 27, 31]
+    assert_seed0()
+
+
+def test_seed_none():
+    """Test that calling seed() with no parameter produces a different sequence."""
+    seed(None)
+    a = rng().random()
+    seed(None)
+    b = rng().random()
+    assert a != b
+
+
+def test_seed_multithreading():
+    """Test that new threads are seeded to zero by default."""
+    with ThreadPoolExecutor(1) as executor:
+        future = executor.submit(assert_seed0)
+        future.result()
+
+
+def test_seed_multiprocessing():
+    """Test that new processes are seeded to zero by default."""
+    ctx = multiprocessing.get_context("spawn")
+    with ProcessPoolExecutor(1, mp_context=ctx) as executor:
+        future = executor.submit(assert_seed0)
+        future.result()
 
 
 def test_set_size():
