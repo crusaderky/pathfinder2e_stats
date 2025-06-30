@@ -490,15 +490,11 @@ def test_multiple_targets_type():
         assert u_fire[1] != u_cold[1]
 
 
-def test_damage_hash():
-    d = {
-        Damage("fire", 1, 8),
-        Damage("fire", 1, 8),
-        Damage("slashing", 1, 8),
-        Damage("fire", 1, 8, two_hands=12),
-    }
-    assert d == {
-        Damage("fire", 1, 8),
-        Damage("slashing", 1, 8),
-        Damage("fire", 1, 8, two_hands=12),
-    }
+def test_null_damage():
+    actual = damage(check(6, DC=15), {})
+    assert actual.sizes == {"roll": 1000, "damage_type": 0}
+    assert actual.damage_type.shape == (0,)
+    assert actual.damage_type.dtype.kind == "U"
+    assert actual.total_damage.shape == (1000,)
+    assert actual.total_damage.dtype.kind == "i"
+    assert (actual.total_damage == 0).all()

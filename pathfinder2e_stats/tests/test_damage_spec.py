@@ -415,6 +415,8 @@ def test_two_hands():
         d.hands(3)
     with pytest.raises(ValueError, match="hands"):
         d.hands(True)
+    with pytest.raises(ValueError, match="does not have .* two-hands"):
+        Damage("slashing", 1, 8).hands(2)
 
 
 def test_fatal_aim():
@@ -432,3 +434,19 @@ def test_fatal_aim():
         d.hands(3)
     with pytest.raises(ValueError, match="hands"):
         d.hands(True)
+    with pytest.raises(ValueError, match="both fatal and fatal aim"):
+        Damage("piercing", 1, 8, fatal=12, fatal_aim=12)
+
+
+def test_damage_hash():
+    d = {
+        Damage("fire", 1, 8),
+        Damage("fire", 1, 8),
+        Damage("slashing", 1, 8),
+        Damage("fire", 1, 8, two_hands=12),
+    }
+    assert d == {
+        Damage("fire", 1, 8),
+        Damage("slashing", 1, 8),
+        Damage("fire", 1, 8, two_hands=12),
+    }

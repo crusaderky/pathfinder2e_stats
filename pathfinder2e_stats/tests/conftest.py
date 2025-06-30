@@ -12,6 +12,4 @@ def init_rng():
 
 @pytest.fixture(autouse=True)
 def init_size():
-    prev = set_size(1000)
-    yield
-    set_size(prev)
+    set_size(1000)

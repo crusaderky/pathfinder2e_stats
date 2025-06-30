@@ -1,3 +1,5 @@
+import pytest
+
 from pathfinder2e_stats import roll, tables
 
 
@@ -11,6 +13,11 @@ def test_PC():
     assert k0 in repr(t)
     # Items can be accessed via attribute or key
     assert t[k0] is getattr(t, k0)
+
+    with pytest.raises(AttributeError, match="no table 'nonexistent'"):
+        _ = t.nonexistent
+    with pytest.raises(KeyError, match="'nonexistent'"):
+        _ = t["nonexistent"]
 
     for k, ds in t.items():
         assert ds.level[0] == 1

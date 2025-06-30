@@ -355,10 +355,11 @@ def damage(
 
     if total_damage:
         out["total_damage"] = sum(total_damage).sum("damage_type")  # type: ignore[union-attr]
+        out["damage_type"] = out["damage_type"].astype("U")
     else:
         out["total_damage"] = xarray.zeros_like(out["outcome"])
+        out["damage_type"] = ("damage_type", np.asarray([], dtype="U"))
 
-    out["damage_type"] = out["damage_type"].astype("U")
     return out
 
 

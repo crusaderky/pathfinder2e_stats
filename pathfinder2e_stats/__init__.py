@@ -5,6 +5,7 @@ import pathfinder2e_stats.armory
 import pathfinder2e_stats.tables  # noqa: F401
 from pathfinder2e_stats.base import level2rank as level2rank
 from pathfinder2e_stats.base import rank2level as rank2level
+from pathfinder2e_stats.base import rng as rng
 from pathfinder2e_stats.base import seed as seed
 from pathfinder2e_stats.base import set_size as set_size
 from pathfinder2e_stats.bonuses import sum_bonuses as sum_bonuses
