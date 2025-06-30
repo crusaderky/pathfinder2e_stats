@@ -389,9 +389,7 @@ class Damage:
         return ExpandedDamage(out)
 
     @overload
-    def __add__(self, other: Damage) -> DamageList: ...
-    @overload
-    def __add__(self, other: Iterable[Damage]) -> DamageList: ...
+    def __add__(self, other: Damage | Iterable[Damage]) -> DamageList: ...
     @overload
     def __add__(self, other: ExpandedDamageLike) -> ExpandedDamage: ...
 
@@ -530,11 +528,7 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     **Failure:** (2d6)/2 precision
     """
 
-    def __init__(
-        self,
-        data: DamageLike | None = None,
-        /,
-    ):
+    def __init__(self, data: DamageLike | None = None, /):
         if data is None:
             data = {}
         elif isinstance(data, Damage):

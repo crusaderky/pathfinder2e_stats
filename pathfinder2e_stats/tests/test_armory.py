@@ -9,7 +9,7 @@ mods = [
     for mod in armory.__dict__.values()
     if isinstance(mod, ModuleType) and mod is not armory._common
 ]
-weapon_mods = (
+weapon_mods = [
     armory.axes,
     armory.bows,
     armory.crossbows,
@@ -18,8 +18,13 @@ weapon_mods = (
     armory.knives,
     armory.picks,
     armory.swords,
-)
-spell_mods = (armory.cantrips, armory.spells)
+]
+spell_mods = [armory.cantrips, armory.spells]
+other_mods = [armory.class_features, armory.runes]
+
+
+def test_mods_inventory():
+    assert set(mods) == set(weapon_mods) | set(spell_mods) | set(other_mods)
 
 
 @pytest.mark.parametrize(
