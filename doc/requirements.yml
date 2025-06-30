@@ -8,8 +8,8 @@ dependencies:
 - python >=3.10
 - pip *
 - sphinx *
-- sphinx_rtd_theme *
-- nbsphinx *
+- pydata-sphinx-theme *
+- myst-nb *
 - jupyterlab *
 - matplotlib *
 - hvplot *
