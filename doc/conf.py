@@ -36,7 +36,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.extlinks",
     "sphinx.ext.mathjax",
-    "nbsphinx",
+    "myst_nb",
 ]
 
 extlinks = {
@@ -119,19 +119,19 @@ pygments_style = "sphinx"
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"
+html_theme = "pydata_sphinx_theme"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {"logo_only": True}
+html_theme_options = {"show_toc_level": 2}  # Work around autoclass sidebar bug
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-# html_title = None
+html_title = "pathfinder2e_stats"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
@@ -149,6 +149,7 @@ html_theme_options = {"logo_only": True}
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = ["style.css"]
 
 # Sometimes the savefig directory doesn't exist and needs to be created
 # https://github.com/ipython/ipython/issues/8733
@@ -173,7 +174,14 @@ html_last_updated_fmt = today_fmt
 # html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-# html_sidebars = {}
+html_sidebars: dict = {
+    "installing": [],
+    "getting-started": [],
+    "api": [],
+    "armory": [],
+    "develop": [],
+    "whats-new": [],
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -309,3 +317,7 @@ intersphinx_mapping = {
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
     "xarray": ("https://xarray.pydata.org/en/stable/", None),
 }
+
+# Myst-NB configuration
+nb_execution_mode = "force"
+nb_execution_raise_on_error = True
