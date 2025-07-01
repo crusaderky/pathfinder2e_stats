@@ -18,17 +18,15 @@ If you're new to Python
 
         import pathfinder2e_stats as pf2
 
-   and start hacking!
+   and start hacking! Now read :doc:`notebooks/getting_started`.
 
 Required dependencies
 ---------------------
-
 - Python 3.10 or later
 - `xarray <https://xarray.pydata.org/>`_
 
-Recommended
------------
-
+Recommended dependencies
+------------------------
 - `jupyterlab <https://jupyter.org/>`_ or `spyder <https://www.spyder-ide.org/>`_
 - matplotlib, plotly, hvplot, or some other plotting library for visualizations
 

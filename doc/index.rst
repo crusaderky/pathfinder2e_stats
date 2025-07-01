@@ -32,6 +32,8 @@ What this software is not
 - This is not a rules reference.
 
 
+.. _audience:
+
 Intended audience
 -----------------
 ``pathfinder2e_stats`` is intended for Pathfinder players and game masters
@@ -67,11 +69,11 @@ Table of contents
    :maxdepth: 1
 
    installing
-   getting-started
+   notebooks/getting_started
+   notebooks/index
    api
    armory
    tables
-   notebooks/index
    develop
    whats-new
 
