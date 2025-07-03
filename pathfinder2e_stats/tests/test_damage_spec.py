@@ -55,46 +55,49 @@ def test_damage_type_validation():
         Damage("fire", -1, 6)
 
 
-def test_damage_type_str():
+def test_damage_repr():
     d = Damage("fire", 1, 6)
-    assert str(d) == "1d6 fire"
-    assert repr(d) == str(d)  # ipython / jupyter calls repr()
+    assert str(d) == "**Damage** 1d6 fire"
+    assert repr(d) == str(d)  # ipython calls repr()
+    assert (
+        d._repr_html_() == "<b>Damage</b> 1d6 fire"
+    )  # jupyter calls _repr_html_ if available
 
     d = Damage("fire", 2, 6, 3)
-    assert str(d) == "2d6+3 fire"
+    assert str(d) == "**Damage** 2d6+3 fire"
 
     d = Damage("fire", 2, 6, -1)
-    assert str(d) == "2d6-1 fire"
+    assert str(d) == "**Damage** 2d6-1 fire"
 
     d = Damage("fire", 0, 0, 1)
-    assert str(d) == "1 fire"
+    assert str(d) == "**Damage** 1 fire"
 
     d = Damage("fire", 6, 6, 1, 2)
-    assert str(d) == "(6d6+1)x2 fire"
+    assert str(d) == "**Damage** (6d6+1)x2 fire"
 
     d = Damage("fire", 6, 6, 1, 0.5)
-    assert str(d) == "(6d6+1)/2 fire"
+    assert str(d) == "**Damage** (6d6+1)/2 fire"
 
     d = Damage("fire", 0, 0, 1, persistent=True)
-    assert str(d) == "1 persistent fire"
+    assert str(d) == "**Damage** 1 persistent fire"
 
     d = Damage("fire", 0, 0, 1, splash=True)
-    assert str(d) == "1 fire splash"
+    assert str(d) == "**Damage** 1 fire splash"
 
     d = Damage("piercing", 2, 6, 4, deadly=8)
-    assert str(d) == "2d6+4 piercing deadly d8"
+    assert str(d) == "**Damage** 2d6+4 piercing deadly d8"
 
     d = Damage("piercing", 2, 6, 4, fatal=10)
-    assert str(d) == "2d6+4 piercing fatal d10"
+    assert str(d) == "**Damage** 2d6+4 piercing fatal d10"
 
     d = Damage("piercing", 1, 8, fatal_aim=12)
-    assert str(d) == "1d8 piercing fatal aim d12"
+    assert str(d) == "**Damage** 1d8 piercing fatal aim d12"
 
     d = Damage("fire", 6, 6, basic_save=True)
-    assert str(d) == "6d6 fire, with a basic saving throw"
+    assert str(d) == "**Damage** 6d6 fire, with a basic saving throw"
 
     d = Damage("slashing", 1, 8, two_hands=12)
-    assert str(d) == "1d8 slashing two-hands d12"
+    assert str(d) == "**Damage** 1d8 slashing two-hands d12"
 
 
 def test_damage_type_copy():
@@ -224,13 +227,18 @@ def test_vicious_swing():
 
 
 def test_damage_list():
-    actual = Damage("slashing", 1, 6, 2) + Damage("slashing", 0, 0, 3)
-    assert actual == [Damage("slashing", 1, 6, 5)]
-    assert str(actual) == "1d6+5 slashing"
+    d = Damage("slashing", 1, 6, 2) + Damage("slashing", 0, 0, 3)
+    assert d == [Damage("slashing", 1, 6, 5)]
+    assert str(d) == "**Damage** 1d6+5 slashing"
+    assert repr(d) == str(d)  # ipython calls repr()
+    # jupyter calls _repr_html_ if available
+    assert d._repr_html_() == "<b>Damage</b> 1d6+5 slashing"
 
-    actual = Damage("slashing", 1, 6, 2) + Damage("fire", 1, 6)
-    assert actual == [Damage("slashing", 1, 6, 2), Damage("fire", 1, 6)]
-    assert str(actual) == "1d6+2 slashing plus 1d6 fire"
+    d = Damage("slashing", 1, 6, 2) + Damage("fire", 1, 6)
+    assert d == [Damage("slashing", 1, 6, 2), Damage("fire", 1, 6)]
+    assert str(d) == "**Damage** 1d6+2 slashing plus 1d6 fire"
+    assert repr(d) == str(d)
+    assert d._repr_html_() == "<b>Damage</b> 1d6+2 slashing plus 1d6 fire"
 
 
 def test_damage_list_expand():
@@ -322,17 +330,17 @@ def test_expanded_damage_sum():
     ) == {0: [Damage("fire", 1, 6, 1)]}
 
 
-def test_expanded_damage_str():
+def test_expanded_damage_repr():
     d = (Damage("fire", 1, 6) + Damage("fire", 0, 0, 1, splash=True)).expand()
     expect_txt = """
-    **Critical success:** (1d6)x2 fire plus 1 fire splash
-    **Success:** 1d6 fire plus 1 fire splash
-    **Failure:** 1 fire splash
+    **Critical success** (1d6)x2 fire plus 1 fire splash
+    **Success** 1d6 fire plus 1 fire splash
+    **Failure** 1 fire splash
     """
     expect_html = """
-    <b>Critical success:</b> (1d6)x2 fire plus 1 fire splash<br>
-    <b>Success:</b> 1d6 fire plus 1 fire splash<br>
-    <b>Failure:</b> 1 fire splash
+    <b>Critical success</b> (1d6)x2 fire plus 1 fire splash<br>
+    <b>Success</b> 1d6 fire plus 1 fire splash<br>
+    <b>Failure</b> 1 fire splash
     """
 
     assert repr(d) == str(d) == dedent(expect_txt).strip()

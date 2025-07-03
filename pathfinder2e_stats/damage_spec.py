@@ -75,12 +75,12 @@ class Damage:
     e.g. a :prd_spells:`Fireball <1530>`:
 
     >>> Damage("fire", 6, 6, basic_save=True)
-    6d6 fire, with a basic saving throw
+    **Damage** 6d6 fire, with a basic saving throw
 
     A *+1 striking longbow*:
 
     >>> Damage("piercing", 2, 8, deadly=10)
-    2d8 piercing deadly d10
+    **Damage** 2d8 piercing deadly d10
 
     You can define effects such as weapons with runes by chaining :class:`Damage`
     instances with the ``+`` operator. For example:
@@ -88,7 +88,7 @@ class Damage:
     A *+1 striking wounding longsword*, wielded by a PC with a +4 STR modifier:
 
     >>> Damage("slashing", 2, 8, 4) + Damage("bleed", 1, 6, persistent=True)
-    2d8+4 slashing plus 1d6 persistent bleed
+    **Damage** 2d8+4 slashing plus 1d6 persistent bleed
 
     A weapon or spell with direct, splash and/or persistent component can be specified
     by adding everything up with ``+``. For example, an
@@ -97,7 +97,7 @@ class Damage:
     >>> (Damage("fire", 1, 8)
     ... + Damage("fire", 0, 0, 1, persistent=True)
     ... + Damage("fire", 0, 0, 1, splash=True))
-    1d8 fire plus 1 persistent fire plus 1 fire splash
+    **Damage** 1d8 fire plus 1 persistent fire plus 1 fire splash
 
     **Complex cases**
 
@@ -151,7 +151,7 @@ class Damage:
         if self.fatal and self.fatal_aim:
             raise ValueError("Can't have both fatal and fatal aim traits")
 
-    def __repr__(self) -> str:
+    def _base_repr(self) -> str:
         if self.dice and self.faces:
             s = f"{self.dice}d{self.faces}"
             if self.bonus > 0:
@@ -186,6 +186,14 @@ class Damage:
             s += ", with a basic saving throw"
         return s
 
+    def __repr__(self) -> str:
+        """String representation for iPython"""
+        return "**Damage** " + self._base_repr()
+
+    def _repr_html_(self) -> str:
+        """HTML representation for Jupyter notebook"""
+        return "<b>Damage</b> " + self._base_repr()
+
     @staticmethod
     def simplify(damages: Iterable[Damage], /) -> list[Damage]:
         """Attempt to reduce multiple Damage instances to a shorter form.
@@ -198,7 +206,7 @@ class Damage:
         **Example:**
 
         >>> Damage.simplify([Damage("fire", 1, 6), Damage("fire", 1, 6, 4)])
-        [2d6+4 fire]
+        [**Damage** 2d6+4 fire]
         """
         # Don't sort e.g. slashing + fire alphabetically
         types_by_appearance: dict[str, int] = {}
@@ -251,7 +259,7 @@ class Damage:
         adding ``deadly d6``:
 
         >>> Damage("slashing", 1, 8).copy(deadly=6)
-        1d8 slashing deadly d6
+        **Damage** 1d8 slashing deadly d6
         """
         kwargs2 = {k: getattr(self, k) for k in self.__annotations__}
         kwargs2.update(kwargs)
@@ -289,7 +297,7 @@ class Damage:
         e.g. a +1 Striking Maul with :prd_feats:`Grasping Reach <4493>`:
 
         >>> Damage("bludgeoning", 2, 12).reduce_die()
-        2d10 bludgeoning
+        **Damage** 2d10 bludgeoning
         """
         return self.copy(faces=self.faces - 2)
 
@@ -299,7 +307,7 @@ class Damage:
         e.g. a Dagger with :prd_feats:`Deadly Simplicity <4642>`:
 
         >>> Damage("piercing", 1, 4).increase_die()
-        1d6 piercing
+        **Damage** 1d6 piercing
         """
         return self.copy(faces=self.faces + 2)
 
@@ -322,15 +330,15 @@ class Damage:
           damage on a hit and an extra d8 on a critical hit:
 
           >>> Damage("slashing", 2, 8, deadly=8).vicious_swing()
-          **Critical success:** (3d8)x2 slashing plus 1d8 slashing
-          **Success:** 3d8 slashing
+          **Critical success** (3d8)x2 slashing plus 1d8 slashing
+          **Success** 3d8 slashing
 
         - A +2 Greater Striking Glaive, which deals 3d8 damage on a hit
           and an extra 2d8 on a critical hit:
 
           >>> Damage("slashing", 3, 8, deadly=8).expand()
-          **Critical success:** (3d8)x2 slashing plus 2d8 slashing
-          **Success:** 3d8 slashing
+          **Critical success** (3d8)x2 slashing plus 2d8 slashing
+          **Success** 3d8 slashing
         """
         if self.deadly:
             return self + {
@@ -410,8 +418,16 @@ class DamageList(UserList[Damage]):
     def basic_save(self) -> bool:
         return self[0].basic_save
 
+    def _base_repr(self) -> str:
+        return " plus ".join(el._base_repr() for el in self)
+
     def __repr__(self) -> str:
-        return " plus ".join(str(el) for el in self)
+        """String representation for iPython"""
+        return "**Damage** " + self._base_repr()
+
+    def _repr_html_(self) -> str:
+        """HTML representation for Jupyter notebook"""
+        return "<b>Damage</b> " + self._base_repr()
 
     def expand(self) -> ExpandedDamage:
         """Convert :class:`DamageList` to :class:`ExpandedDamage`."""
@@ -466,9 +482,9 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     >>> Damage("piercing", 2, 6, deadly=8) + Damage("fire", 1, 6) + {
     ...     DoS.critical_success: [Damage("fire", 1, 10, persistent=True)]
     ... }
-    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    **Critical success** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
     plus 1d10 persistent fire
-    **Success:** 2d6 piercing plus 1d6 fire
+    **Success** 2d6 piercing plus 1d6 fire
 
     Above we implicitly initialized an :class:`ExpandedDamage` by auto-expanding the
     `deadly` trait by adding a dict to a :class:`Damage` object.
@@ -489,9 +505,9 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     ...     ],
     ... })
     >>> rapier + flaming
-    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    **Critical success** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
     plus 1d10 persistent fire
-    **Success:** 2d6 piercing plus 1d6 fire
+    **Success** 2d6 piercing plus 1d6 fire
 
     Which is the same as writing:
 
@@ -507,9 +523,9 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     ...         Damage("fire", 1, 10, persistent=True),
     ...     ],
     ... })
-    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    **Critical success** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
     plus 1d10 persistent fire
-    **Success:** 2d6 piercing plus 1d6 fire
+    **Success** 2d6 piercing plus 1d6 fire
 
     What if the reapier was used for a swashbuckler's
     :prd_actions:`Confident Finisher <2818>`, which adds 2d6
@@ -522,10 +538,10 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     ...     DoS.critical_success: [p.copy(multiplier=2)],
     ... }
     >>> rapier + flaming + finisher
-    **Critical success:** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
+    **Critical success** (2d6)x2 piercing plus 1d8 piercing plus (1d6)x2 fire
     plus (2d6)x2 precision plus 1d10 persistent fire
-    **Success:** 2d6 piercing plus 1d6 fire plus 2d6 precision
-    **Failure:** (2d6)/2 precision
+    **Success** 2d6 piercing plus 1d6 fire plus 2d6 precision
+    **Failure** (2d6)/2 precision
     """
 
     def __init__(self, data: DamageLike | None = None, /):
@@ -557,19 +573,25 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         return ExpandedDamage(out)
 
     def _repr_html_(self) -> str:
+        """HTML representation for Jupyter notebook"""
         out = []
         for k, v in self.items():
             name = k.name.replace("_", " ").capitalize()
-            out.append(f"<b>{name}:</b> {DamageList(v)}")
+            out.append(f"<b>{name}</b> {DamageList(v)._base_repr()}")
         return "<br>\n".join(out)
 
     def __repr__(self) -> str:
+        """String representation for iPython"""
         return (
             self._repr_html_()
             .replace("<b>", "**")
             .replace("</b>", "**")
             .replace("<br>", "")
         )
+
+    def to_dict_of_str(self) -> dict[str, str]:
+        """Pretty-print as a dict"""
+        return {str(k): DamageList(v)._base_repr() for k, v in self.items()}
 
     def filter(
         self, *which: Literal["direct", "persistent", "splash"]
@@ -595,10 +617,6 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
     def simplify(self) -> ExpandedDamage:
         """See :meth:`Damage.simplify`."""
         return ExpandedDamage({k: DamageList(v).simplify() for k, v in self.items()})
-
-    def to_dict_of_str(self) -> dict[str, str]:
-        """Pretty-print as a dict"""
-        return {str(k): str(DamageList(v)) for k, v in self.items()}
 
 
 ExpandedDamageLike: TypeAlias = (
