@@ -42,6 +42,8 @@ Installing with pip
 
     pip install pathfinder2e_stats
 
+.. _mindeps_policy:
+
 Minimum dependency versions
 ---------------------------
 This project adopts a rolling policy based on `SPEC 0
