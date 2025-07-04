@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from pathfinder2e_stats.damage_spec import Damage, DamageList, DoS, ExpandedDamage
+from pathfinder2e_stats.check import DoS
+from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
 __all__ = (
     "bleeding_finisher",

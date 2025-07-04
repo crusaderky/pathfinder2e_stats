@@ -32,7 +32,7 @@ jobs:
           - windows-latest
         environment:
           - mindeps
-          - py310
+          - py311
           - py313
         include:
           - os: ubuntu-latest
@@ -73,4 +73,4 @@ jobs:
 
       - name: codecov.io
         if: matrix.os != 'macos-13' && matrix.environment != 'nogil'
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5

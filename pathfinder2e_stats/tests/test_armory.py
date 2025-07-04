@@ -2,7 +2,7 @@ from types import ModuleType
 
 import pytest
 
-from pathfinder2e_stats import Damage, DamageList, ExpandedDamage, armory
+from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage, armory
 
 mods = [
     mod
@@ -98,7 +98,7 @@ def test_critical_specialization_picks():
 def test_ignition():
     ir = armory.cantrips.ignition()
     im = armory.cantrips.ignition(melee=True)
-    for dos in (1, 2):
+    for dos in (DoS.success, DoS.critical_success):
         for el in ir[dos]:
             assert el.faces == 4
         for el in im[dos]:
