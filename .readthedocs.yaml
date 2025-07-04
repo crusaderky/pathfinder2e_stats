@@ -6,7 +6,7 @@ build:
     python: mambaforge-22.9
   jobs:
     post_install:
-      - cp notebooks/*.ipynb doc/notebooks/
+      - cp -v notebooks/*.ipynb doc/notebooks/
 
 conda:
   environment: doc/requirements.yml

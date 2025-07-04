@@ -26,6 +26,17 @@ jobs:
       - name: Build sdist and wheels
         run: pixi run dist
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install wheel
+        run: pip install dist/*.whl
+
+      - name: Smoke test
+        run: python -c "import pathfinder2e_stats; print(pathfinder2e_stats.__version__)"
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist
