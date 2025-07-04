@@ -19,7 +19,7 @@ size = 100_000
 _state = threading.local()
 
 
-def rng(  ) -> np.random.Generator:
+def rng() -> np.random.Generator:
     """Get the library-global, thread-local random number generator.
 
     This is seeded by default to 0. This means, for example, that restarting and
