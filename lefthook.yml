@@ -1,25 +1,21 @@
 pre-commit:
   parallel: true
   jobs:
+    - run: actionlint
+    - run: blacken-docs
+    - run: codespell
     - name: dprint
-      run: pixi run dprint
+      run: dprint fmt
+    - run: mypy
     - name: ruff
       group:
         piped: true
         jobs:
           - name: ruff format
-            run: pixi run ruff-format
+            run: ruff format
           - name: ruff check
-            run: pixi run ruff-check
-    - name: mypy
-      run: pixi run mypy
-    - name: actionlint
-      run: pixi run actionlint
-    - name: blacken-docs
-      run: pixi run blacken-docs
-    - name: codespell
-      run: pixi run codespell
-    - name: validate-pyproject
-      run: pixi run validate-pyproject
+            run: ruff check --fix --show-fixes
     - name: sphinx-lint
-      run: pixi run sphinx-lint
+      run: sphinx-lint doc
+    - name: validate-pyproject
+      run: validate-pyproject pyproject.toml
