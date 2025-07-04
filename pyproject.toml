@@ -179,15 +179,6 @@ xarray = "*"
 
 [tool.pixi.feature.lint.tasks]
 install-git-hooks = { cmd = "lefthook install", description = "Install pre-commit hooks" }
-mypy = { cmd = "mypy", description = "Type check with mypy" }
-ruff-check = { cmd = "ruff check --fix --show-fixes", description = "Lint with ruff" }
-ruff-format = { cmd = "ruff format", description = "Format with ruff" }
-dprint = { cmd = "dprint fmt", description = "Format with dprint" }
-actionlint = { cmd = "actionlint", description = "Lint actions with actionlint" }
-codespell = { cmd = "codespell", description = "Spell check with codespell" }
-blacken-docs = { cmd = "blacken-docs", description = "Format Python markdown blocks with Black" }
-validate-pyproject = { cmd = "validate-pyproject pyproject.toml", description = "Validate pyproject.toml" }
-sphinx-lint = { cmd = "sphinx-lint doc", description = "Run sphinx-lint" }
 lint = { cmd = "lefthook run pre-commit --all-files --force", description = "Run all linters" }
 
 [tool.pixi.feature.tests.dependencies]
