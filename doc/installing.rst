@@ -22,7 +22,7 @@ If you're new to Python
 
 Required dependencies
 ---------------------
-- Python 3.10 or later
+- Python 3.11 or later
 - `xarray <https://xarray.pydata.org/>`_
 
 Recommended dependencies

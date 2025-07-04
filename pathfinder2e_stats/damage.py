@@ -207,7 +207,7 @@ def damage(
         persistent_damage_check  (roll, damage_type, persistent_round) int64 2MB ...
         apply_persistent_damage  (roll, damage_type, persistent_round) bool 300kB ...
         total_damage             (roll) int64 800kB 2 7 6 2 18 11 ... 2 6 7 11 9 9
-        Attributes:
+    Attributes:
         keen:                   False
         fortune:                False
         misfortune:             False
@@ -255,7 +255,7 @@ def damage(
     How much damage did each target take, on average?
 
     >>> dmg.total_damage.mean("roll").to_pandas()
-        target
+    target
     0    15.65510
     1    13.47350
     2     7.64498

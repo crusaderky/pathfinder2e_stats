@@ -312,7 +312,7 @@ def test_check_map_outcome_array():
 
 
 def test_chain_check_map_outcome():
-    ds = map_outcome(check(DC=9), {2: 10})
+    ds = map_outcome(check(DC=9), {DoS.critical_success: 10})
     assert_equal(ds.original_outcome == 2, ds.natural >= 19)
     assert_equal(ds.outcome == 10, ds.natural >= 19)
     assert np.unique(ds.outcome).tolist() == [0, 10]

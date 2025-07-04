@@ -314,14 +314,14 @@ def check(
 def map_outcome(
     outcome: _Outcome_T,
     map_: (
-        Mapping[DoS | int | DataArray, object]
-        | Iterable[tuple[DoS | int | DataArray, object]]
+        Mapping[DoS | int | DataArray, Any]
+        | Iterable[tuple[DoS | int | DataArray, Any]]
         | None
     ) = None,
     /,
     *,
     evasion: bool | DataArray = False,
-    incapacitation: bool | DataArray = False,
+    incapacitation: bool | Literal[-1, 0, 1] | DataArray = False,
     allow_critical_failure: bool | DataArray = True,
     allow_failure: bool | DataArray = True,
     allow_critical_success: bool | DataArray = True,
@@ -351,8 +351,10 @@ def map_outcome(
 
     :param incapacitation:
         Set to True when an incapacitation effect is applied to
-        a creature whose level is more than twice the effect rank. If True, all
-        outcomes are improved by one notch. Default: False.
+        a creature whose level is more than twice the effect rank. If 1 or True, all
+        outcomes are improved by one notch (use this for the creature's saving throws).
+        If -1, all outcomes are worsened by one notch (use this for checks against the
+        creature). Default: False.
 
         See also :func:`level2rank` and :func:`rank2level`.
     :param allow_critical_failure:

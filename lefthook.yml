@@ -1,0 +1,23 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: dprint
+      run: pixi run dprint
+    - name: ruff
+      group:
+        piped: true
+        jobs:
+          - name: ruff format
+            run: pixi run ruff-format
+          - name: ruff check
+            run: pixi run ruff-check
+    - name: mypy
+      run: pixi run mypy
+    - name: actionlint
+      run: pixi run actionlint
+    - name: blacken-docs
+      run: pixi run blacken-docs
+    - name: validate-pyproject
+      run: pixi run validate-pyproject
+    - name: sphinx-lint
+      run: pixi run sphinx-lint

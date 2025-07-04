@@ -1,0 +1,29 @@
+name: Linting
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  checks:
+    name: pre-commit hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - uses: prefix-dev/setup-pixi@v0.8.10
+        with:
+          pixi-version: v0.49.0
+          cache: true
+          environments: lint
+      - name: Run linters
+        run: pixi run lint
+      - name: Check for changed files after linting
+        run: |
+          if [[ -n $(git status) ]]; then
+            echo "There are uncommitted changes after linting"
+            git status
+            exit 1
+          fi
