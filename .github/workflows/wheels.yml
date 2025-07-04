@@ -34,7 +34,7 @@ jobs:
       - name: Install wheel
         run: pip install dist/*.whl
 
-      - name: Smoke test
+      - name: Test import
         run: python -c "import pathfinder2e_stats; print(pathfinder2e_stats.__version__)"
 
       - uses: actions/upload-artifact@v4
