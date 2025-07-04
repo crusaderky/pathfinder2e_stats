@@ -221,11 +221,28 @@ python = "=3.11"
 [tool.pixi.feature.py313.dependencies]
 python = "=3.13"
 
+[tool.pixi.feature.nogil.dependencies]
+python-freethreading = "=3.13"
+pytest-run-parallel = "*"
+
+[tool.pixi.feature.nogil.pypi-dependencies]
+# TODO python 3.14 prereleases?
+# FIXME Need pandas >=2.3.1
+# https://github.com/pandas-dev/pandas/issues/59057
+pandas = { version = ">=2.3.1", index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+xarray = "*"
+
 [tool.pixi.feature.mindeps.dependencies]
 python = "=3.11"
 numpy = "==1.24.0"
 pandas = "==1.5.1"
 xarray = "==2023.1.0"
+
+[tool.pixi.feature.upstream.pypi-dependencies]
+# TODO python 3.14 prereleases?
+numpy = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+xarray = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
 
 [tool.pixi.feature.dist.dependencies]
 python-build = "*"
@@ -238,22 +255,6 @@ twine-check = { cmd = "python -m twine check dist/*" }
 dist = { depends-on = ["dist-clear", "build", "twine-check"] }
 twine-upload = { depends-on = ["dist"], cmd = "python -m twine upload dist/*" }
 
-[tool.pixi.feature.upstream.pypi-dependencies]
-# TODO python 3.14 prereleases?
-numpy = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-xarray = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-
-[tool.pixi.feature.nogil.dependencies]
-python-freethreading = "~=3.13.0"
-pytest-run-parallel = "*"
-
-[tool.pixi.feature.nogil.pypi-dependencies]
-# TODO python 3.14 prereleases?
-# https://github.com/pandas-dev/pandas/issues/59057
-pandas = ">=2.3.0" # FIXME 3.13t conda-forge packages not available yet
-xarray = "*"
-
 [tool.pixi.environments]
 default = { features = ["py313", "docs", "tests", "jupyter"], solve-group = "py313" }
 dist = { features = ["dist"], no-default-feature = true }
@@ -261,6 +262,6 @@ lint = { features = ["lint"], no-default-feature = true }
 docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }
 mindeps = { features = ["mindeps", "tests"] }
 py311 = { features = ["py311", "tests"] }
-py313 = { features = ["py313", "tests"], solve-group = "py313" } # alias of tests
+py313 = { features = ["py313", "tests"], solve-group = "py313" }
 nogil = { features = ["nogil", "tests"], no-default-feature = true }
 upstream = { features = ["py313", "upstream", "tests"], no-default-feature = true }
