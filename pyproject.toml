@@ -216,13 +216,13 @@ ipython = { cmd = "ipython", description = "Launch IPython" }
 jupyter = { cmd = "jupyter lab", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT" }, description = "Launch Jupyter Lab" }
 
 [tool.pixi.feature.py311.dependencies]
-python = "~=3.11.0"
+python = "=3.11"
 
 [tool.pixi.feature.py313.dependencies]
-python = "~=3.13.0"
+python = "=3.13"
 
 [tool.pixi.feature.mindeps.dependencies]
-python = "~=3.11.0"
+python = "=3.11"
 numpy = "==1.24.0"
 pandas = "==1.5.1"
 xarray = "==2023.1.0"
@@ -233,10 +233,9 @@ twine = "*"
 
 [tool.pixi.feature.dist.tasks]
 dist-clear = { cmd = "rm -rf build dist" }
-sdist = { cmd = "python -m build --sdist", description = "Build source distribution" }
-wheel = { cmd = "python -m build --wheel", description = "Build wheel distribution" }
+build = { cmd = "python -m build", description = "Build pypi artifacts" }
 twine-check = { cmd = "python -m twine check dist/*" }
-dist = { depends-on = ["dist-clear", "sdist", "wheel", "twine-check"] }
+dist = { depends-on = ["dist-clear", "build", "twine-check"] }
 twine-upload = { depends-on = ["dist"], cmd = "python -m twine upload dist/*" }
 
 [tool.pixi.feature.upstream.pypi-dependencies]

@@ -48,7 +48,7 @@ Test with coverage and open HTML report in your browser:
 Code Formatting
 ---------------
 
-pathfinder2e_stats uses several code linters (ruff, mypy, etc.), which are enforced by
+This project uses several code linters (ruff, mypy, etc.), which are enforced by
 CI. Developers should run them locally before they submit a PR, through the single
 command
 
