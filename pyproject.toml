@@ -38,7 +38,7 @@ zip-safe = false # https://mypy.readthedocs.io/en/latest/installed_packages.html
 include-package-data = true
 
 [tool.setuptools.packages]
-find = {namespaces = false}
+find = { namespaces = false }
 
 [tool.setuptools_scm]
 # Use hardcoded version when .git has been removed and this is not a package created
