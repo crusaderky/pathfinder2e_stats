@@ -78,9 +78,9 @@ exclude_lines = [
 
 [tool.codespell]
 ignore-words-list = [
-  "Mot",
+  "Mot", # Bon Mot
 ]
-exclude-file = ["pixi.lock"]
+skip = "pixi.lock,build,htmlcov"
 
 [tool.ruff]
 exclude = [".eggs"]
@@ -138,7 +138,6 @@ known-first-party = ["pathfinder2e_stats"]
 [tool.mypy]
 files = ["."]
 python_version = "3.11"
-# strict = true
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
@@ -170,6 +169,7 @@ ruff = "*"
 mypy = "*"
 dprint = "*"
 actionlint = "*"
+codespell = "*"
 blacken-docs = "*"
 validate-pyproject = "*"
 sphinx-lint = "*"
@@ -183,6 +183,7 @@ ruff-check = { cmd = "ruff check --fix --show-fixes", description = "Lint with r
 ruff-format = { cmd = "ruff format", description = "Format with ruff" }
 dprint = { cmd = "dprint fmt", description = "Format with dprint" }
 actionlint = { cmd = "actionlint", description = "Lint actions with actionlint" }
+codespell = { cmd = "codespell", description = "Spell check with codespell" }
 blacken-docs = { cmd = "blacken-docs", description = "Format Python markdown blocks with Black" }
 validate-pyproject = { cmd = "validate-pyproject pyproject.toml", description = "Validate pyproject.toml" }
 sphinx-lint = { cmd = "sphinx-lint doc", description = "Run sphinx-lint" }

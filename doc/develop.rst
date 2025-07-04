@@ -48,15 +48,13 @@ Test with coverage and open HTML report in your browser:
 Code Formatting
 ---------------
 
-pathfinder2e_stats uses several code linters (ruff, black, mypy, etc.), which are
-enforced by CI. Developers should run them locally before they submit a PR, through the
-single command
+pathfinder2e_stats uses several code linters (ruff, mypy, etc.), which are enforced by
+CI. Developers should run them locally before they submit a PR, through the single
+command
 
 .. code-block:: bash
 
     pixi run lint
-
-This makes sure that linter versions and options are aligned for all developers.
 
 Optionally, you may wish to run the linters automatically every time you make a
 git commit. This can be done by running:

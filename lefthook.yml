@@ -17,6 +17,8 @@ pre-commit:
       run: pixi run actionlint
     - name: blacken-docs
       run: pixi run blacken-docs
+    - name: codespell
+      run: pixi run codespell
     - name: validate-pyproject
       run: pixi run validate-pyproject
     - name: sphinx-lint
