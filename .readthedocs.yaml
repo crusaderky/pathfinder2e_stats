@@ -6,8 +6,7 @@ build:
     python: mambaforge-22.9
   jobs:
     post_install:
-      - jupyter nbconvert --execute --to notebook notebooks/*.ipynb
-      - mv notebooks/*.nbconvert.ipynb doc/notebooks/
+      - cp notebooks/*.ipynb doc/notebooks/
 
 conda:
   environment: doc/requirements.yml
