@@ -22,7 +22,7 @@ jobs:
         run: pixi run lint
       - name: Check for changed files after linting
         run: |
-          if [[ -n $(git status) ]]; then
+          if [[ -n $(git status --porcelain) ]]; then
             echo "There are uncommitted changes after linting"
             git status
             exit 1
