@@ -1,12 +1,11 @@
 [project]
 name = "pathfinder2e_stats"
 authors = [{ name = "Guido Imperiale", email = "crusaderky@gmail.com" }]
-license = { text = "Apache" }
+license = "Apache-2.0"
 description = "Statistical tools for Pathfinder 2nd edition"
 keywords = ["pathfinder", "statistics"]
 classifiers = [
   "Development Status :: 3 - Alpha",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Topic :: Games/Entertainment :: Board Games",
   "Programming Language :: Python",
@@ -35,9 +34,11 @@ text = "Statistical tools for Pathfinder 2nd Edition"
 content-type = "text/plain"
 
 [tool.setuptools]
-packages = ["pathfinder2e_stats"]
 zip-safe = false # https://mypy.readthedocs.io/en/latest/installed_packages.html
 include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["pathfinder2e_stats"]
 
 [tool.setuptools_scm]
 # Use hardcoded version when .git has been removed and this is not a package created
@@ -136,7 +137,7 @@ select = [
 known-first-party = ["pathfinder2e_stats"]
 
 [tool.mypy]
-files = ["."]
+files = ["pathfinder2e_stats"]
 python_version = "3.11"
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
@@ -240,7 +241,7 @@ python-build = "*"
 twine = "*"
 
 [tool.pixi.feature.dist.tasks]
-dist-clear = { cmd = "rm -rf dist build" }
+dist-clear = { cmd = "rm -rf build dist" }
 sdist = { cmd = "python -m build --sdist", description = "Build source distribution" }
 wheel = { cmd = "python -m build --wheel", description = "Build wheel distribution" }
 twine-check = { cmd = "python -m twine check dist/*" }
@@ -265,7 +266,7 @@ xarray = "*"
 
 [tool.pixi.environments]
 default = { features = ["py313", "docs", "tests", "jupyter"], solve-group = "py313" }
-dist = { features = ["py313", "dist"], no-default-feature = true }
+dist = { features = ["dist"], no-default-feature = true }
 lint = { features = ["lint"], no-default-feature = true }
 docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }
 mindeps = { features = ["mindeps", "tests"] }
