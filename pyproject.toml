@@ -199,7 +199,7 @@ pydata-sphinx-theme = "*"
 myst-nb = "*"
 
 [tool.pixi.feature.docs.tasks]
-copy-nbs = "cp -v notebooks/*.ipynb doc/notebooks/"
+copy-nbs = "cp notebooks/*.ipynb doc/notebooks/"
 sphinx-build = { cmd = "sphinx-build -n -j auto -b html -d ../build/doctrees . ../build/html", cwd = "doc", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT" }, description = "Run Sphinx" }
 docs = { depends-on = ["copy-nbs", "sphinx-build"], description = "Build docs" }
 open-docs = { cmd = "open build/html/index.html", depends-on = ["docs"], description = "Open the generated docs" }
@@ -258,7 +258,7 @@ xarray = "*"
 default = { features = ["py313", "docs", "tests", "jupyter"], solve-group = "py313" }
 dist = { features = ["dist"], no-default-feature = true }
 lint = { features = ["lint"], no-default-feature = true }
-docs = { features = ["docs", "jupyter"], solve-group = "py313" }
+docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }
 mindeps = { features = ["mindeps", "tests"] }
 py311 = { features = ["py311", "tests"] }
 py313 = { features = ["py313", "tests"], solve-group = "py313" } # alias of tests

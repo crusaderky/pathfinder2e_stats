@@ -4,6 +4,8 @@ channels:
 - https://prefix.dev/conda-forge
 - nodefaults
 dependencies:
+- python 3.13.*
+- python >=3.11
 - pip *
 - sphinx *
 - pydata-sphinx-theme *
@@ -12,7 +14,6 @@ dependencies:
 - matplotlib *
 - hvplot *
 - scipy *
-- python >=3.11
 - numpy >=1.24
 - pandas >=1.5
 - xarray >=2023.1.0
