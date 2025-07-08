@@ -272,12 +272,19 @@ twine = "*"
 [tool.pixi.feature.dist.tasks]
 dist-clear = { cmd = "rm -rf build dist" }
 build = { cmd = "python -m build", description = "Build pypi artifacts" }
-dist = { depends-on = ["dist-clear", "build", "twine-check"] }
 twine-check = { cmd = "python -m twine check dist/*" }
 twine-upload = { cmd = "python -m twine upload dist/*" }
 
+self-contained-mkdir = { cmd = "mkdir dist/pathfinder2e_stats" }
+self-contained-copy = { cmd = "cp -r pyproject.toml pixi.lock run_self_contained.* smoke_test.py notebooks dist/*.whl dist/pathfinder2e_stats/" }
+self-contained-tar = { cmd = "tar -C dist -czf dist/pathfinder2e_stats-self-contained.tar.gz  --exclude .ipynb_checkpoints pathfinder2e_stats" }
+self-contained = { depends-on = ["self-contained-mkdir", "self-contained-copy", "self-contained-tar"], description = "Create a self-contained deployment tarball" }
+
+dist = { depends-on = ["dist-clear", "build", "twine-check", "self-contained"] }
+
 [tool.pixi.environments]
 default = { features = ["py313", "smoke", "docs", "tests", "jupyter"], solve-group = "py313" }
+prod = { features = ["py313", "smoke", "jupyter"], solve-group = "py313" }
 dist = { features = ["dist"], no-default-feature = true }
 lint = { features = ["lint"], no-default-feature = true }
 docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }

@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: ["*"]
 
+# When this workflow is queued, automatically cancel any previous running
+# or pending jobs from the same branch
+concurrency:
+  group: wheels-${{ github.ref }}
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash -l {0}
@@ -48,3 +54,35 @@ jobs:
           name: dist
           path: dist/*
           if-no-files-found: error
+
+  self-contained-test:
+    name: self-contained test ${{ matrix.os }}
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest # x86-64
+          - ubuntu-24.04-arm # ARM
+          - macos-13 # x86-64
+          - macos-latest # ARM
+          - windows-latest # x86-64
+    steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          merge-multiple: true # Don't use subdirectories
+
+      - name: Unpack
+        run: tar -xzvf pathfinder2e_stats-self-contained.tar.gz
+
+      - name: Run self-contained smoke test (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: pathfinder2e_stats/run_self_contained.sh -e prod smoke-test
+
+      - name: Run self-contained smoke test (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: pathfinder2e_stats\run_self_contained.ps1 -e prod smoke-test
