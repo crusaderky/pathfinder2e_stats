@@ -28,7 +28,7 @@ jobs:
           - ubuntu-latest # x86-64
           - ubuntu-24.04-arm # ARM
           - macos-13 # x86-64
-          - macos-14 # ARM
+          - macos-latest # ARM
           - windows-latest # x86-64
         environment:
           - mindeps
