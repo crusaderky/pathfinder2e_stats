@@ -10,7 +10,7 @@ on:
 # When this workflow is queued, automatically cancel any previous running
 # or pending jobs from the same branch
 concurrency:
-  group: tests-${{ github.ref }}
+  group: pytest-${{ github.ref }}
   cancel-in-progress: true
 
 defaults:
@@ -18,7 +18,7 @@ defaults:
     shell: bash -l {0}
 
 jobs:
-  build:
+  test:
     name: ${{ matrix.os }} ${{ matrix.environment }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -56,6 +56,9 @@ jobs:
           environments: ${{ matrix.environment }}
           cache: ${{ matrix.environment != 'upstream' }}
           locked: ${{ matrix.environment != 'upstream' }}
+
+      - name: Smoke test
+        run: pixi run -e ${{ matrix.environment }} smoke-test
 
       - name: pytest with coverage
         if: matrix.environment != 'nogil'
