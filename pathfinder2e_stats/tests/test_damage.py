@@ -6,7 +6,7 @@ import xarray
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import Damage, check, damage, set_size
+from pathfinder2e_stats import Damage, DoS, check, damage, set_size
 
 
 def test_damage_simple():
@@ -415,8 +415,9 @@ def test_multiple_targets():
     """
     set_size(50)
     actual = damage(
-        check(6, DC=15, dims={"target": 1000}),  # That's a lot of pixies! :)
+        check(6, DC=15, independent_dims={"target": 1000}),
         Damage("fire", 6, 6, basic_save=True),
+        dependent_dims=["target"],
     )
     d = actual.total_damage.values
     assert d.shape == (50, 1000)
@@ -435,8 +436,9 @@ def test_multiple_targets_splash():
     """
     set_size(50)
     actual = damage(
-        check(6, DC=15, dims={"target": 1000}),
+        check(6, DC=15, independent_dims={"target": 1000}),
         Damage("fire", 6, 6, splash=True),
+        dependent_dims=["target"],
     ).total_damage.values
     assert actual.shape == (50, 1000)
     assert np.unique(actual).size > 10
@@ -448,13 +450,15 @@ def test_multiple_targets_splash():
 
 
 def test_multiple_targets_deadly():
-    """If you hit multiple targets with a deadly weapon, roll the base damage
+    """If you hit multiple targets with a deadly weapon, but for some reason
+    you only roll damage oncce, then roll the base damage
     only once for all, then double it, then roll the deadly die.
     """
     set_size(50)
     actual = damage(
-        check(6, DC=15, dims={"target": 1000}),
+        check(6, DC=15, independent_dims={"target": 1000}),
         Damage("slashing", 2, 12, deadly=6),
+        dependent_dims=["target"],
     ).total_damage.values
     assert actual.shape == (50, 1000)
     assert np.unique(actual).size > 10
@@ -467,13 +471,18 @@ def test_multiple_targets_deadly():
 
 
 def test_multiple_targets_type():
-    """In case of multiple targets, damage is rolled only once. However,
-    identical damage dice with different types are rolled separately.
+    """In case of multiple targets of e.g. a fireball, damage is rolled only once
+    for half, full, and double.
+    However, identical damage dice with different types are rolled separately.
+    You do not need to explicitly state that 'damage_type' is an dependent dimension.
+
+    # TODO weaknesses with damage_type dim
     """
     set_size(50)
     actual = damage(
-        check(6, DC=15, dims={"target": 1000}),
+        check(6, DC=15, independent_dims={"target": 1000}),
         Damage("fire", 10, 12, splash=True) + Damage("cold", 10, 12, splash=True),
+        dependent_dims=["target"],
     )
     d = actual.splash_damage.values
     assert d.shape == (50, 1000, 2)
@@ -498,3 +507,56 @@ def test_null_damage():
     assert actual.total_damage.shape == (1000,)
     assert actual.total_damage.dtype.kind == "i"
     assert (actual.total_damage == 0).all()
+
+
+def test_independent_dims():
+    c = check(6, DC=15, independent_dims={"target": 2})
+    s = Damage("fire", 6, 6, basic_save=True)
+
+    with pytest.raises(
+        ValueError,
+        match="target.*must be listed in either independent_dims or dependent_dims",
+    ):
+        damage(c, s)
+    with pytest.raises(ValueError, match="target.*both independent and dependent"):
+        damage(c, s, independent_dims=["target"], dependent_dims=["target"])
+    with pytest.raises(KeyError, match="notfound"):
+        damage(c, s, independent_dims=["target", "notfound"])
+    with pytest.raises(KeyError, match="notfound"):
+        damage(c, s, dependent_dims=["target", "notfound"])
+    with pytest.raises(ValueError, match="roll.*always independent"):
+        damage(c, s, independent_dims=["target", "roll"])
+    with pytest.raises(ValueError, match="roll.*always independent"):
+        damage(c, s, dependent_dims=["target", "roll"])
+
+    ind = damage(c, s, independent_dims=["target"])
+    dep = damage(c, s, dependent_dims=["target"])
+
+    c0 = c.outcome.isel(target=0)
+    c1 = c.outcome.isel(target=1)
+    ind0 = ind.total_damage.isel(target=0)
+    ind1 = ind.total_damage.isel(target=1)
+    dep0 = dep.total_damage.isel(target=0)
+    dep1 = dep.total_damage.isel(target=0)
+
+    mask = c0 == c1
+    assert mask.any()
+    assert_equal(dep0[mask], dep1[mask])
+    assert (ind0[mask] == ind1[mask]).any()
+    assert (ind0[mask] != ind1[mask]).any()
+
+    mask = c0 != c1
+    assert mask.any()
+    # assert (dep0[mask] != dep1[mask]).all()  # FIXME
+    assert (ind0[mask] == ind1[mask]).any()
+    assert (ind0[mask] != ind1[mask]).any()
+
+    # Roll once along dependent dims and then halve/double for
+    # successful save or critical failure.
+    mask = (c0 == DoS.failure) & (c1 == DoS.critical_failure)
+    assert mask.any()
+    assert_equal(dep1[mask], dep0[mask] * 2)
+
+    mask = (c0 == DoS.failure) & (c1 == DoS.success)
+    assert mask.any()
+    assert_equal(dep1[mask], dep0[mask] // 2)
