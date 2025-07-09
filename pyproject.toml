@@ -89,6 +89,7 @@ target-version = "py311"
 
 [tool.ruff.lint]
 ignore = [
+  "C408", # Unnecessary `dict()` call (rewrite as a literal)
   "EM101", # Exception must not use a string literal, assign to variable first
   "EM102", # Exception must not use an f-string literal, assign to variable first
   "N802", # Function name should be lowercase

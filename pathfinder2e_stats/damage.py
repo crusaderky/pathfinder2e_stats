@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Collection, Hashable, Mapping
-from typing import cast
+from typing import Literal, cast
 
 import numpy as np
 import xarray
 from xarray import DataArray, Dataset
 
-from pathfinder2e_stats.check import check
+from pathfinder2e_stats.check import _parse_independent_dependent_dims, check
 from pathfinder2e_stats.damage_spec import Damage, DamageLike, ExpandedDamage
 from pathfinder2e_stats.dice import roll
 
@@ -16,6 +16,8 @@ def damage(
     check_outcome: Dataset,
     damage_spec: DamageLike,
     *,
+    independent_dims: Collection[Hashable] = (),
+    dependent_dims: Collection[Hashable] | Literal["*"] = (),
     weaknesses: Mapping[str, int] | DataArray | None = None,
     resistances: Mapping[str, int] | DataArray | None = None,
     immunities: Mapping[str, bool] | Collection[str] | DataArray | None = None,
@@ -36,6 +38,28 @@ def damage(
         :class:`~pathfinder2e_stats.ExpandedDamage`, a
         dict representing an :class:`~pathfinder2e_stats.ExpandedDamage`, or
         a combination thereof using the `+` operator.
+    :param independent_dims:
+        Dimensions to roll independently from each other.
+
+        This must be a subset of the dimensions of any of the input parameters.
+        Note that a dimension may be:
+
+        - independent in both :func:`check` and :func:`damage`; e.g. two
+          iterative Strikes;
+        - independent in :func:`check`, but dependent in :func:`damage`;
+          e.g. multiple targets roll a check to save vs.
+          :prd_spells:`Fireball <1530>`, damage rolled only once;
+        - dependent  in both :func:`check` and :func:`damage`, e.g.
+          :prd_feats:`Swipe <4795>` vs. two targets, or a what-if analysis of
+          the same strike vs. two different targets or from two different attackers.
+
+        Dimension `roll` is always independent and must not be included.
+
+        See examples below.
+    :param dependent_dims:
+        Dimensions to roll together with the same roll, for validation purposes.
+        See :func:`check` for more details. `damage_type`, if present in the inputs
+        (e.g. weaknesses or resistances), is always treated as dependent.
     :param weaknesses:
         Optional weaknesses to apply to the damage, in the format
         ``{damage type: value}``, where the damage type may or may not match
@@ -175,13 +199,8 @@ def damage(
         direct_damage  (roll, damage_type) int64 800kB 8 9 5 0 0 0 ... 0 11 6 0 0 0
         total_damage   (roll) int64 800kB 8 9 5 0 0 0 0 0 0 ... 0 0 5 0 11 6 0 0 0
     Attributes:
-        keen:            False
-        fortune:         False
-        misfortune:      False
-        hero_point:      False
-        perfected_form:  False
-        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
-        damage_spec:     {'Critical success': '(1d8+4)x2 slashing', 'Success': '1...
+        legend:       {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'S...
+        damage_spec:  {'Critical success': '(1d8+4)x2 slashing', 'Success': '1d8+...
 
     Strike with an :prd_equipment:`Alchemist's Fire <3287>`:
 
@@ -208,11 +227,6 @@ def damage(
         apply_persistent_damage  (roll, damage_type, persistent_round) bool 300kB ...
         total_damage             (roll) int64 800kB 2 7 6 2 18 11 ... 2 6 7 11 9 9
     Attributes:
-        keen:                   False
-        fortune:                False
-        misfortune:             False
-        hero_point:             False
-        perfected_form:         False
         legend:                 {-2: 'No roll', -1: 'Critical failure', 0: 'Failu...
         damage_spec:            {'Critical success': '(1d8)x2 fire plus 2 persist...
         splash_damage_targets:  2
@@ -222,13 +236,15 @@ def damage(
     The last target also has resistance 5 to fire:
 
     >>> spec = Damage("fire", 6, 6, basic_save=True)
-    >>> reflex_bonus = xarray.DataArray([11, 13, 15], dims=["target"])
-    >>> resistances = xarray.DataArray(
+    >>> reflex_bonus = DataArray([11, 13, 15], dims=["target"])
+    >>> resistances = DataArray(
     ...     [[0, 0, 5]], dims=["damage_type", "target"],
     ...     coords={"damage_type": ["fire"]})
-    >>> # Use dims={"target": 3} to roll separately for each target
-    >>> saving_throw = check(reflex_bonus, DC=21, dims={"target": 3})
-    >>> dmg = damage(saving_throw, spec, resistances=resistances)
+    >>> # Roll savint throw separately for each target
+    >>> saving_throw = check(reflex_bonus, DC=21, independent_dims=["target"])
+    >>> dmg = damage(saving_throw, spec, resistances=resistances,
+    ...              # Roll damage once for all targets and halve/double as needed
+    ...              dependent_dims=["target"])
     >>> dmg
     <xarray.Dataset> Size: 10MB
     Dimensions:        (target: 3, roll: 100000, damage_type: 1)
@@ -244,13 +260,8 @@ def damage(
         resistances    (damage_type, target) int64 24B 0 0 5
         total_damage   (roll, target) int64 2MB 15 30 10 11 11 6 ... 12 12 1 6 13 21
     Attributes:
-        keen:            False
-        fortune:         False
-        misfortune:      False
-        hero_point:      False
-        perfected_form:  False
-        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
-        damage_spec:     {'Success': '(6d6)/2 fire', 'Failure': '6d6 fire', 'Crit...
+        legend:       {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'S...
+        damage_spec:  {'Success': '(6d6)/2 fire', 'Failure': '6d6 fire', 'Critica...
 
     How much damage did each target take, on average?
 
@@ -265,12 +276,17 @@ def damage(
     damage_spec = ExpandedDamage(damage_spec)
     out.attrs["damage_spec"] = damage_spec.to_dict_of_str()
 
-    pers_dims: dict[Hashable, int] = {"persistent_round": persistent_damage_rounds}
+    independent_dims = _parse_independent_dependent_dims(
+        out, independent_dims, dependent_dims
+    )
+    pers_dims = independent_dims.copy()
+    pers_dims["persistent_round"] = persistent_damage_rounds
+
     damages = {
         name: _roll_damage(check_outcome.outcome, spec, dims)
         for name, spec, dims in (
-            ("direct_damage", damage_spec.filter("direct"), None),
-            ("splash_damage", damage_spec.filter("splash"), None),
+            ("direct_damage", damage_spec.filter("direct"), independent_dims),
+            ("splash_damage", damage_spec.filter("splash"), independent_dims),
             ("persistent_damage", damage_spec.filter("persistent"), pers_dims),
         )
         if spec
@@ -333,7 +349,16 @@ def damage(
         out["persistent_damage_check"] = check(
             DC=persistent_damage_DC,
             # Roll separately for each damage type, but not e.g. for different targets
-            dims={
+            independent_dims={
+                # Treat all dimensions as independent.
+                # Note: this is not *quite* right. Consider:
+                # Swipe: attack roll is dependent on target, damage is dependent too,
+                #        but check to recover from persistent damage is independent.
+                # What-if analysis of persistent damage vs. different targets:
+                #        persistent damage is dependent too.
+                # This last case is not modelled exactly for the sake of not
+                # overwhelming the user with configuration options.
+                **dict.fromkeys(out["persistent_damage_DC"].dims),
                 "damage_type": out.sizes["damage_type"],
                 "persistent_round": persistent_damage_rounds,
             },
@@ -364,49 +389,51 @@ def damage(
 
 
 def _roll_damage(
-    check_outcome: DataArray, spec: ExpandedDamage, dims: Mapping[Hashable, int] | None
+    check_outcome: DataArray,
+    spec: ExpandedDamage,
+    independent_dims: Mapping[Hashable, int],
 ) -> DataArray:
     # Only roll once and then double/halve instead of rolling separately for each
     # outcome. This matters in case of multiple targets receiving the same damage.
     cache: dict[Damage, xarray.DataArray] = {}
 
-    out = []
+    dmg_by_dos = []  # dims=(roll, damage_type)
     for specs in spec.values():
-        damage_rolls = []
+        dmg_by_type = []  # dims=(roll,); specific for the current DoS
         for d in specs:
-            # Don't include multiplier in the cache key
-            # Note: this includes in the cache type, persistent, and splash
+            # Cache key includes in the damage type, persistent, and splash
+            # Don't include multiplier in the cache key, so that along all
+            # dependent dimensions you roll damage only once and then
+            # double/halve it as needed.
             key = d.copy(multiplier=1)
             try:
                 r = cache[key]
             except KeyError:
-                r = roll(d.dice, d.faces, d.bonus, dims=dims)
+                r = roll(d.dice, d.faces, d.bonus, dims=independent_dims)
                 cache[key] = r
 
+            assert d.multiplier in (0.5, 1, 2)
             if d.multiplier == 2:
-                r = r * 2
+                r = r * 2  # Don't use *= to avoid modifying the cache
             elif d.multiplier == 0.5:
                 r = r // 2
-            else:
-                assert d.multiplier == 1
 
             # Halved damage is rounded down, but can't be reduced below 1.
             # If the combined penalties on an attack would reduce the damage to 0 or
             # below, you still deal 1 damage.
             r = cast(DataArray, np.maximum(1, r))
 
-            damage_rolls.append(r)
+            dmg_by_type.append(r)
 
-        r = xarray.concat(damage_rolls, dim="damage_type", join="outer", fill_value=0)
-        del damage_rolls
+        r = xarray.concat(dmg_by_type, dim="damage_type", join="outer", fill_value=0)
         r.coords["damage_type"] = [d.type for d in specs]
         r = r.groupby("damage_type", squeeze=False).sum()
-        out.append(r)
+        dmg_by_dos.append(r)
 
-    out = list(xarray.align(*out, copy=False, join="outer", fill_value=0))
+    dmg_by_dos = list(xarray.align(*dmg_by_dos, copy=False, join="outer", fill_value=0))
     return sum(
-        xarray.where(check_outcome == dos, r, 0)
-        for dos, r in zip(spec, out, strict=False)
+        xarray.where(check_outcome == dos, dmg, 0)
+        for dos, dmg in zip(spec, dmg_by_dos, strict=False)
     )
 
 
