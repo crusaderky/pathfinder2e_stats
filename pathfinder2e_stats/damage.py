@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Collection, Hashable, Mapping
-from typing import Literal, cast
+from typing import cast
 
 import numpy as np
 import xarray
@@ -17,7 +17,7 @@ def damage(
     damage_spec: DamageLike,
     *,
     independent_dims: Collection[Hashable] = (),
-    dependent_dims: Collection[Hashable] | Literal["*"] = (),
+    dependent_dims: Collection[Hashable] = (),
     weaknesses: Mapping[str, int] | DataArray | None = None,
     resistances: Mapping[str, int] | DataArray | None = None,
     immunities: Mapping[str, bool] | Collection[str] | DataArray | None = None,

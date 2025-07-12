@@ -601,12 +601,9 @@ def test_independent_dims():
     ind4 = check(7, DC=DC, independent_dims={"target": None, "x": 3})
     seed(0)
     dep1 = check(7, DC=DC, dependent_dims=["target"])
-    seed(0)
-    dep2 = check(7, DC=DC, dependent_dims="*")
 
     assert_equal(ind1, ind2)
     assert_equal(ind1, ind3)
-    assert_equal(dep1, dep2)
 
     assert ind1.natural.dims == ("roll", "target")
     assert ind4.natural.dims == ("roll", "target", "x")

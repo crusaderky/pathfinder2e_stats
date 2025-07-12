@@ -54,7 +54,7 @@ def check(
     *,
     DC: int | DataArray,
     independent_dims: Mapping[Hashable, int | None] | Collection[Hashable] = (),
-    dependent_dims: Collection[Hashable] | Literal["*"] = (),
+    dependent_dims: Collection[Hashable] = (),
     keen: bool | DataArray = False,
     perfected_form: bool | DataArray = False,
     fortune: bool | DataArray = False,
@@ -98,10 +98,6 @@ def check(
         `dependent_dims` must cover all dimensions of the input parameters.
         The name of these two parameters comes from the concept in statistics of
         dependent and independent variables.
-        This parameter is only used for validation to make the choice between
-        dependent and independent dims always explicit. You can disable this check
-        by passing `dependent_dims=*`. This is not recommended unless your input
-        dimensions are variable and laborious to track.
     :param keen:
         Set to True to Strike with a weapon inscribed with a
         :prd_equipment:`Keen <2843>` rune.
@@ -332,7 +328,7 @@ def check(
 def _parse_independent_dependent_dims(
     ds: Dataset,
     independent_dims: Mapping[Hashable, int | None] | Collection[Hashable],
-    dependent_dims: Collection[Hashable] | Literal["*"],
+    dependent_dims: Collection[Hashable],
 ) -> dict[Hashable, int]:
     """Parse and validate the independent and dependent dimensions.
 
@@ -364,30 +360,28 @@ def _parse_independent_dependent_dims(
     else:
         out = {dim: ds.sizes[dim] for dim in independent_dims}
 
-    if dependent_dims != "*":
-        # Validate that independent_dims + dependent_dims == ds.sizes
-        dependent_dims = set(dependent_dims)
-        if "roll" in dependent_dims:
-            raise ValueError("Dimension 'roll' is always independent")
-        conflict = set(out) & dependent_dims
-        missing = set(ds.sizes) - set(out) - {"roll"} - dependent_dims
-        unknown = dependent_dims - set(ds.sizes)
-        if conflict:
-            raise ValueError(
-                f"Dimension(s) {sorted(conflict, key=str)} are both independent "
-                "and dependent"
-            )
-        if missing:
-            raise ValueError(
-                f"Dimension(s) {sorted(missing, key=str)} must be listed in either "
-                "independent_dims or dependent_dims. "
-                "Set dependent_dims='*' to disable this check."
-            )
-        if unknown:
-            raise KeyError(
-                f"Dimension(s) {sorted(unknown, key=str)} are not present in the "
-                "input dataset. "
-            )
+    # Validate that independent_dims + dependent_dims == ds.sizes
+    dependent_dims = set(dependent_dims)
+    if "roll" in dependent_dims:
+        raise ValueError("Dimension 'roll' is always independent")
+    conflict = set(out) & dependent_dims
+    missing = set(ds.sizes) - set(out) - {"roll"} - dependent_dims
+    unknown = dependent_dims - set(ds.sizes)
+    if conflict:
+        raise ValueError(
+            f"Dimension(s) {sorted(conflict, key=str)} are both independent "
+            "and dependent"
+        )
+    if missing:
+        raise ValueError(
+            f"Dimension(s) {sorted(missing, key=str)} must be listed in either "
+            "independent_dims or dependent_dims. "
+        )
+    if unknown:
+        raise KeyError(
+            f"Dimension(s) {sorted(unknown, key=str)} are not present in the "
+            "input dataset. "
+        )
 
     return out
 
