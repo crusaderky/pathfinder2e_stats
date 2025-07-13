@@ -226,14 +226,15 @@ python = "=3.11"
 python = "=3.13"
 
 [tool.pixi.feature.nogil.dependencies]
+# TODO python 3.14 prereleases?
 python-freethreading = "=3.13"
 pytest-run-parallel = "*"
 
 [tool.pixi.feature.nogil.pypi-dependencies]
 # TODO python 3.14 prereleases?
-# FIXME Need pandas >=2.3.1
-# https://github.com/pandas-dev/pandas/issues/59057
-pandas = { version = ">=2.3.1", index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+# FIXME Need pandas >=2.3.2
+# https://github.com/pandas-dev/pandas/issues/61844
+pandas = { version = ">=2.3.2", index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
 xarray = "*"
 
 [tool.pixi.feature.mindeps.dependencies]
