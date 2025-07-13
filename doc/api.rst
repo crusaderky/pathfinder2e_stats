@@ -35,18 +35,15 @@ Rolling for damage
 ------------------
 .. autofunction:: pathfinder2e_stats.damage
 
-Utilities
----------
+Utility functions
+-----------------
 .. autofunction:: pathfinder2e_stats.level2rank
 .. autofunction:: pathfinder2e_stats.rank2level
-.. autofunction:: pathfinder2e_stats.rng
-.. autofunction:: pathfinder2e_stats.seed
-.. autofunction:: pathfinder2e_stats.set_size
 
 Xarray extensions
 -----------------
-When you ``import pathfinder2e_stats``, all DataArray and Dataset objects gain these
-new methods:
+When you ``import pathfinder2e_stats``, all DataArray and Dataset objects gain this
+new method:
 
 .. _value_counts:
 
@@ -69,3 +66,12 @@ new methods:
     :returns:
         :class:`~xarray.DataArray` with the same dimensions as the input array,
         minus dim, plus new_dim.
+
+Configuration
+-------------
+.. autofunction:: pathfinder2e_stats.set_config
+.. autofunction:: pathfinder2e_stats.get_config
+.. autoclass:: pathfinder2e_stats.config.Config
+    :members:
+    :undoc-members:
+.. autofunction:: pathfinder2e_stats.seed

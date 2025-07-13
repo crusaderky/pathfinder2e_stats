@@ -6,7 +6,7 @@ import xarray
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import Damage, DoS, check, damage, set_size
+from pathfinder2e_stats import Damage, DoS, check, damage, set_config
 
 
 def test_damage_simple():
@@ -309,7 +309,7 @@ def test_weaknesses_persistent():
 
 def test_resistances_persistent():
     """Resistances re-apply at every application of persistent damage"""
-    set_size(10_000)
+    set_config(roll_size=10_000)
 
     actual = damage(
         check(6, DC=15),
@@ -413,7 +413,7 @@ def test_multiple_targets():
     """In case of multiple targets along a dependent_dim, damage is rolled only once
     and then multiplied/halved.
     """
-    set_size(50)
+    set_config(roll_size=50)
     actual = damage(
         check(6, DC=15, independent_dims={"target": 1000}),
         Damage("fire", 6, 6, basic_save=True),
@@ -434,7 +434,7 @@ def test_multiple_targets_splash():
     """In case of multiple targets along a dependent_dim, damage is rolled only once.
     This includes when there is no multiplier.
     """
-    set_size(50)
+    set_config(roll_size=50)
     actual = damage(
         check(6, DC=15, independent_dims={"target": 1000}),
         Damage("fire", 6, 6, splash=True),
@@ -454,7 +454,7 @@ def test_multiple_targets_deadly():
     (e.g. Swipe), then roll the base damage only once for all, then double it, then roll
     the deadly die.
     """
-    set_size(50)
+    set_config(roll_size=50)
     actual = damage(
         check(6, DC=15, independent_dims={"target": 1000}),
         Damage("slashing", 2, 12, deadly=6),
@@ -478,7 +478,7 @@ def test_multiple_targets_type():
 
     # TODO weaknesses with damage_type dim
     """
-    set_size(50)
+    set_config(roll_size=50)
     actual = damage(
         check(6, DC=15, independent_dims={"target": 1000}),
         Damage("fire", 10, 12, splash=True) + Damage("cold", 10, 12, splash=True),

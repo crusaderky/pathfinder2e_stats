@@ -5,7 +5,7 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, seed, set_size
+from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, seed, set_config
 
 
 def test_DoS_str():
@@ -478,7 +478,7 @@ def test_perfected_form():
 
 def test_perfected_form_with_fortune():
     """Disable Perfected Form if fortune is active"""
-    set_size(2000)  # With fortune there's a 1/400 chance of crit fail
+    set_config(roll_size=2000)  # With fortune there's a 1/400 chance of crit fail
     ds = check(+10, DC=20, perfected_form=True, fortune=True)
     assert ds.outcome.min() == DoS.critical_failure
     assert ds.outcome.max() == DoS.critical_success
@@ -522,7 +522,7 @@ def test_hero_point_with_fortune_array():
 
 
 def test_perfected_form_with_fortune_array():
-    set_size(2000)  # With fortune there's a 1/400 chance of crit fail
+    set_config(roll_size=2000)  # With fortune there's a 1/400 chance of crit fail
     pf = DataArray([False, True], dims=["pf"])
     fortune = DataArray([False, True], dims=["f"])
     ds = check(

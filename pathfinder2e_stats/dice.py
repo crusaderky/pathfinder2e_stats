@@ -10,7 +10,7 @@ import numpy as np
 import xarray
 from xarray import DataArray
 
-from pathfinder2e_stats import base
+from pathfinder2e_stats.config import get_config, rng
 
 # XdY+Z | XdY-Z | dY+Z | dY-Z | dY
 _pattern = re.compile(r"([0-9]+)?d([0-9]+)([+-][0-9]+)?$")
@@ -95,8 +95,6 @@ def roll(
 
     **See Also:**
 
-    - :func:`seed`
-    - :func:`set_size`
     - :func:`d20`
     - :func:`check`
     """
@@ -120,8 +118,9 @@ def roll(
     if dims is None:
         dims = {}
 
+    roll_size = get_config()["roll_size"]
     raw = DataArray(
-        base.rng().integers(1, faces + 1, size=(base.size, dice, *dims.values())),
+        rng().integers(1, faces + 1, size=(roll_size, dice, *dims.values())),
         dims=("roll", "__dice", *dims),
     )
     return cast(DataArray, np.maximum(0, raw.sum("__dice") + bonus))
