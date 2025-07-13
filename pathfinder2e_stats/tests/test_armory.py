@@ -122,12 +122,35 @@ def test_blazing_bolt():
     assert armory.spells.blazing_bolt(rank=3, actions=3) == Damage("fire", 6, 6)
 
 
+def test_dehydrate():
+    assert armory.spells.dehydrate().dice == 1
+    assert armory.spells.dehydrate(rank=2).dice == 1
+    assert armory.spells.dehydrate(rank=3).dice == 4
+    assert armory.spells.dehydrate(rank=4).dice == 4
+    assert armory.spells.dehydrate(rank=5).dice == 7
+
+
+def test_divine_wrath():
+    d = armory.spells.divine_wrath()
+    assert d[DoS.failure] == d[DoS.critical_failure]  # Doesn't double
+
+
 def test_force_barrage():
     assert armory.spells.force_barrage(actions=1) == Damage("force", 1, 4, 1)
     assert armory.spells.force_barrage(actions=2) == Damage("force", 2, 4, 2)
     assert armory.spells.force_barrage(actions=3) == Damage("force", 3, 4, 3)
     assert armory.spells.force_barrage(rank=2, actions=3) == Damage("force", 3, 4, 3)
     assert armory.spells.force_barrage(rank=3, actions=3) == Damage("force", 6, 4, 6)
+    assert armory.spells.force_barrage(
+        rank=3, actions=3, corageous_anthem=True
+    ) == Damage("force", 6, 4, 12)
+
+
+def test_harm_heal():
+    assert armory.spells.harm().faces == 8
+    assert armory.spells.harm(harming_hands=True).faces == 10
+    assert armory.spells.heal().faces == 8
+    assert armory.spells.heal(healing_hands=True).faces == 10
 
 
 def test_sneak_attack():
