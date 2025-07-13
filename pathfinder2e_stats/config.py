@@ -44,13 +44,13 @@ class Config(TypedDict):
 
     #: Number of rolls in all simulations. Default: 100_000.
     roll_size: int
-    #: Default `independent_dims` parameter for :func:`check`.
+    #: Default `independent_dims` parameter for :func:`~pathfinder2e_stats.check`.
     check_independent_dims: set[Hashable]
-    #: Default `dependent_dims` parameter for :func:`check`.
+    #: Default `dependent_dims` parameter for :func:`~pathfinder2e_stats.check`.
     check_dependent_dims: set[Hashable]
-    #: Default `independent_dims` parameter for :func:`damage`.
+    #: Default `independent_dims` parameter for :func:`~pathfinder2e_stats.damage`.
     damage_independent_dims: set[Hashable]
-    #: Default `dependent_dims` parameter for :func:`damage`.
+    #: Default `dependent_dims` parameter for :func:`~pathfinder2e_stats.damage`.
     damage_dependent_dims: set[Hashable]
 
 
