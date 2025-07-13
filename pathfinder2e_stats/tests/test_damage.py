@@ -552,24 +552,50 @@ def test_independent_dims():
     assert_equal(dep1[mask], dep0[mask] // 2)
 
 
+def test_damage_type_independent_dims():
+    """Damage of different types is rolled separately"""
+    c = check(6, DC=15)
+    s = Damage("fire", 1, 6) + Damage("cold", 1, 6)
+    d = damage(c, s)
+    fire = d.direct_damage.sel(damage_type="fire", drop=True)
+    cold = d.direct_damage.sel(damage_type="cold", drop=True)
+    assert (fire != cold).any()
+
+
+def test_splash_damage_is_independent():
+    """direct and splash damages are rolled separately"""
+    c = check(6, DC=15)
+    s = Damage("fire", 1, 6) + Damage("fire", 1, 6, splash=True)
+    d = damage(c, s, splash_damage_targets=1)
+    assert (d.direct_damage != d.splash_damage).any()
+
+
 def test_persistent_damage_independent_dims():
     """Persistent damage and recovery checks are always independent, regardless of
     initial damage.
     """
     c = check(6, DC=DataArray([15, 15], dims=["target"]), dependent_dims=["target"])
-    s = Damage("fire", 1, 6, persistent=True)
+    s = Damage("fire", 1, 6, persistent=True) + Damage("cold", 1, 6, persistent=True)
     d = damage(c, s, dependent_dims=["target"])
     d = d.sel(roll=d.outcome.isel(target=0) == DoS.success)
     assert (d.outcome == DoS.success).all()  # target is a dependent dim
 
     for var in d.persistent_damage, d.persistent_damage_check:
+        # test target dim is independent
         assert (
-            var.isel(target=0, persistent_round=0)
-            != var.isel(target=0, persistent_round=1)
+            var.isel(target=0, persistent_round=0, damage_type=0)
+            != var.isel(target=1, persistent_round=0, damage_type=0)
         ).any()
+        # test persistent_round dim is independent
         assert (
-            var.isel(target=0, persistent_round=0)
-            != var.isel(target=1, persistent_round=0)
+            var.isel(target=0, persistent_round=0, damage_type=0)
+            != var.isel(target=0, persistent_round=1, damage_type=0)
+        ).any()
+        # test damage_type dim is independent
+        # (this is not obvious for the recovery check!)
+        assert (
+            var.isel(target=0, persistent_round=0, damage_type=0)
+            != var.isel(target=0, persistent_round=0, damage_type=1)
         ).any()
 
 

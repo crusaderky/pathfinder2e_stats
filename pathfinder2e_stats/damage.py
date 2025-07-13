@@ -53,13 +53,13 @@ def damage(
           :prd_feats:`Swipe <4795>` vs. two targets, or a what-if analysis of
           the same strike vs. two different targets or from two different attackers.
 
-        Dimension `roll` is always independent and must not be included.
+        Dimensions `roll` and `damage_type` are always independent and must not be
+        included.
 
         See examples below.
     :param dependent_dims:
         Dimensions along which there must be a single dice roll for all points.
-        See :func:`check` for more details. `damage_type`, if present in the inputs
-        (e.g. weaknesses or resistances), is always treated as dependent.
+        See :func:`check` for more details.
     :param weaknesses:
         Optional weaknesses to apply to the damage, in the format
         ``{damage type: value}``, where the damage type may or may not match

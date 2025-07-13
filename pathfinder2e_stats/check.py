@@ -92,6 +92,7 @@ def check(
         Dimension `roll` is always independent and must not be included.
 
         See examples below.
+
     :param dependent_dims:
         Dimensions along which there must be a single dice roll for all points.
         They must be a subset of the dimensions of the input parameters.
@@ -346,6 +347,7 @@ def _parse_independent_dependent_dims(
             "Dimension 'roll' is always independent and must not be included in "
             "independent_dims"
         )
+
     if isinstance(independent_dims, Mapping):
         out = dict(independent_dims)
         for dim, size in independent_dims.items():
