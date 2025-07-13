@@ -1,9 +1,5 @@
-from __future__ import annotations
+from typing import TYPE_CHECKING, TypeVar
 
-import threading
-from typing import TYPE_CHECKING, Any, TypeVar
-
-import numpy as np
 import xarray
 from xarray import DataArray
 
@@ -12,48 +8,6 @@ if TYPE_CHECKING:
 else:
     # Hack to fix Sphinx rendering
     _T = "int | DataArray"
-
-
-size = 100_000
-
-_state = threading.local()
-
-
-def rng() -> np.random.Generator:
-    """Get the library-global, thread-local random number generator.
-
-    This is seeded by default to 0. This means, for example, that restarting and
-    rerunning the same Jupyter notebook will produce identical results, but true
-    multi-threaded applications don't need to worry about seeding. However, the side
-    effect is that multi-process and multi-threaded applications need to be careful to
-    call :func:`seed` on each thread and process or will produce the same sequence of
-    random numbers everywhere.
-
-    See also :func:`seed`.
-    """
-    try:
-        return _state.rng
-    except AttributeError:
-        seed(0)
-        return _state.rng
-
-
-def seed(n: Any | None = None) -> None:
-    """Seed the library-global, thread-local random number generator.
-
-    Accepts the same parameter as :func:`numpy.random.default_rng`, which means that
-    calling it with no arguments will produce a different random sequence every time.
-    """
-    _state.rng = np.random.default_rng(n)
-
-
-def set_size(n: int) -> int:
-    """Set the number of rolls in all simulations, for all threads of the current
-    process. Default is 100,000. Return previous size.
-    """
-    global size
-    prev, size = size, n
-    return prev
 
 
 def level2rank(level: _T, *, dedication: bool = False) -> _T:
