@@ -5,7 +5,7 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, seed, set_config
+from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, set_config
 
 
 def test_DoS_str():
@@ -570,49 +570,27 @@ def test_check_array_input():
 
 
 def test_independent_dims():
-    DC = DataArray([15, 16], dims=["target"])
-    with pytest.raises(
-        ValueError,
-        match="target.*must be listed in either independent_dims or dependent_dims",
-    ):
-        check(7, DC=DC)
-    with pytest.raises(ValueError, match="target.*already exists with size 2"):
-        check(7, DC=DC, independent_dims={"target": 3})
-    with pytest.raises(ValueError, match="target.*both independent and dependent"):
-        check(7, DC=DC, independent_dims=["target"], dependent_dims=["target"])
-    with pytest.raises(KeyError, match="notfound"):
-        check(7, DC=DC, independent_dims=["target", "notfound"])
-    with pytest.raises(KeyError, match="notfound"):
-        check(7, DC=DC, independent_dims={"target": None, "notfound": None})
-    with pytest.raises(KeyError, match="notfound"):
-        check(7, DC=DC, dependent_dims=["target", "notfound"])
-    with pytest.raises(ValueError, match="roll.*always independent"):
-        check(7, DC=DC, independent_dims=["target", "roll"])
-    with pytest.raises(ValueError, match="roll.*always independent"):
-        check(7, DC=DC, dependent_dims=["target", "roll"])
+    """Test check() parameters independent_dims and dependent_dims.
 
-    seed(0)
+    See also
+    --------
+    test_damage.py::test_independent_dims()
+    test_tools.py::test_parse_independent_dependent_dims()
+    """
+    DC = DataArray([15, 16], dims=["target"])
+
     ind1 = check(7, DC=DC, independent_dims=["target"])
-    seed(0)
-    ind2 = check(7, DC=DC, independent_dims={"target": 2})
-    seed(0)
-    ind3 = check(7, DC=DC, independent_dims={"target": None})
-    seed(0)
-    ind4 = check(7, DC=DC, independent_dims={"target": None, "x": 3})
-    seed(0)
+    ind2 = check(7, DC=DC, independent_dims={"target": None, "x": 3})
     dep1 = check(7, DC=DC, dependent_dims=["target"])
 
-    assert_equal(ind1, ind2)
-    assert_equal(ind1, ind3)
-
     assert ind1.natural.dims == ("roll", "target")
-    assert ind4.natural.dims == ("roll", "target", "x")
+    assert ind2.natural.dims == ("roll", "target", "x")
     assert dep1.natural.dims == ("roll",)
     assert ind1.outcome.dims == ("roll", "target")
-    assert ind4.outcome.dims == ("roll", "target", "x")
+    assert ind2.outcome.dims == ("roll", "target", "x")
     assert dep1.outcome.dims == ("roll", "target")
     assert (ind1.natural.isel(target=0) != ind1.natural.isel(target=1)).any()
-    assert (ind4.natural.isel(target=0, x=0) != ind4.natural.isel(target=0, x=1)).any()
+    assert (ind2.natural.isel(target=0, x=0) != ind2.natural.isel(target=0, x=1)).any()
 
 
 def test_outcome_counts():

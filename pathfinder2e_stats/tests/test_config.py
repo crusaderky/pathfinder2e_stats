@@ -55,7 +55,13 @@ def test_seed_multiprocessing():
 
 def test_get_config():
     config = get_config()
-    assert config == {"roll_size": 1000}
+    assert config == {
+        "roll_size": 1000,
+        "check_dependent_dims": set(),
+        "check_independent_dims": set(),
+        "damage_dependent_dims": set(),
+        "damage_independent_dims": set(),
+    }
 
 
 def test_tests_reset_config_1():

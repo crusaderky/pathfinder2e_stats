@@ -9,6 +9,7 @@ import xarray
 from xarray import DataArray, Dataset
 
 from pathfinder2e_stats.dice import d20
+from pathfinder2e_stats.tools import _parse_independent_dependent_dims
 
 if TYPE_CHECKING:
     _Outcome_T = TypeVar("_Outcome_T", DataArray, Dataset)
@@ -74,6 +75,11 @@ def check(
     All parameters can be either scalars or :class:`~xarray.DataArray`.
     Providing array parameters will cause all the outputs to be broadcasted accordingly.
 
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import seed, set_config
+        >>> seed(0)
+
     :param bonus:
         The bonus or penalty to add to the d20 roll.
     :param DC:
@@ -99,6 +105,28 @@ def check(
         `independent_dims` plus `dependent_dims` must cover all dimensions of the input
         parameters. The name of these two parameters comes from the concept in
         statistics of dependent and independent variables.
+
+        **Global configuration**
+
+        `independent_dims` and `depedent_dims` add to config keys
+        `check_independent_dims` and `check_dependent_dims` respectively.
+        If a dimension is always going to be independent or dependent throughout your
+        workflow, you can avoid specifying it every time:
+
+        Instead of:
+
+        >>> check(10, DC=DC,
+        ...       independent_dims=["x"],
+        ...       dependent_dims=["y"])  # doctest: +SKIP
+
+        You can write:
+        >>> set_config(check_independent_dims=["x"], check_dependent_dims=["y"])
+        >>> check(10, DC=DC)  # doctest: +SKIP
+
+    .. only:: doctest
+
+        >>> set_config(check_independent_dims=(), check_dependent_dims=())
+
     :param keen:
         Set to True to Strike with a weapon inscribed with a
         :prd_equipment:`Keen <2843>` rune.
@@ -149,11 +177,6 @@ def check(
             The final outcome of the check
 
     **Examples:**
-
-    .. only:: doctest
-
-        >>> from pathfinder2e_stats import seed
-        >>> seed(0)
 
     Strike an enemy with AC18 with a +10 weapon:
 
@@ -250,7 +273,7 @@ def check(
 
     # Normalize and validate independent_dims and dependent_dims
     independent_dims = _parse_independent_dependent_dims(
-        ds, independent_dims, dependent_dims
+        "check", ds, independent_dims, dependent_dims
     )
 
     hp_reroll_coord = ["original"]
@@ -324,68 +347,6 @@ def check(
         allow_failure=allow_failure,
         allow_critical_success=allow_critical_success,
     )
-
-
-def _parse_independent_dependent_dims(
-    ds: Dataset,
-    independent_dims: Mapping[Hashable, int | None] | Collection[Hashable],
-    dependent_dims: Collection[Hashable],
-) -> dict[Hashable, int]:
-    """Parse and validate the independent and dependent dimensions.
-
-    :param ds:
-        Dataset defininig the domain of the input dimensions
-    :param independent_dims:
-        See parameter description in :func:`check`
-    :param dependent_dims:
-        See parameter description in :func:`check`
-    :returns:
-        A dictionary of independent dimensions with their sizes.
-    """
-    if "roll" in independent_dims:
-        raise ValueError(
-            "Dimension 'roll' is always independent and must not be included in "
-            "independent_dims"
-        )
-
-    if isinstance(independent_dims, Mapping):
-        out = dict(independent_dims)
-        for dim, size in independent_dims.items():
-            if size is None:
-                out[dim] = ds.sizes[dim]
-            elif dim in ds.sizes and ds.sizes[dim] != size:
-                raise ValueError(
-                    f"Dimension {dim!r} already exists with size "
-                    f"{ds.sizes.get(dim, size)}, but {size=} was specified. "
-                    "Set to None to automatically use the existing size."
-                )
-    else:
-        out = {dim: ds.sizes[dim] for dim in independent_dims}
-
-    # Validate that independent_dims + dependent_dims == ds.sizes
-    dependent_dims = set(dependent_dims)
-    if "roll" in dependent_dims:
-        raise ValueError("Dimension 'roll' is always independent")
-    conflict = set(out) & dependent_dims
-    missing = set(ds.sizes) - set(out) - {"roll"} - dependent_dims
-    unknown = dependent_dims - set(ds.sizes)
-    if conflict:
-        raise ValueError(
-            f"Dimension(s) {sorted(conflict, key=str)} are both independent "
-            "and dependent"
-        )
-    if missing:
-        raise ValueError(
-            f"Dimension(s) {sorted(missing, key=str)} must be listed in either "
-            "independent_dims or dependent_dims. "
-        )
-    if unknown:
-        raise KeyError(
-            f"Dimension(s) {sorted(unknown, key=str)} are not present in the "
-            "input dataset. "
-        )
-
-    return out
 
 
 def map_outcome(
