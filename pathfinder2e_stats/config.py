@@ -90,7 +90,7 @@ def set_config(
 
         >>> get_config()["check_independent_dims"].add("my_dim")
 
-        Default: empty set (but `roll` is always an independent).
+        Default: empty set (but `roll` is always independent).
 
     :param check_dependent_dims:
         Default `dependent_dims` parameter for :func:`check`.
@@ -117,6 +117,10 @@ def set_config(
         All notes for `check_dependent_dims` apply.
 
         Default: empty set.
+
+    .. only:: doctest
+
+        >>> set_config(check_independent_dims=(), check_dependent_dims=())
     """
     if roll_size is not None:
         _config.roll_size = roll_size

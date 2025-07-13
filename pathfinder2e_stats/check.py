@@ -75,6 +75,11 @@ def check(
     All parameters can be either scalars or :class:`~xarray.DataArray`.
     Providing array parameters will cause all the outputs to be broadcasted accordingly.
 
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import seed, set_config
+        >>> seed(0)
+
     :param bonus:
         The bonus or penalty to add to the d20 roll.
     :param DC:
@@ -104,17 +109,23 @@ def check(
         **Global configuration**
 
         `independent_dims` and `depedent_dims` add to config keys
-        `check_independent_dims` and `check_independent_dims` respectively.
+        `check_independent_dims` and `check_dependent_dims` respectively.
         If a dimension is always going to be independent or dependent throughout your
         workflow, you can avoid specifying it every time:
 
         Instead of:
 
-        >>> outcome = check(10, DC=18, independent_dims=["x"], dependent_dims=["y"])
+        >>> check(10, DC=DC,
+        ...       independent_dims=["x"],
+        ...       dependent_dims=["y"])  # doctest: +SKIP
 
         You can write:
-        >>> set_config(checK_independent_dims=["x"], check_dependent_dims=["y"])
-        >>> outcome = check(10, DC=18)
+        >>> set_config(check_independent_dims=["x"], check_dependent_dims=["y"])
+        >>> check(10, DC=DC)  # doctest: +SKIP
+
+    .. only:: doctest
+
+        >>> set_config(check_independent_dims=(), check_dependent_dims=())
 
     :param keen:
         Set to True to Strike with a weapon inscribed with a
@@ -166,11 +177,6 @@ def check(
             The final outcome of the check
 
     **Examples:**
-
-    .. only:: doctest
-
-        >>> from pathfinder2e_stats import seed
-        >>> seed(0)
 
     Strike an enemy with AC18 with a +10 weapon:
 

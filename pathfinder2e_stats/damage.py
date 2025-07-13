@@ -28,6 +28,11 @@ def damage(
 ) -> Dataset:
     """Roll for damage.
 
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import seed, set_config
+        >>> seed(0)
+
     :param check_outcome:
         The outcome of the check that caused the damage.
         This must be the return value of :func:`check`, typically either
@@ -60,7 +65,30 @@ def damage(
         See examples below.
     :param dependent_dims:
         Dimensions along which there must be a single dice roll for all points.
+
         See :func:`check` for more details.
+
+        **Global configuration**
+
+        `independent_dims` and `depedent_dims` add to config keys
+        `damage_independent_dims` and `damage_dependent_dims` respectively.
+        If a dimension is always going to be independent or dependent throughout your
+        workflow, you can avoid specifying it every time:
+
+        Instead of:
+
+        >>> damage(check_outcome, spec,
+        ...        independent_dims=["x"],
+        ...        dependent_dims=["y"])  # doctest: +SKIP
+
+        You can write:
+        >>> set_config(damage_independent_dims=["x"], damage_dependent_dims=["y"])
+        >>> damage(check_outcome, spec)  # doctest: +SKIP
+
+        .. only:: doctest
+
+            >>> set_config(damage_independent_dims=(), damage_dependent_dims=())
+
     :param weaknesses:
         Optional weaknesses to apply to the damage, in the format
         ``{damage type: value}``, where the damage type may or may not match
@@ -176,11 +204,6 @@ def damage(
             String representation of the `damage_spec` parameter.
 
     **Examples:**
-
-    .. only:: doctest
-
-        >>> from pathfinder2e_stats import seed
-        >>> seed(0)
 
     Strike an AC17 enemy with a Longsword (+8 to hit, 1d8+4 damage):
 
