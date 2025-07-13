@@ -6,7 +6,9 @@ from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
 __all__ = (
+    "biting_words",
     "blazing_bolt",
+    "blistering_invective",
     "breathe_fire",
     "brine_dragon_bile",
     "fireball",
@@ -17,6 +19,10 @@ __all__ = (
 )
 
 
+def biting_words(rank: int = 1) -> Damage:
+    return Damage("sonic", rank * 2, 6)
+
+
 def blazing_bolt(rank: int = 2, actions: Literal[1, 2, 3] = 3) -> Damage:
     dice = rank
     if actions > 1:
@@ -24,16 +30,20 @@ def blazing_bolt(rank: int = 2, actions: Literal[1, 2, 3] = 3) -> Damage:
     return Damage("fire", dice, 6)
 
 
+def blistering_invective(rank: int = 2) -> Damage:
+    return Damage("fire", rank // 2 * 2, 6, persistent=True, basic_save=True)
+
+
 def brine_dragon_bile(rank: int = 2) -> Damage:
-    return Damage("acid", 2 * (rank // 2), 6, persistent=True)
+    return Damage("acid", rank // 2 * 2, 6, persistent=True)
 
 
 def breathe_fire(rank: int = 1) -> Damage:
-    return Damage("fire", 2 * rank, 6, basic_save=True)
+    return Damage("fire", rank * 2, 6, basic_save=True)
 
 
 def fireball(rank: int = 3) -> Damage:
-    return Damage("fire", 2 * rank, 6, basic_save=True)
+    return Damage("fire", rank * 2, 6, basic_save=True)
 
 
 def force_barrage(rank: int = 1, actions: Literal[1, 2, 3] = 3) -> Damage:
