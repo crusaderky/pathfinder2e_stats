@@ -557,6 +557,10 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
         data = {k: v for k, v in data.items() if v}
         self.data = dict(sorted(data.items(), reverse=True))  # success > failure
 
+    def expand(self) -> ExpandedDamage:
+        """Dummy method to match :class:`Damage` and :class:`DamageList` interface."""
+        return self
+
     def __add__(self, other: DamageLike) -> ExpandedDamage:
         return ExpandedDamage.sum([self, other])
 

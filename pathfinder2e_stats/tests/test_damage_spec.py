@@ -287,6 +287,11 @@ def test_expanded_damage_init_filter_empty():
     assert actual == {1: [Damage("fire", 1, 6)]}
 
 
+def test_expanded_damage_expand():
+    e = Damage("fire", 1, 8).expand()
+    assert e.expand() is e
+
+
 def test_damage_plus_expanded():
     assert Damage("fire", 1, 6, 4) + {
         0: [Damage("fire", 0, 0, 4)],

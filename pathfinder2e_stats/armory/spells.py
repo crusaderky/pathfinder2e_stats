@@ -11,8 +11,13 @@ __all__ = (
     "blistering_invective",
     "breathe_fire",
     "brine_dragon_bile",
+    "dehydrate",
+    "divine_wrath",
     "fireball",
     "force_barrage",
+    "harm",
+    "heal",
+    "lightning_bolt",
     "organsight",
     "shocking_grasp",
     "thunderstrike",
@@ -34,19 +39,39 @@ def blistering_invective(rank: int = 2) -> Damage:
     return Damage("fire", rank // 2 * 2, 6, persistent=True, basic_save=True)
 
 
+def breathe_fire(rank: int = 1) -> Damage:
+    return Damage("fire", rank * 2, 6, basic_save=True)
+
+
 def brine_dragon_bile(rank: int = 2) -> Damage:
     return Damage("acid", rank // 2 * 2, 6, persistent=True)
 
 
-def breathe_fire(rank: int = 1) -> Damage:
-    return Damage("fire", rank * 2, 6, basic_save=True)
+def dehydrate(rank: int = 1) -> Damage:
+    dice = (rank - 1) // 2 * 3 + 1
+    return Damage("fire", dice, 6, basic_save=True, persistent=True)
+
+
+def divine_wrath(rank: int = 4) -> ExpandedDamage:
+    base = Damage("spirit", rank, 10)
+    return ExpandedDamage(
+        {
+            DoS.success: [base.copy(multiplier=0.5)],
+            DoS.failure: [base],
+            DoS.critical_failure: [base],  # Doesn't double
+        }
+    )
 
 
 def fireball(rank: int = 3) -> Damage:
     return Damage("fire", rank * 2, 6, basic_save=True)
 
 
-def force_barrage(rank: int = 1, actions: Literal[1, 2, 3] = 3) -> Damage:
+def force_barrage(
+    rank: int = 1,
+    actions: Literal[1, 2, 3] = 3,
+    corageous_anthem: bool = False,
+) -> Damage:
     """
     .. note::
 
@@ -54,7 +79,19 @@ def force_barrage(rank: int = 1, actions: Literal[1, 2, 3] = 3) -> Damage:
        Assumes no resistance.
     """
     bolts = (rank + 1) // 2 * actions
-    return Damage("force", bolts, 4, bolts)
+    return Damage("force", bolts, 4, bolts * (2 if corageous_anthem else 1))
+
+
+def harm(rank: int = 1, harming_hands: bool = False) -> Damage:
+    return Damage("void", rank, 10 if harming_hands else 8, basic_save=True)
+
+
+def heal(rank: int = 1, healing_hands: bool = False) -> Damage:
+    return Damage("vitality", rank, 10 if healing_hands else 8, basic_save=True)
+
+
+def lightning_bolt(rank: int = 3) -> Damage:
+    return Damage("electricity", rank + 1, 12, basic_save=True)
 
 
 def organsight(rank: int = 3) -> Damage:

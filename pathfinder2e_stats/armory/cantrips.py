@@ -3,7 +3,35 @@ from __future__ import annotations
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
 
-__all__ = ("electric_arc", "frostbite", "ignition", "live_wire", "ray_of_frost")
+__all__ = (
+    "daze",
+    "electric_arc",
+    "frostbite",
+    "haunting_hymn",
+    "ignition",
+    "live_wire",
+    "needle_darts",
+    "ray_of_frost",
+    "void_warp",
+)
+
+
+def daze(rank: int = 1) -> Damage:
+    dice = (rank + 1) // 2
+    return Damage("mental", dice, 6, basic_save=True)
+
+
+def electric_arc(rank: int = 1) -> Damage:
+    return Damage("electricity", rank + 1, 4, basic_save=True)
+
+
+def frostbite(rank: int = 1) -> Damage:
+    return Damage("cold", rank + 1, 4, basic_save=True)
+
+
+def haunting_hymn(rank: int = 1) -> Damage:
+    dice = (rank + 1) // 2
+    return Damage("sonic", dice, 8, basic_save=True)
 
 
 def ignition(rank: int = 1, melee: bool = False) -> ExpandedDamage:
@@ -23,13 +51,15 @@ def live_wire(rank: int = 1) -> ExpandedDamage:
     )
 
 
-def electric_arc(rank: int = 1) -> Damage:
-    return Damage("electricity", rank + 1, 4, basic_save=True)
+def needle_darts(rank: int = 1) -> ExpandedDamage:
+    return Damage("piercing", rank + 2, 4) + {
+        DoS.critical_success: [Damage("bleed", 0, 0, rank, persistent=True)]
+    }
 
 
 def ray_of_frost(rank: int = 1) -> Damage:
     return Damage("cold", rank + 1, 4)
 
 
-def frostbite(rank: int = 1) -> Damage:
-    return Damage("cold", rank + 1, 4, basic_save=True)
+def void_warp(rank: int = 1) -> Damage:
+    return Damage("void", rank + 1, 4, basic_save=True)
