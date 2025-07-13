@@ -58,6 +58,16 @@ def test_get_config():
     assert config == {"roll_size": 1000}
 
 
+def test_tests_reset_config_1():
+    """config changes in one test don't impact later tests."""
+    set_config(roll_size=123)
+
+
+def test_tests_reset_config_2():
+    """config changes in one test don't impact later tests."""
+    assert get_config()["roll_size"] == 1000
+
+
 def test_roll_size():
     assert get_config()["roll_size"] == 1_000  # Test-specific override
     assert roll(1, 20).shape == (1000,)
