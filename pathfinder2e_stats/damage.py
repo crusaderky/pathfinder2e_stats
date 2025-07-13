@@ -277,7 +277,7 @@ def damage(
     out.attrs["damage_spec"] = damage_spec.to_dict_of_str()
 
     independent_dims = _parse_independent_dependent_dims(
-        check_outcome, independent_dims, dependent_dims
+        "damage", check_outcome, independent_dims, dependent_dims
     )
 
     # For persistent damage, treat all dimensions as independent.

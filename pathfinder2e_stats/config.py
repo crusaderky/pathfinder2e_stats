@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import threading
+from collections.abc import Collection, Hashable
 from typing import Any, TypedDict, cast
 
 import numpy as np
@@ -43,6 +44,14 @@ class Config(TypedDict):
 
     #: Number of rolls in all simulations. Default: 100_000.
     roll_size: int
+    #: Default `independent_dims` parameter for :func:`check`.
+    check_independent_dims: set[Hashable]
+    #: Default `dependent_dims` parameter for :func:`check`.
+    check_dependent_dims: set[Hashable]
+    #: Default `independent_dims` parameter for :func:`damage`.
+    damage_independent_dims: set[Hashable]
+    #: Default `dependent_dims` parameter for :func:`damage`.
+    damage_dependent_dims: set[Hashable]
 
 
 def get_config() -> Config:
@@ -50,15 +59,72 @@ def get_config() -> Config:
     d = _config.__dict__.copy()
     d.pop("rng", None)
     d.setdefault("roll_size", _roll_size_default)
+    d.setdefault("check_independent_dims", set())
+    d.setdefault("check_dependent_dims", set())
+    d.setdefault("damage_independent_dims", set())
+    d.setdefault("damage_dependent_dims", set())
     return cast(Config, d)
 
 
-def set_config(roll_size: int | None = None) -> None:
+def set_config(
+    roll_size: int | None = None,
+    check_independent_dims: Collection[Hashable] | None = None,
+    check_dependent_dims: Collection[Hashable] | None = None,
+    damage_independent_dims: Collection[Hashable] | None = None,
+    damage_dependent_dims: Collection[Hashable] | None = None,
+) -> None:
     """Set one or more library settings.
     All settings are thread-local.
 
     :param roll_size:
         Number of rolls in all simulations. Default: 100_000.
+    :param check_independent_dims:
+        Default `independent_dims` parameter for :func:`check`.
+
+        If the `independent_dims` parameter is explicitly specified
+        in the function call, the parameter items adds to this set.
+        If the `dependent_dims` parameter is explicitly specified
+        in the function call, the parameter items detract from this set.
+
+        You may also add/remove single elements with:
+
+        >>> get_config()["check_independent_dims"].add("my_dim")
+
+        Default: empty set (but `roll` is always an independent).
+
+    :param check_dependent_dims:
+        Default `dependent_dims` parameter for :func:`check`.
+
+        If the `dependent_dims` parameter is explicitly specified
+        in the function call, the parameter items adds to this set.
+        If the `independent_dims` parameter is explicitly specified
+        in the function call, the parameter items detract from this set.
+
+        You may also add/remove single elements with:
+
+        >>> get_config()["check_dependent_dims"].add("my_dim")
+
+        Default: empty set.
+
+    :param damage_independent_dims:
+        Default `independent_dims` parameter for :func:`damage`.
+        All notes for `check_independent_dims` apply.
+
+        Default: empty set (but `roll` and `damage_type` are always independent).
+
+    :param damage_dependent_dims:
+        Default `dependent_dims` parameter for :func:`damage`.
+        All notes for `check_dependent_dims` apply.
+
+        Default: empty set.
     """
     if roll_size is not None:
         _config.roll_size = roll_size
+    if check_independent_dims is not None:
+        _config.check_independent_dims = set(check_independent_dims)
+    if check_dependent_dims is not None:
+        _config.check_dependent_dims = set(check_dependent_dims)
+    if damage_independent_dims is not None:
+        _config.damage_independent_dims = set(damage_independent_dims)
+    if damage_dependent_dims is not None:
+        _config.damage_dependent_dims = set(damage_dependent_dims)

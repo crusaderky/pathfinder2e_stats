@@ -8,6 +8,7 @@ import numpy as np
 import xarray
 from xarray import DataArray, Dataset
 
+from pathfinder2e_stats.config import get_config
 from pathfinder2e_stats.dice import d20
 
 if TYPE_CHECKING:
@@ -99,6 +100,22 @@ def check(
         `independent_dims` plus `dependent_dims` must cover all dimensions of the input
         parameters. The name of these two parameters comes from the concept in
         statistics of dependent and independent variables.
+
+        **Global configuration**
+
+        `independent_dims` and `depedent_dims` add to config keys
+        `check_independent_dims` and `check_independent_dims` respectively.
+        If a dimension is always going to be independent or dependent throughout your
+        workflow, you can avoid specifying it every time:
+
+        Instead of:
+
+        >>> outcome = check(10, DC=18, independent_dims=["x"], dependent_dims=["y"])
+
+        You can write:
+        >>> set_config(checK_independent_dims=["x"], check_dependent_dims=["y"])
+        >>> outcome = check(10, DC=18)
+
     :param keen:
         Set to True to Strike with a weapon inscribed with a
         :prd_equipment:`Keen <2843>` rune.
@@ -250,7 +267,7 @@ def check(
 
     # Normalize and validate independent_dims and dependent_dims
     independent_dims = _parse_independent_dependent_dims(
-        ds, independent_dims, dependent_dims
+        "check", ds, independent_dims, dependent_dims
     )
 
     hp_reroll_coord = ["original"]
@@ -327,12 +344,15 @@ def check(
 
 
 def _parse_independent_dependent_dims(
+    config_prefix: Literal["check", "damage"],
     ds: Dataset,
     independent_dims: Mapping[Hashable, int | None] | Collection[Hashable],
     dependent_dims: Collection[Hashable],
 ) -> dict[Hashable, int]:
     """Parse and validate the independent and dependent dimensions.
 
+    :param config_prefix:
+        ``check`` or ``damage``
     :param ds:
         Dataset defininig the domain of the input dimensions
     :param independent_dims:
@@ -342,6 +362,31 @@ def _parse_independent_dependent_dims(
     :returns:
         A dictionary of independent dimensions with their sizes.
     """
+    cfg = get_config()
+    ind_default = cfg[f"{config_prefix}_independent_dims"]  # type: ignore[literal-required]
+    dep_default = cfg[f"{config_prefix}_dependent_dims"]  # type: ignore[literal-required]
+
+    default_conflict = ind_default & dep_default
+    if default_conflict:
+        raise ValueError(
+            f"Dimension(s) {sorted(default_conflict, key=str)} appear in config "
+            f"in config key `{config_prefix}_independent_dims` as well as "
+            f"`{config_prefix}_dependent_dims"
+        )
+
+    dim: Hashable
+    for cont, label in (
+        (independent_dims, "parameter `independent_dims`"),
+        (dependent_dims, "parameter `dependent_dims`"),
+        (ind_default, f"config key `{config_prefix}_independent_dims`"),
+        (dep_default, f"config key `{config_prefix}_dependent_dims`"),
+    ):
+        if "roll" in cont:
+            raise ValueError(
+                "Dimension `roll` is always independent and must not be included "
+                f"in {label}"
+            )
+
     if "roll" in independent_dims:
         raise ValueError(
             "Dimension 'roll' is always independent and must not be included in "
@@ -362,12 +407,13 @@ def _parse_independent_dependent_dims(
     else:
         out = {dim: ds.sizes[dim] for dim in independent_dims}
 
-    # Validate that independent_dims + dependent_dims == ds.sizes
+    for dim in ind_default:
+        if dim in ds.sizes:
+            out.setdefault(dim, ds.sizes[dim])
+
     dependent_dims = set(dependent_dims)
-    if "roll" in dependent_dims:
-        raise ValueError("Dimension 'roll' is always independent")
     conflict = set(out) & dependent_dims
-    missing = set(ds.sizes) - set(out) - {"roll"} - dependent_dims
+    missing = set(ds.sizes) - {"roll"} - set(out) - dependent_dims - dep_default
     unknown = dependent_dims - set(ds.sizes)
     if conflict:
         raise ValueError(
