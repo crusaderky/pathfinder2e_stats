@@ -5,7 +5,7 @@ import pytest
 from xarray import DataArray
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, set_size
+from pathfinder2e_stats import DoS, check, map_outcome, outcome_counts, seed, set_size
 
 
 def test_DoS_str():
@@ -124,11 +124,37 @@ def test_map_outcome_empty_map():
     )
 
 
-def test_map_outcome_string():
-    assert_equal(
-        map_outcome(DataArray([-2, -1, 0, 1, 2]), {1: "X", 2: "YY"}),
-        DataArray(["", "", "", "X", "YY"]),
+def test_map_outcome_result_type():
+    actual = map_outcome(
+        DataArray([-2, -1, 0, 1, 2]),
+        {
+            DoS.critical_failure: 10,
+            DoS.failure: np.uint8(20),
+            DoS.success: np.uint32(30),
+            DoS.critical_success: np.uint16(40),
+        },
     )
+    assert actual.dtype == np.uint32
+    assert_equal(actual, DataArray([0, 10, 20, 30, 40]))
+
+
+def test_map_outcome_string():
+    actual = map_outcome(
+        DataArray([-2, -1, 0, 1, 2]),
+        {DoS.failure: "No", DoS.success: "Pass"},
+    )
+    assert actual.dtype == "<U4"
+    assert_equal(actual, DataArray(["", "", "No", "Pass", ""]))
+
+
+@pytest.mark.skipif(np.__version__ < "2", reason="Requires NumPy >=2.0")
+def test_map_outcome_npystring():
+    actual = map_outcome(
+        DataArray([-2, -1, 0, 1, 2]),
+        {DoS.failure: DataArray(np.asarray("No", dtype="T"))},
+    )
+    assert actual.dtype.kind == "T"
+    assert actual.values.tolist() == ["", "", "No", "", ""]
 
 
 def test_map_outcome_sequence():
@@ -159,10 +185,6 @@ def test_check_basic():
     assert ds.DC == 7
     assert ds.sizes == {"roll": 1000}
     assert ds.attrs == {
-        "fortune": False,
-        "hero_point": False,
-        "perfected_form": False,
-        "keen": False,
         "legend": {
             -2: "No roll",
             -1: "Critical failure",
@@ -170,7 +192,6 @@ def test_check_basic():
             1: "Success",
             2: "Critical success",
         },
-        "misfortune": False,
     }
 
     assert ds.natural.dims == ("roll",)
@@ -222,9 +243,16 @@ def test_check_nat20():
     assert np.unique(ds.outcome).tolist() == [-1, 0, 1, 2]
 
 
+def test_check_defaults_are_hidden():
+    ds = check(DC=7)
+    assert list(ds) == ["bonus", "DC", "natural", "outcome"]
+
+
 def test_check_keen():
     # keen only promotes success to crit success
     ds = check(+10, DC=40, keen=True)
+    assert_equal(ds["keen"], DataArray(True))
+
     assert_equal(ds.outcome == 0, ds.natural == 20)
     assert np.unique(ds.outcome).tolist() == [-1, 0]
 
@@ -237,14 +265,28 @@ def test_check_keen():
     assert np.unique(ds.outcome).tolist() == [-1, 0, 1, 2]
 
 
-def test_check_keen_array():
-    r = check(DC=11, keen=DataArray([False, True], dims=["keen"]))
+def test_check_keen_array_coord():
+    keen = DataArray([False, True], dims=["keen"])
+    r = check(DC=11, keen=keen, dependent_dims=["keen"])
+    # Because the name of the DataArray is the same as the dim, it becomes a coord
+    assert_equal(
+        r.coords["keen"],
+        DataArray([False, True], dims=["keen"], coords={"keen": [False, True]}),
+    )
+
     assert r.natural.sizes == {"roll": 1000}
     assert r.outcome.sizes == {"keen": 2, "roll": 1000}
     r = r.isel(roll=(r.natural == 19))
     assert (r.outcome.isel(keen=0) == DoS.success).all()
     assert (r.outcome.isel(keen=1) == DoS.critical_success).all()
-    assert r.attrs["keen"] == "varies"
+
+
+def test_check_keen_array_data_var():
+    keen = DataArray([False, True], dims=["foo"])
+    r = check(DC=11, keen=keen, dependent_dims=["foo"])
+    # Because the name of the DataArray is NOT the same as the dim,
+    # it becomes a data variable
+    assert_equal(r.data_vars["keen"], keen)
 
 
 def test_check_fortune():
@@ -256,14 +298,12 @@ def test_check_fortune():
         assert np.unique(r.natural).tolist() == list(range(1, 21))
         assert np.unique(r.outcome).tolist() == [-1, 0, 1, 2]
 
-    assert r1.attrs["fortune"] is False
-    assert r1.attrs["misfortune"] is False
-    assert r2.attrs["fortune"] is True
-    assert r2.attrs["misfortune"] is False
-    assert r3.attrs["fortune"] is False
-    assert r3.attrs["misfortune"] is True
-    assert r4.attrs["fortune"] is True
-    assert r4.attrs["misfortune"] is True
+    assert_equal(r2["fortune"], DataArray(True))
+    assert "misfortune" not in r2
+    assert "fortune" not in r3
+    assert_equal(r3["misfortune"], DataArray(True))
+    assert_equal(r4["fortune"], DataArray(True))
+    assert_equal(r4["misfortune"], DataArray(True))
 
     assert 0.45 < (r1.natural > 10).mean() < 0.55
     assert 0.45 < (r1.outcome > 0).mean() < 0.55
@@ -278,37 +318,47 @@ def test_check_fortune():
 
 def test_check_fortune_array():
     fortune = DataArray([False, True], dims=["f"], coords={"f": [False, True]})
-    r = check(DC=11, fortune=fortune, misfortune=fortune.rename({"f": "m"}))
+    misfortune = fortune.rename({"f": "m"})
+    r = check(
+        DC=11,
+        fortune=fortune,
+        misfortune=misfortune,
+        dependent_dims=["f", "m"],
+    )
+    assert_equal(r["fortune"], fortune)
+    assert_equal(r["misfortune"], misfortune)
+
     assert r.sizes == {"f": 2, "m": 2, "roll": 1000}
     assert r.natural.dims == r.outcome.dims == ("f", "m", "roll")
-    assert r.attrs["fortune"] == "varies"
-    assert r.attrs["misfortune"] == "varies"
 
 
-def test_check_map_outcome_bool():
+def test_check_map_outcome_evasion():
     ds = check(DC=9, evasion=True)
+    assert_equal(ds["evasion"], DataArray(True))
     assert_equal(ds.original_outcome == 2, ds.natural >= 19)
     assert_equal(ds.outcome == 2, ds.natural >= 9)
     assert np.unique(ds.outcome).tolist() == [-1, 0, 2]
-    assert ds.attrs["evasion"] is True
 
 
-def test_check_map_outcome_int():
+def test_check_map_outcome_incapacitation():
     ds = check(DC=9, incapacitation=-1)
+    assert_equal(ds["incapacitation"], DataArray(-1))
     assert np.unique(ds.outcome).tolist() == [-1, 0, 1]
-    assert ds.attrs["incapacitation"] == -1
 
 
 def test_check_map_outcome_array():
+    evasion = DataArray([False, True], dims=["x"])
+    incapacitation = DataArray([-1, 0, 1], dims=["y"])
     ds = check(
         DC=9,
-        evasion=DataArray([False, True], dims=["x"]),
-        incapacitation=DataArray([-1, 0, 1], dims=["y"]),
+        evasion=evasion,
+        incapacitation=incapacitation,
+        dependent_dims=["x", "y"],
     )
+    assert_equal(ds["evasion"], evasion)
+    assert_equal(ds["incapacitation"], incapacitation)
     assert ds.original_outcome.sizes == {"roll": 1000}
     assert ds.outcome.sizes == {"roll": 1000, "x": 2, "y": 3}
-    assert ds.attrs["evasion"] == "varies"
-    assert ds.attrs["incapacitation"] == "varies"
 
 
 def test_chain_check_map_outcome():
@@ -318,24 +368,38 @@ def test_chain_check_map_outcome():
     assert np.unique(ds.outcome).tolist() == [0, 10]
 
 
+def test_chain_check_map_outcome_empty_map():
+    ds = map_outcome(check(DC=9), {})
+    assert (ds.outcome == 0).all()
+
+
+def test_chain_check_map_outcome_all_default():
+    orig = check(DC=9)
+    ds = map_outcome(orig, evasion=False)
+    assert "original_outcome" not in ds
+    assert_equal(ds, orig)
+
+
 @pytest.mark.parametrize(
-    "hp,attr,lt",
+    "hp,lt",
     [
-        (False, False, None),
-        (-1, "critical_failure", 6),
-        (DoS.failure, "failure", 15),
-        (0, "failure", 15),
-        (1, "success", 20),
+        (False, None),
+        (-1, 6),
+        (DoS.failure, 15),
+        (0, 15),
+        (1, 20),
     ],
 )
-def test_hero_point(hp, attr, lt):
+def test_hero_point(hp, lt):
     ds = check(+5, DC=20, hero_point=hp)
-    assert ds.attrs["hero_point"] == attr
+
     assert ds.outcome.shape == (1000,)
     if hp is False:
-        assert "use_hero_point" not in ds.variables
+        assert "hero_point" not in ds
+        assert "use_hero_point" not in ds
         assert ds.sizes == {"roll": 1000}
     else:
+        assert_equal(ds.hero_point, DataArray(hp))
         assert ds.sizes == {"roll": 1000, "hp_reroll": 2}
         assert ds.natural.shape == (1000, 2)
         assert ds.use_hero_point.shape == (1000,)
@@ -392,7 +456,7 @@ def test_hero_point_with_fortune():
 def test_perfected_form():
     # Inconsequential, if you take 10 it's still a critical failure
     ds = check(+0, DC=20, perfected_form=True)
-    assert ds.attrs["perfected_form"] is True
+    assert_equal(ds["perfected_form"], DataArray(True))
     assert ds.outcome.shape == (1000,)
     assert ds.outcome.min() == DoS.critical_failure
     assert ds.outcome.max() == DoS.critical_success
@@ -435,15 +499,18 @@ def test_perfected_form_with_hero_point():
 
 
 def test_hero_point_with_fortune_array():
+    hero_point = DataArray(
+        [-2, -1, 0, 1, 2], dims=["hp"], coords={"hp": [-2, -1, 0, 1, 2]}
+    )
+    fortune = DataArray([False, True], dims=["f"], coords={"f": [False, True]})
     ds = check(
         DC=11,
-        hero_point=DataArray(
-            [-2, -1, 0, 1, 2], dims=["hp"], coords={"hp": [-2, -1, 0, 1, 2]}
-        ),
-        fortune=DataArray([False, True], dims=["f"], coords={"f": [False, True]}),
+        hero_point=hero_point,
+        fortune=fortune,
+        dependent_dims=["hp", "f"],
     )
-    assert ds.attrs["hero_point"] == "varies"
-    assert ds.attrs["fortune"] == "varies"
+    assert_equal(ds.hero_point, hero_point)
+    assert_equal(ds.fortune, fortune)
     assert ds.outcome.sizes == {"roll": 1000, "hp": 5, "f": 2}
     assert ds.use_hero_point.sizes == {"roll": 1000, "hp": 5, "f": 2}
     assert not ds.use_hero_point.sel(f=True).any()
@@ -456,13 +523,16 @@ def test_hero_point_with_fortune_array():
 
 def test_perfected_form_with_fortune_array():
     set_size(2000)  # With fortune there's a 1/400 chance of crit fail
+    pf = DataArray([False, True], dims=["pf"])
+    fortune = DataArray([False, True], dims=["f"])
     ds = check(
         DC=10,
-        perfected_form=DataArray([False, True], dims=["pf"]),
-        fortune=DataArray([False, True], dims=["f"]),
+        perfected_form=pf,
+        fortune=fortune,
+        dependent_dims=["pf", "f"],
     )
-    assert ds.attrs["perfected_form"] == "varies"
-    assert ds.attrs["fortune"] == "varies"
+    assert_equal(ds.perfected_form, pf)
+    assert_equal(ds.fortune, fortune)
     assert ds.outcome.sizes == {"roll": 2000, "f": 2, "pf": 2}
     # Fortune overrides Perfected Form
     assert ds.outcome.isel(f=1, pf=0).min() == DoS.critical_failure
@@ -480,7 +550,7 @@ def test_check_array_input():
         dims=["monster"],
         coords={"monster": ["Bugbear", "Skeleton", "Goblin"]},
     )
-    ds = check(bonus, DC=DC)
+    ds = check(bonus, DC=DC, dependent_dims=["PC", "monster"])
 
     assert ds.sizes == {"roll": 1000, "PC": 2, "monster": 3}
     assert_equal(ds.PC, bonus.PC)
@@ -497,6 +567,52 @@ def test_check_array_input():
         ds.sel(PC="Alice", monster="Goblin").outcome.mean()
         < ds.sel(PC="Bob", monster="Goblin").outcome.mean()
     )
+
+
+def test_independent_dims():
+    DC = DataArray([15, 16], dims=["target"])
+    with pytest.raises(
+        ValueError,
+        match="target.*must be listed in either independent_dims or dependent_dims",
+    ):
+        check(7, DC=DC)
+    with pytest.raises(ValueError, match="target.*already exists with size 2"):
+        check(7, DC=DC, independent_dims={"target": 3})
+    with pytest.raises(ValueError, match="target.*both independent and dependent"):
+        check(7, DC=DC, independent_dims=["target"], dependent_dims=["target"])
+    with pytest.raises(KeyError, match="notfound"):
+        check(7, DC=DC, independent_dims=["target", "notfound"])
+    with pytest.raises(KeyError, match="notfound"):
+        check(7, DC=DC, independent_dims={"target": None, "notfound": None})
+    with pytest.raises(KeyError, match="notfound"):
+        check(7, DC=DC, dependent_dims=["target", "notfound"])
+    with pytest.raises(ValueError, match="roll.*always independent"):
+        check(7, DC=DC, independent_dims=["target", "roll"])
+    with pytest.raises(ValueError, match="roll.*always independent"):
+        check(7, DC=DC, dependent_dims=["target", "roll"])
+
+    seed(0)
+    ind1 = check(7, DC=DC, independent_dims=["target"])
+    seed(0)
+    ind2 = check(7, DC=DC, independent_dims={"target": 2})
+    seed(0)
+    ind3 = check(7, DC=DC, independent_dims={"target": None})
+    seed(0)
+    ind4 = check(7, DC=DC, independent_dims={"target": None, "x": 3})
+    seed(0)
+    dep1 = check(7, DC=DC, dependent_dims=["target"])
+
+    assert_equal(ind1, ind2)
+    assert_equal(ind1, ind3)
+
+    assert ind1.natural.dims == ("roll", "target")
+    assert ind4.natural.dims == ("roll", "target", "x")
+    assert dep1.natural.dims == ("roll",)
+    assert ind1.outcome.dims == ("roll", "target")
+    assert ind4.outcome.dims == ("roll", "target", "x")
+    assert dep1.outcome.dims == ("roll", "target")
+    assert (ind1.natural.isel(target=0) != ind1.natural.isel(target=1)).any()
+    assert (ind4.natural.isel(target=0, x=0) != ind4.natural.isel(target=0, x=1)).any()
 
 
 def test_outcome_counts():
@@ -517,7 +633,7 @@ def test_outcome_counts():
 
 
 def test_outcome_counts_extra_dims():
-    c = check(5, DC=12, dims={"foo": 3, "bar": 4})
+    c = check(5, DC=12, independent_dims={"foo": 3, "bar": 4})
     oc = outcome_counts(c)
     assert oc.dims == ("foo", "bar", "outcome")
 

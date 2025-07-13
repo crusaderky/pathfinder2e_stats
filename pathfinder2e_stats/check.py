@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Iterable, Mapping
+from collections.abc import Collection, Hashable, Iterable, Mapping
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
@@ -53,13 +53,18 @@ def check(
     bonus: int | DataArray = 0,
     *,
     DC: int | DataArray,
+    independent_dims: Mapping[Hashable, int | None] | Collection[Hashable] = (),
+    dependent_dims: Collection[Hashable] = (),
     keen: bool | DataArray = False,
     perfected_form: bool | DataArray = False,
     fortune: bool | DataArray = False,
     misfortune: bool | DataArray = False,
     hero_point: DoS | int | Literal[False] | DataArray = False,
-    dims: Mapping[Hashable, int] | None = None,
-    **kwargs: Any,
+    evasion: bool | DataArray = False,
+    incapacitation: bool | Literal[-1, 0, 1] | DataArray = False,
+    allow_critical_failure: bool | DataArray = True,
+    allow_failure: bool | DataArray = True,
+    allow_critical_success: bool | DataArray = True,
 ) -> Dataset:
     """Roll a d20 and compare the result to a Difficulty Class (DC).
 
@@ -73,6 +78,26 @@ def check(
         The bonus or penalty to add to the d20 roll.
     :param DC:
         The Difficulty Class to compare the result to.
+    :param independent_dims:
+        Dimensions along which to roll independently for each point.
+
+        This can be either a mapping where the keys are the dimension names and
+        the values are the number of elements along them, or a collection of a
+        subset of the dimensions of any of the input parameters.
+
+        You may also mix dimensions that already exist in the input parameters with new
+        dimensions in a mapping; the values for the already existing dimensions will be
+        ignored.
+
+        Dimension `roll` is always independent and must not be included.
+
+        See examples below.
+    :param dependent_dims:
+        Dimensions along which there must be a single dice roll for all points.
+        They must be a subset of the dimensions of the input parameters.
+        `independent_dims` plus `dependent_dims` must cover all dimensions of the input
+        parameters. The name of these two parameters comes from the concept in
+        statistics of dependent and independent variables.
     :param keen:
         Set to True to Strike with a weapon inscribed with a
         :prd_equipment:`Keen <2843>` rune.
@@ -96,32 +121,31 @@ def check(
         ``hero_point=DoS.critical_failure`` rerolls only critical failures, whereas
         ``hero_point=DoS.failure`` rerolls anything less than a success.
         Hero points are a fortune effect, so they can't be used when fortune is True.
-    :param dims:
-        Additional dimensions to create while rolling, in addition to `roll`.
-        This is a mapping where the keys are the dimension names and the values are the
-        number of elements along them.
-    :param kwargs:
-        If kwargs are specified, call :func:`map_outcome` before returning the output.
+    :param evasion:
+        Passed to :func:`map_outcome` post-processing.
+    :param incapacitation:
+        Passed to :func:`map_outcome` post-processing.
+    :param allow_critical_failure:
+        Passed to :func:`map_outcome` post-processing.
+    :param allow_failure:
+        Passed to :func:`map_outcome` post-processing.
+    :param allow_critical_success:
+        Passed to :func:`map_outcome` post-processing.
     :returns:
         A :class:`~xarray.Dataset` containing the following variables:
 
-        bonus
-            As the parameter
-        DC
-            As the parameter
+        bonus, etc.
+            As the parameter. Only present when not the default value.
         natural
             The result of the natural d20 roll before adding the bonus
         use_hero_point
             Whether a hero point was used to reroll the outcome.
+            Only present if `hero_point` is not False.
         original_outcome
             The outcome of the check before any modifications by :func:`map_outcome`.
             Only present if any parameters to the function are specified.
         outcome
             The final outcome of the check
-
-        All data variables other than `outcome` are only returned for the purpose of
-        debugging and data tracking. For the same reason, `attrs` contains a wealth
-        of useful information regarding the check.
 
     **Examples:**
 
@@ -142,55 +166,44 @@ def check(
         natural  (roll) int64 800kB 18 13 11 6 7 1 2 1 4 17 ... 8 4 15 3 14 13 1 1 4
         outcome  (roll) int64 800kB 2 1 1 0 0 -1 0 -1 0 1 ... -1 1 0 1 0 1 1 -1 -1 0
     Attributes:
-        keen:            False
-        fortune:         False
-        misfortune:      False
-        hero_point:      False
-        perfected_form:  False
-        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
+        legend:   {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'Succe...
 
-    Strike three times in sequence, with MAP, and test how it works out differently
-    against a henchman with AC16 or a boss with AC20:
+    Strike three times in sequence, with MAP, and test how the same strike
+    works out differently against a henchman with AC16 or a boss with AC20:
 
-    >>> MAP = xarray.DataArray([0, -5, -10], dims=["strike"])
-    >>> targets = xarray.DataArray(
-    ...     [16, 20],
-    ...     dims=["target"],
-    ...     coords={"target": ["henchman", "boss"]})
-    >>> check(10 + MAP, DC = targets, dims=MAP.sizes)
+    >>> MAP = DataArray([0, -5, -10], dims=["action"])
+    >>> targets = DataArray([16, 20], coords={"target": ["henchman", "boss"]})
+    >>> outcome = check(10 + MAP, DC = targets,
+    ...                 independent_dims=["action"],
+    ...                 dependent_dims=["target"])
+    >>> outcome
     <xarray.Dataset> Size: 7MB
-    Dimensions:  (strike: 3, target: 2, roll: 100000)
+    Dimensions:  (action: 3, target: 2, roll: 100000)
     Coordinates:
       * target   (target) <U8 64B 'henchman' 'boss'
-    Dimensions without coordinates: strike, roll
+    Dimensions without coordinates: action, roll
     Data variables:
-        bonus    (strike) int64 24B 10 5 0
+        bonus    (action) int64 24B 10 5 0
         DC       (target) int64 16B 16 20
-        natural  (roll, strike) int64 2MB 10 12 3 19 9 5 1 19 ... 6 2 15 2 4 15 11 9
-        outcome  (roll, strike, target) int64 5MB 1 1 1 0 -1 -1 2 ... 1 1 1 0 0 -1
+        natural  (roll, action) int64 2MB 10 12 3 19 9 5 1 19 ... 6 2 15 2 4 15 11 9
+        outcome  (roll, action, target) int64 5MB 1 1 1 0 -1 -1 2 ... 1 1 1 0 0 -1
     Attributes:
-        keen:            False
-        fortune:         False
-        misfortune:      False
-        hero_point:      False
-        perfected_form:  False
-        legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
+        legend:   {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'Succe...
 
-    Note the parameter ``dims=MAP.sizes``. This causes :func:`check` to roll
-    independently for each value of MAP, but to reuse the same roll against different
-    targets. This is reflected by the dimensionality of the `natural` and the
-    `outcome` arrays.
+    Note the parameters ``independent_dims`` and ``dependent_dims``. They cause
+    :func:`check` to roll independently for each value of MAP, but to reuse the same
+    roll against different targets.
+    This is reflected by the dimensionality of the `natural` and the `outcome` arrays.
 
     Study the roll above:
 
-    >>> c = check(10 + MAP, DC = targets)
     >>> (
-    ...     outcome_counts(c)
-    ...     .stack(row=["target", "strike"])
+    ...     outcome_counts(outcome)
+    ...     .stack(row=["target", "action"])
     ...     .round(2).T.to_pandas() * 100.0
     ... )
     outcome          Critical success  Success  Failure  Critical failure
-    target   strike
+    target   action
     henchman 0                   25.0     50.0     20.0               5.0
              1                    5.0     45.0     45.0               5.0
              2                    5.0     20.0     45.0              30.0
@@ -204,35 +217,57 @@ def check(
     >>> c = check(12, DC=20, hero_point=DoS.failure, evasion=True)
     >>> outcome_counts(c).to_pandas()
     outcome
-    Critical success    0.87670
-    Failure             0.10561
-    Critical failure    0.01769
+    Critical success    0.87786
+    Failure             0.10424
+    Critical failure    0.01790
     Name: outcome, dtype: float64
     >>> c.use_hero_point.value_counts("roll", normalize=True).to_pandas()
     unique_value
-    False    0.65106
-    True     0.34894
+    False    0.6524
+    True     0.3476
     Name: use_hero_point, dtype: float64
     """
-    dims = dict(dims) if dims else {}
+    # Create output dataset, normalize input args, and collect input dimensions
+    ds = Dataset(
+        data_vars={"bonus": bonus, "DC": DC},
+        attrs={"legend": {dos.value: str(dos) for dos in DoS.__members__.values()}},
+    )
+    for k, v, default in (
+        ("keen", keen, False),
+        ("perfected_form", perfected_form, False),
+        ("fortune", fortune, False),
+        ("misfortune", misfortune, False),
+        ("hero_point", hero_point, False),
+        ("evasion", evasion, False),
+        ("incapacitation", incapacitation, False),
+        ("allow_critical_failure", allow_critical_failure, True),
+        ("allow_failure", allow_failure, True),
+        ("allow_critical_success", allow_critical_success, True),
+    ):
+        if v is not default:
+            ds[k] = v
+
+    # Normalize and validate independent_dims and dependent_dims
+    independent_dims = _parse_independent_dependent_dims(
+        ds, independent_dims, dependent_dims
+    )
+
     hp_reroll_coord = ["original"]
     if perfected_form is not False:
-        dims["hp_reroll"] = 2
+        independent_dims["hp_reroll"] = 2
         hp_reroll_coord.append("perfected form")
     if hero_point is not False:
-        dims["hp_reroll"] = dims.get("hp_reroll", 1) + 1
+        independent_dims["hp_reroll"] = independent_dims.get("hp_reroll", 1) + 1
         hp_reroll_coord.append("hero point")
-        if isinstance(hero_point, int):
-            hero_point = DoS(hero_point)
 
-    natural = d20(fortune=fortune, misfortune=misfortune, dims=dims)
-
-    if perfected_form is not False or hero_point is not False:
+    natural = d20(fortune=fortune, misfortune=misfortune, dims=independent_dims)
+    if len(hp_reroll_coord) > 1:
         natural.coords["hp_reroll"] = hp_reroll_coord
     if perfected_form is not False:
         natural = xarray.where(
             natural.coords["hp_reroll"] == "perfected form", 10, natural
         )
+    ds["natural"] = natural
 
     delta = natural + bonus - DC
 
@@ -254,35 +289,7 @@ def check(
         DoS.critical_success,
         outcome,
     )
-
-    ds = Dataset(
-        data_vars={
-            "bonus": bonus,
-            "DC": DC,
-            "natural": natural,
-            "outcome": outcome,
-        },
-        attrs={
-            "keen": keen if isinstance(keen, bool) else "varies",
-            **{
-                k: v if isinstance(v, int | bool) else "varies"
-                for k, v in kwargs.items()
-            },
-            "fortune": fortune if isinstance(fortune, bool) else "varies",
-            "misfortune": misfortune if isinstance(misfortune, bool) else "varies",
-            "hero_point": (
-                hero_point.name
-                if isinstance(hero_point, DoS)
-                else "varies"
-                if isinstance(hero_point, DataArray)
-                else False
-            ),
-            "perfected_form": perfected_form
-            if isinstance(perfected_form, bool)
-            else "varies",
-            "legend": {dos.value: str(dos) for dos in DoS.__members__.values()},
-        },
-    )
+    ds["outcome"] = outcome
 
     if hero_point is not False or perfected_form is not False:
         # Hero point, Perfected Form and fortune effects that apply before the roll
@@ -308,7 +315,75 @@ def check(
         ds["outcome"] = cur_outcome
     assert "hp_reroll" not in ds["outcome"].dims
 
-    return map_outcome(ds, **kwargs) if kwargs else ds
+    return map_outcome(
+        ds,
+        evasion=evasion,
+        incapacitation=incapacitation,
+        allow_critical_failure=allow_critical_failure,
+        allow_failure=allow_failure,
+        allow_critical_success=allow_critical_success,
+    )
+
+
+def _parse_independent_dependent_dims(
+    ds: Dataset,
+    independent_dims: Mapping[Hashable, int | None] | Collection[Hashable],
+    dependent_dims: Collection[Hashable],
+) -> dict[Hashable, int]:
+    """Parse and validate the independent and dependent dimensions.
+
+    :param ds:
+        Dataset defininig the domain of the input dimensions
+    :param independent_dims:
+        See parameter description in :func:`check`
+    :param dependent_dims:
+        See parameter description in :func:`check`
+    :returns:
+        A dictionary of independent dimensions with their sizes.
+    """
+    if "roll" in independent_dims:
+        raise ValueError(
+            "Dimension 'roll' is always independent and must not be included in "
+            "independent_dims"
+        )
+    if isinstance(independent_dims, Mapping):
+        out = dict(independent_dims)
+        for dim, size in independent_dims.items():
+            if size is None:
+                out[dim] = ds.sizes[dim]
+            elif dim in ds.sizes and ds.sizes[dim] != size:
+                raise ValueError(
+                    f"Dimension {dim!r} already exists with size "
+                    f"{ds.sizes.get(dim, size)}, but {size=} was specified. "
+                    "Set to None to automatically use the existing size."
+                )
+    else:
+        out = {dim: ds.sizes[dim] for dim in independent_dims}
+
+    # Validate that independent_dims + dependent_dims == ds.sizes
+    dependent_dims = set(dependent_dims)
+    if "roll" in dependent_dims:
+        raise ValueError("Dimension 'roll' is always independent")
+    conflict = set(out) & dependent_dims
+    missing = set(ds.sizes) - set(out) - {"roll"} - dependent_dims
+    unknown = dependent_dims - set(ds.sizes)
+    if conflict:
+        raise ValueError(
+            f"Dimension(s) {sorted(conflict, key=str)} are both independent "
+            "and dependent"
+        )
+    if missing:
+        raise ValueError(
+            f"Dimension(s) {sorted(missing, key=str)} must be listed in either "
+            "independent_dims or dependent_dims. "
+        )
+    if unknown:
+        raise KeyError(
+            f"Dimension(s) {sorted(unknown, key=str)} are not present in the "
+            "input dataset. "
+        )
+
+    return out
 
 
 def map_outcome(
@@ -337,9 +412,12 @@ def map_outcome(
         Either the :class:`~xarray.Dataset` returned by :func:`check` or
         just its `outcome` variable.
     :param map_:
-        An arbitrary ``{from: to, ...}`` or ``[(from, to), ...]`` mapping of
-        outcomes. Both from and to must be :class:`DoS` values or their int equivalents.
-        This is applied *after* all other rules. Default: no bespoke mapping.
+        An arbitrary ``{from: to, ...}`` mapping or ``[(from, to), ...]`` sequence of
+        tuples of outcomes. `from` must be :class:`DoS` values or their int equivalents.
+        `to` can be anything, including other dtypes such as strings.
+        This is applied *after* all other rules.
+        Any DoS value not in `from` is mapped to the null value by default.
+        Default: no bespoke mapping.
     :param evasion:
         Set to True to convert a success into a critical success. Default: False.
 
@@ -372,6 +450,8 @@ def map_outcome(
         previous outcome stored in `original_outcome`.
         If `outcome` is a :class:`~xarray.DataArray`, return a new DataArray with
         the mapped outcomes.
+        If `map_` is defined, the dtype of the return value will be the dtype of
+        the values of `map_`; otherwise it will be int like the input.
 
     **Examples:**
 
@@ -395,7 +475,7 @@ def map_outcome(
       ...     "evasion": ("target", [False, False, True])})
       >>> check(targets.bonus,
       ...       DC=30,
-      ...       dims=targets.sizes,  # targets rolls independently
+      ...       independent_dims=["target"],
       ...       evasion=targets.evasion,
       ...       incapacitation=rank2level(spell_rank) < targets.level)
       <xarray.Dataset> Size: 7MB
@@ -404,32 +484,46 @@ def map_outcome(
       Data variables:
           bonus             (target) int64 24B 16 21 24
           DC                int64 8B 30
+          evasion           (target) bool 3B False False True
+          incapacitation    (target) bool 3B False True False
           natural           (roll, target) int64 2MB 18 13 11 6 7 1 ... 10 9 11 12 12
           original_outcome  (roll, target) int64 2MB 1 1 1 0 0 -1 -1 ... -1 1 1 0 1 1
           outcome           (roll, target) int64 2MB 1 2 2 0 1 -1 -1 ... -1 2 2 0 2 2
       Attributes:
-          keen:            False
-          evasion:         varies
-          incapacitation:  varies
-          fortune:         False
-          misfortune:      False
-          hero_point:      False
-          perfected_form:  False
-          legend:          {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1:...
+          legend:    {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'Succe...
     """
     if isinstance(outcome, Dataset):
-        outcome = outcome.rename({"outcome": "original_outcome"})
-        outcome["outcome"] = map_outcome(
-            outcome["original_outcome"],
+        ds = outcome
+        changed = map_ is not None
+        ds = ds.rename({"outcome": "original_outcome"})
+        for k, v, default in (
+            ("evasion", evasion, False),
+            ("incapacitation", incapacitation, False),
+            ("allow_critical_failure", allow_critical_failure, True),
+            ("allow_failure", allow_failure, True),
+            ("allow_critical_success", allow_critical_success, True),
+        ):
+            if v is not default:
+                changed = True
+                # Note: when map_outcome is a tail call from check, this is redundant.
+                ds[k] = v
+        if not changed:
+            return outcome
+        # FIXME how do we display map_ in the data variables?
+        ds["outcome"] = map_outcome(
+            ds["original_outcome"],
             map_,
-            **{k: v for k, v in locals().items() if k not in ("map_", "outcome")},
+            evasion=evasion,
+            incapacitation=incapacitation,
+            allow_critical_failure=allow_critical_failure,
+            allow_failure=allow_failure,
+            allow_critical_success=allow_critical_success,
         )
-        return outcome
+        return ds
 
-    success_to_critical_success = DataArray(evasion)
     orig_outcome = outcome
     outcome = xarray.where(
-        success_to_critical_success & (outcome == DoS.success),
+        evasion & (outcome == DoS.success),
         DoS.critical_success,
         outcome,
     )
@@ -445,22 +539,29 @@ def map_outcome(
         DoS.success,
     )
 
-    if map_ is not None:
-        if isinstance(map_, Mapping):
-            map_ = map_.items()
-        map_ = list(map_)
-        if not map_:
-            return xarray.zeros_like(outcome)
+    if map_ is None:
+        return outcome
 
-        # False, 0, 0.0, etc.
-        out = DataArray(0).astype(DataArray(map_[0][1]).dtype)
-        if out.dtype.kind == "U":
-            out = DataArray("")
-        for from_, to in reversed(map_):
-            out = xarray.where(outcome == from_, to, out)
-        return out
+    if isinstance(map_, Mapping):
+        map_ = map_.items()
+    norm_map = [
+        # Preserve dtype promotion in result_type
+        # e.g. int + np.int8 -> np.int8
+        # However, we need to wrap str objects and such, which
+        # np.result_type does not understand.
+        (from_, to if isinstance(to, int | float | bool) else DataArray(to))
+        for from_, to in map_
+    ]
+    dtype = np.result_type(*(v for _, v in norm_map)) if norm_map else np.dtype(int)
+    if dtype.kind in "TU":
+        out = xarray.full_like(outcome, fill_value="", dtype=dtype)
+    else:
+        out = xarray.zeros_like(outcome, dtype=dtype)
 
-    return outcome
+    # In case of multiple matches, leftmost wins.
+    for from_, to in reversed(norm_map):
+        out = xarray.where(outcome == from_, to, out)
+    return out
 
 
 def outcome_counts(

@@ -122,9 +122,9 @@ def roll(
 
     raw = DataArray(
         base.rng().integers(1, faces + 1, size=(base.size, dice, *dims.values())),
-        dims=("roll", "count", *dims),
+        dims=("roll", "__dice", *dims),
     )
-    return cast(DataArray, np.maximum(0, raw.sum("count") + bonus))
+    return cast(DataArray, np.maximum(0, raw.sum("__dice") + bonus))
 
 
 def d20(
