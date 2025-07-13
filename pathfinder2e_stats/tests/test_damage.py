@@ -500,24 +500,15 @@ def test_multiple_targets_type():
 
 
 def test_independent_dims():
+    """Test damage() parameters independent_dims and dependent_dims.
+
+    See also
+    --------
+    test_check.py::test_independent_dims()
+    test_tools.py::test_parse_independent_dependent_dims()
+    """
     c = check(6, DC=15, independent_dims={"target": 2})
     s = Damage("fire", 6, 6, basic_save=True)
-
-    with pytest.raises(
-        ValueError,
-        match="target.*must be listed in either independent_dims or dependent_dims",
-    ):
-        damage(c, s)
-    with pytest.raises(ValueError, match="target.*both independent and dependent"):
-        damage(c, s, independent_dims=["target"], dependent_dims=["target"])
-    with pytest.raises(KeyError, match="notfound"):
-        damage(c, s, independent_dims=["target", "notfound"])
-    with pytest.raises(KeyError, match="notfound"):
-        damage(c, s, dependent_dims=["target", "notfound"])
-    with pytest.raises(ValueError, match="roll.*always independent"):
-        damage(c, s, independent_dims=["target", "roll"])
-    with pytest.raises(ValueError, match="roll.*always independent"):
-        damage(c, s, dependent_dims=["target", "roll"])
 
     ind = damage(c, s, independent_dims=["target"])
     dep = damage(c, s, dependent_dims=["target"])

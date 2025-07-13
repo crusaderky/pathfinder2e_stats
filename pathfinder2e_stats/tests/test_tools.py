@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from xarray import DataArray
+from functools import partial
+
+import pytest
+from xarray import DataArray, Dataset
 from xarray.testing import assert_equal
 
-from pathfinder2e_stats import level2rank, rank2level
+from pathfinder2e_stats import level2rank, rank2level, set_config
+from pathfinder2e_stats.tools import _parse_independent_dependent_dims
 
 
 def test_level2rank():
@@ -54,3 +58,149 @@ def test_rank2level_dedication():
         actual_i = rank2level(level_i, dedication=True)
         assert actual_i == expect_i
         assert isinstance(actual_i, int)
+
+
+def test_parse_independent_dependent_dims():
+    ds = Dataset({"DC": ("foo", [1, 2])})
+    p = partial(_parse_independent_dependent_dims, "check", ds)
+
+    assert p(["foo"], []) == {"foo": 2}
+    assert p(("foo",), []) == {"foo": 2}
+    assert p({"foo"}, []) == {"foo": 2}
+    assert p({"foo": None}, []) == {"foo": 2}
+    assert p({"foo": 2}, []) == {"foo": 2}
+    assert p({"foo": 2, "bar": 3}, []) == {"foo": 2, "bar": 3}
+    assert p({"foo": None, "bar": 3}, []) == {"foo": 2, "bar": 3}
+    assert p([], ["foo"]) == {}
+    assert p([], ("foo",)) == {}
+    assert p([], {"foo"}) == {}
+
+    with pytest.raises(
+        ValueError,
+        match="foo.*must be listed in either independent_dims or dependent_dims",
+    ):
+        p([], [])
+    with pytest.raises(ValueError, match="foo.*already exists with size 2"):
+        p({"foo": 3}, [])
+    with pytest.raises(ValueError, match="foo.*both independent and dependent"):
+        p(["foo"], ["foo"])
+    with pytest.raises(KeyError, match="notfound"):
+        p(["foo", "notfound"], ())
+    with pytest.raises(KeyError, match="notfound"):
+        p({"foo": None, "notfound": None}, ())
+    with pytest.raises(KeyError, match="notfound"):
+        p([], ["foo", "notfound"])
+    with pytest.raises(
+        ValueError, match="roll.*always independent.*parameter `independent_dims`"
+    ):
+        p(["foo", "roll"], [])
+    with pytest.raises(
+        ValueError, match="roll.*always independent.*parameter `dependent_dims`"
+    ):
+        p([], ["foo", "roll"])
+
+
+def test_parse_independent_dependent_dims_config_check():
+    ds = Dataset({"DC": ("foo", [1, 2])})
+    p = partial(_parse_independent_dependent_dims, "check", ds)
+
+    set_config(check_independent_dims=["foo"])
+    assert p([], []) == {"foo": 2}
+    set_config(check_independent_dims=("foo",))
+    assert p([], []) == {"foo": 2}
+    set_config(check_independent_dims={"foo"})
+    assert p([], []) == {"foo": 2}
+
+    # Unlike with the parameter, extra dims in the config are ignored
+    set_config(check_independent_dims=["foo", "bar"])
+    assert p([], []) == {"foo": 2}
+
+    # Override config
+    assert p(["foo"], []) == {"foo": 2}
+    assert p({"foo": None}, []) == {"foo": 2}
+    assert p([], ["foo"]) == {}
+
+    set_config(check_independent_dims=[], check_dependent_dims=["foo", "bar"])
+    assert p([], []) == {}
+    assert p(["foo"], []) == {"foo": 2}  # Override
+    assert p({"foo": None, "bar": 3}, []) == {"foo": 2, "bar": 3}  # Override
+
+    set_config(check_independent_dims=["foo"], check_dependent_dims=[])
+    assert p([], []) == {"foo": 2}
+
+    set_config(check_independent_dims=["foo"], check_dependent_dims=["foo"])
+    with pytest.raises(
+        ValueError, match="foo.*check_independent_dims.*check_dependent_dims"
+    ):
+        p([], [])
+
+    set_config(check_independent_dims=["foo", "roll"], check_dependent_dims=[])
+    with pytest.raises(
+        ValueError, match="roll.*always independent.*check_independent_dims"
+    ):
+        p([], [])
+
+    set_config(check_independent_dims=["foo"], check_dependent_dims=["roll"])
+    with pytest.raises(
+        ValueError, match="roll.*always independent.*check_dependent_dims"
+    ):
+        p([], [])
+
+
+def test_parse_independent_dependent_dims_config_damage():
+    ds = Dataset({"DC": ("foo", [1, 2])})
+    p = partial(_parse_independent_dependent_dims, "damage", ds)
+
+    set_config(damage_independent_dims=["foo"])
+    assert p([], []) == {"foo": 2}
+    set_config(damage_independent_dims=("foo",))
+    assert p([], []) == {"foo": 2}
+    set_config(damage_independent_dims={"foo"})
+    assert p([], []) == {"foo": 2}
+
+    # Unlike with the parameter, extra dims in the config are ignored
+    set_config(damage_independent_dims=["foo", "bar"])
+    assert p([], []) == {"foo": 2}
+
+    # Override config
+    assert p(["foo"], []) == {"foo": 2}
+    assert p({"foo": None}, []) == {"foo": 2}
+    assert p([], ["foo"]) == {}
+
+    set_config(damage_independent_dims=[], damage_dependent_dims=["foo", "bar"])
+    assert p([], []) == {}
+    assert p(["foo"], []) == {"foo": 2}  # Override
+    assert p({"foo": None, "bar": 3}, []) == {"foo": 2, "bar": 3}  # Override
+
+    set_config(damage_independent_dims=["foo"], damage_dependent_dims=[])
+    assert p([], []) == {"foo": 2}
+
+    set_config(damage_independent_dims=["foo"], damage_dependent_dims=["foo"])
+    with pytest.raises(
+        ValueError, match="foo.*damage_independent_dims.*damage_dependent_dims"
+    ):
+        p([], [])
+
+    set_config(damage_independent_dims=["foo", "roll"], damage_dependent_dims=[])
+    with pytest.raises(
+        ValueError, match="roll.*always independent.*damage_independent_dims"
+    ):
+        p([], [])
+
+    set_config(damage_independent_dims=["foo"], damage_dependent_dims=["roll"])
+    with pytest.raises(
+        ValueError, match="roll.*always independent.*damage_dependent_dims"
+    ):
+        p([], [])
+
+
+def test_parse_independent_dependent_dims_config_cross():
+    ds = Dataset({"x": ("foo", [1, 2]), "y": ("bar", [3, 4, 5])})
+    set_config(
+        check_independent_dims=["foo"],
+        check_dependent_dims=["bar"],
+        damage_independent_dims=["bar"],
+        damage_dependent_dims=["foo"],
+    )
+    assert _parse_independent_dependent_dims("check", ds, [], []) == {"foo": 2}
+    assert _parse_independent_dependent_dims("damage", ds, [], []) == {"bar": 3}
