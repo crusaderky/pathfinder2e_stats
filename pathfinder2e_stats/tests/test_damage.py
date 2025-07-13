@@ -552,6 +552,27 @@ def test_independent_dims():
     assert_equal(dep1[mask], dep0[mask] // 2)
 
 
+def test_persistent_damage_independent_dims():
+    """Persistent damage and recovery checks are always independent, regardless of
+    initial damage.
+    """
+    c = check(6, DC=DataArray([15, 15], dims=["target"]), dependent_dims=["target"])
+    s = Damage("fire", 1, 6, persistent=True)
+    d = damage(c, s, dependent_dims=["target"])
+    d = d.sel(roll=d.outcome.isel(target=0) == DoS.success)
+    assert (d.outcome == DoS.success).all()  # target is a dependent dim
+
+    for var in d.persistent_damage, d.persistent_damage_check:
+        assert (
+            var.isel(target=0, persistent_round=0)
+            != var.isel(target=0, persistent_round=1)
+        ).any()
+        assert (
+            var.isel(target=0, persistent_round=0)
+            != var.isel(target=1, persistent_round=0)
+        ).any()
+
+
 def test_null_damage():
     actual = damage(check(6, DC=15), {})
     assert actual.sizes == {"roll": 1000, "damage_type": 0}

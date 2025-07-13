@@ -39,7 +39,7 @@ def damage(
         dict representing an :class:`~pathfinder2e_stats.ExpandedDamage`, or
         a combination thereof using the `+` operator.
     :param independent_dims:
-        Dimensions to roll independently from each other.
+        Dimensions along which to roll independently for each point.
 
         This must be a subset of the dimensions of any of the input parameters.
         Note that a dimension may be:
@@ -57,7 +57,7 @@ def damage(
 
         See examples below.
     :param dependent_dims:
-        Dimensions to roll together with the same roll, for validation purposes.
+        Dimensions along which there must be a single dice roll for all points.
         See :func:`check` for more details. `damage_type`, if present in the inputs
         (e.g. weaknesses or resistances), is always treated as dependent.
     :param weaknesses:
@@ -277,17 +277,31 @@ def damage(
     out.attrs["damage_spec"] = damage_spec.to_dict_of_str()
 
     independent_dims = _parse_independent_dependent_dims(
-        out, independent_dims, dependent_dims
+        check_outcome, independent_dims, dependent_dims
     )
-    pers_dims = independent_dims.copy()
-    pers_dims["persistent_round"] = persistent_damage_rounds
+
+    # For persistent damage, treat all dimensions as independent.
+    # Note: this is not *quite* right. Consider:
+    # Swipe: attack roll is dependent on target, damage is dependent too,
+    #        but check to recover from persistent damage is independent.
+    # What-if analysis of persistent damage vs. different targets:
+    #        persistent damage is dependent too.
+    # This last case is not modelled exactly for the sake of not
+    # overwhelming the user with configuration options.
+    persistent_independent_dims = dict(check_outcome.sizes)
+    del persistent_independent_dims["roll"]
+    persistent_independent_dims["persistent_round"] = persistent_damage_rounds
 
     damages = {
         name: _roll_damage(check_outcome.outcome, spec, dims)
         for name, spec, dims in (
             ("direct_damage", damage_spec.filter("direct"), independent_dims),
             ("splash_damage", damage_spec.filter("splash"), independent_dims),
-            ("persistent_damage", damage_spec.filter("persistent"), pers_dims),
+            (
+                "persistent_damage",
+                damage_spec.filter("persistent"),
+                persistent_independent_dims,
+            ),
         )
         if spec
     }
@@ -350,17 +364,11 @@ def damage(
             DC=persistent_damage_DC,
             # Roll separately for each damage type, but not e.g. for different targets
             independent_dims={
-                # Treat all dimensions as independent.
-                # Note: this is not *quite* right. Consider:
-                # Swipe: attack roll is dependent on target, damage is dependent too,
-                #        but check to recover from persistent damage is independent.
-                # What-if analysis of persistent damage vs. different targets:
-                #        persistent damage is dependent too.
-                # This last case is not modelled exactly for the sake of not
-                # overwhelming the user with configuration options.
-                **dict.fromkeys(out["persistent_damage_DC"].dims),
+                # For persistent damage, treat all dimensions as independent.
+                # Read note above.
                 "damage_type": out.sizes["damage_type"],
-                "persistent_round": persistent_damage_rounds,
+                **persistent_independent_dims,
+                **dict.fromkeys(out["persistent_damage_DC"].dims),
             },
             allow_critical_failure=False,
             allow_critical_success=False,

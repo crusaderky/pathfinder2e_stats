@@ -79,7 +79,7 @@ def check(
     :param DC:
         The Difficulty Class to compare the result to.
     :param independent_dims:
-        Dimensions to roll independently from each other.
+        Dimensions along which to roll independently for each point.
 
         This can be either a mapping where the keys are the dimension names and
         the values are the number of elements along them, or a collection of a
@@ -93,11 +93,11 @@ def check(
 
         See examples below.
     :param dependent_dims:
-        Collection of dimensions along which to reuse the same roll. They must be a
-        subset of the dimensions of the input parameters. `independent_dims` plus
-        `dependent_dims` must cover all dimensions of the input parameters.
-        The name of these two parameters comes from the concept in statistics of
-        dependent and independent variables.
+        Dimensions along which there must be a single dice roll for all points.
+        They must be a subset of the dimensions of the input parameters.
+        `independent_dims` plus `dependent_dims` must cover all dimensions of the input
+        parameters. The name of these two parameters comes from the concept in
+        statistics of dependent and independent variables.
     :param keen:
         Set to True to Strike with a weapon inscribed with a
         :prd_equipment:`Keen <2843>` rune.
