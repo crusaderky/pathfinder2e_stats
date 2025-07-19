@@ -1,4 +1,4 @@
-Advanced Tutorials
+Advanced Notebooks
 ==================
 
 If you've finished :doc:`getting_started`, we can start dissecting some actual complex

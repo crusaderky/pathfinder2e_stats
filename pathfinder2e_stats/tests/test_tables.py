@@ -50,8 +50,8 @@ def test_NPC():
         if v.dtype.kind == "U":
             # Test that text is a well-formed dice expression, e.g. 2d6+1
             for dice in v.values.flat:
-                if dice != "0":  # Fill-in for terrible
-                    roll(dice)  # TODO separate pareser from roller
+                if dice != "0":  # Fill-in for challenge='Terrible'
+                    roll(dice)  # TODO separate parser from roller
         else:
             assert v.dtype.kind == "i"
             if "mm" in v.dims:
