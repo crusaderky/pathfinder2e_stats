@@ -43,10 +43,11 @@ extlinks = {
     "prd": ("https://2e.aonprd.com/Search.aspx?q=%s&display=full", "%s"),
     "prd_actions": ("https://2e.aonprd.com/Actions.aspx?ID=%s", None),
     "prd_classes": ("https://2e.aonprd.com/Classes.aspx?ID=%s", None),
+    "prd_conditions": ("https://2e.aonprd.com/Conditions.aspx?ID=%s", None),
     "prd_equipment": ("https://2e.aonprd.com/Equipment.aspx?ID=%s", None),
     "prd_feats": ("https://2e.aonprd.com/Feats.aspx?ID=%s", None),
     "prd_rules": ("https://2e.aonprd.com/Rules.aspx?ID=%s", None),
-    "prd_skills": ("https://2e.aonprd.com/Skills.aspx?ID=%s", None),
+    "prd_skills": ("https://2e.aonprd.com/Skills.aspx?ID=%s&General=true", None),
     "prd_spells": ("https://2e.aonprd.com/Spells.aspx?ID=%s", None),
     "prd_traits": ("https://2e.aonprd.com/Traits.aspx?ID=%s", None),
 }
