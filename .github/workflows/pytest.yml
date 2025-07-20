@@ -61,16 +61,16 @@ jobs:
         run: pixi run -e ${{ matrix.environment }} smoke-test
 
       - name: pytest with coverage
-        if: matrix.environment != 'nogil'
-        run: pixi run -e ${{ matrix.environment }} coverage
+        if: matrix.environment != 'mindeps' && matrix.environment != 'nogil'
+        run: pixi run -e ${{ matrix.environment }} tests-cov
+
+      - name: pytest with coverage (except doctests)
+        if: matrix.environment == 'mindeps'
+        run: pixi run -e mindeps tests-cov pathfinder2e_stats/tests
 
       - name: Free-threading stress test
         if: matrix.environment == 'nogil'
         run: pixi run -e nogil tests --parallel-threads=4
-
-      - name: doctests
-        if: matrix.environment != 'nogil' && matrix.environment != 'mindeps'
-        run: pixi run -e ${{ matrix.environment }} doctests
 
       - name: codecov.io
         if: matrix.os != 'macos-13' && matrix.environment != 'nogil'
