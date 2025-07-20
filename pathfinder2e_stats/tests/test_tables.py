@@ -14,7 +14,7 @@ def test_PC():
     # Items can be accessed via attribute or key
     assert t[k0] is getattr(t, k0)
 
-    with pytest.raises(AttributeError, match="no table 'nonexistent'"):
+    with pytest.raises(AttributeError, match="no table 'PC.nonexistent'"):
         _ = t.nonexistent
     with pytest.raises(KeyError, match="'nonexistent'"):
         _ = t["nonexistent"]
@@ -39,6 +39,24 @@ def test_PC():
     assert t.weapon_proficiency.fighter.sel(level=6) == 6
     # test fill with zeros
     assert t.attack_item_bonus.bomb.sel(level=1) == 0
+
+
+def test_PC_postproc():
+    """Test that .py post-processing scripts in the _PC directory are executed"""
+    ds = tables.PC.ability_bonus
+    assert tuple(ds.data_vars) == ("boosts", "apex")
+    assert tuple(ds.coords) == ("level", "initial")
+    assert ds.boosts.dims == ("level", "initial")
+
+
+def test_PC_repr():
+    s = repr(tables.PC)
+    assert "- ability_bonus\n" in s
+
+
+def test_html_repr():
+    s = tables.PC._repr_html_()
+    assert "<li>ability_bonus</li>" in s
 
 
 def test_NPC():

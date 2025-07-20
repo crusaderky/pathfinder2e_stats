@@ -1,0 +1,166 @@
+from __future__ import annotations
+
+import importlib
+from collections import UserDict
+from functools import cached_property
+from pathlib import Path
+from typing import cast
+
+import pandas as pd
+import xarray
+from xarray import DataArray, Dataset
+
+
+def _ensure_var_dtypes(ds: Dataset) -> None:
+    for k, var in ds.variables.items():
+        if var.dtype == object:
+            ds[k] = var.astype("U")
+        else:
+            assert var.dtype.kind in ("i", "b"), var
+
+
+class PCTables(UserDict[str, Dataset]):
+    def __init__(self) -> None:
+        super().__init__()
+
+        fnames = sorted((Path(__file__).parent / "_PC").glob("*.csv"))
+        assert fnames
+
+        for fname in fnames:
+            df = pd.read_csv(fname, index_col=0).ffill().fillna(0).astype(int)
+            ds = df.to_xarray()
+            _ensure_var_dtypes(ds)
+            name = fname.name.removesuffix(".csv")
+
+            # Bespoke tweaks
+            try:
+                mod = importlib.import_module(f"pathfinder2e_stats._tables._PC.{name}")
+            except ModuleNotFoundError:
+                pass
+            else:
+                mod.postproc(ds)
+            self.data[name] = ds
+
+        self["level"] = next(iter(self.data.values())).level
+
+    def __getattr__(self, item: str) -> Dataset:
+        try:
+            return self.data[item]
+        except KeyError:
+            raise AttributeError(f"no table 'PC.{item}'") from None
+
+    def __repr__(self) -> str:
+        msg = "Available tables:"
+        for k in self:
+            msg += f"\n- {k}"
+        return msg
+
+    def _repr_html_(self) -> str:
+        msg = "Available tables:<br>\n"
+        msg += "<ul>\n"
+        for k in self:
+            msg += f"  <li>{k}</li>\n"
+        msg += "</ul>"
+        return msg
+
+
+def _read_NPC_table(fname: Path) -> DataArray:
+    df = pd.read_csv(
+        fname,
+        index_col=0,
+        header=[0, 1] if fname.name == "HP.csv" else 0,
+    )
+
+    arr = DataArray(df)
+
+    dim_1 = arr.coords["dim_1"]
+    if fname.name == "HP.csv":
+        arr = arr.unstack("dim_1", fill_value=1337)  # noqa: PD010
+        # Undo alphabetical sorting
+        arr = arr.sel(challenge=["High", "Moderate", "Low"])
+    elif "High" in dim_1:
+        arr = arr.rename({"dim_1": "challenge"})
+    elif "max" in dim_1:
+        arr = arr.rename({"dim_1": "mm"})
+    elif dim_1[0] == "Unlimited":
+        arr = arr.rename({"dim_1": "limited"})
+        arr.coords["limited"] = [False, True]
+    else:
+        raise AssertionError("unreachable")  # pragma: nocover
+
+    if "mm" in arr.dims:
+        mean = arr.sum("mm").expand_dims(mm=["mean"]) / 2
+        mean = mean.round(0).astype(int)
+        arr = xarray.concat([arr, mean], dim="mm")
+
+    return arr
+
+
+class Tables:
+    @cached_property
+    def PC(self) -> PCTables:
+        return PCTables()
+
+    @cached_property
+    def NPC(self) -> Dataset:
+        names = []
+        vars = []
+        fnames = sorted((Path(__file__).parent / "_NPC").glob("*.csv"))
+        assert fnames
+
+        for fname in fnames:
+            names.append(fname.name.removesuffix(".csv"))
+            vars.append(_read_NPC_table(fname))
+
+        vars = list(xarray.align(*vars, join="outer", fill_value=0))
+
+        ds = Dataset(data_vars=dict(zip(names, vars, strict=True)))
+        _ensure_var_dtypes(ds)
+
+        # Restore priority order after align
+        ds = ds.sortby(
+            DataArray(
+                ["Extreme", "High", "Moderate", "Low", "Terrible"],
+                dims=["challenge"],
+            )
+        )
+
+        ds["recall_knowledge"] = self._earn_income.DC.sel(level=ds.level)
+        return ds
+
+    @cached_property
+    def _earn_income(self) -> Dataset:
+        """Earn income table, with extra DCs for levels -1 and 22~25."""
+        fname = Path(__file__).parent / "earn_income.csv"
+        df = pd.read_csv(fname, index_col=0)
+        ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
+        ds = ds.rename({"dim_1": "proficiency"})
+        ds.coords["proficiency"] = ds.proficiency.astype("U")
+        return ds
+
+    @cached_property
+    def EARN_INCOME(self) -> Dataset:
+        return self._earn_income.sel(level=slice(0, 21))
+
+    @cached_property
+    def DC(self) -> DataArray:
+        return self._earn_income.DC.sel(level=slice(0, None))
+
+    @cached_property
+    def SIMPLE_NPC(self) -> DataArray:
+        # Level -2 henchman, everything is Low
+        # At-level opponent, everything is Moderate
+        # Level +2 boss, everything is High
+        a = xarray.concat(
+            [
+                self.NPC.sel(challenge="Low").shift({"level": 2}, fill_value=0),
+                self.NPC.sel(challenge="Moderate"),
+                self.NPC.sel(challenge="High").shift({"level": -2}, fill_value=0),
+            ],
+            dim="challenge",
+        )
+        return (
+            cast(DataArray, a)
+            .sel(level=range(1, 21), mm="mean", drop=True)
+            .transpose("level", "challenge", "limited")
+        )

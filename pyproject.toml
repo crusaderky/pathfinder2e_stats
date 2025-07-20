@@ -191,7 +191,7 @@ pytest-cov = "*"
 
 [tool.pixi.feature.tests.tasks]
 tests = { cmd = "pytest -v", description = "Run tests" }
-doctests = { cmd = "pytest -v --doctest-glob='*.rst' --doctest-modules pathfinder2e_stats/*.py pathfinder2e_stats/armory doc", description = "Run doctests" } # FIXME fail to import pathfinder2e.tables
+doctests = { cmd = "pytest -v --doctest-glob='*.rst' --doctest-modules pathfinder2e_stats doc --ignore=pathfinder2e_stats/tests", description = "Run doctests" }
 tests-cov = { cmd = "pytest -v -ra --cov --cov-report=xml --cov-report=term --durations=20", description = "Run tests with coverage" }
 coverage = { cmd = "coverage html", depends-on = ["tests-cov"], description = "Generate test coverage html report" }
 open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"], description = "Open test coverage report" }
