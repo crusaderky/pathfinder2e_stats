@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import importlib
-from collections import UserDict
+from collections.abc import Iterator, Mapping
 from functools import cached_property
 from pathlib import Path
 from typing import cast
@@ -19,10 +19,8 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
             assert var.dtype.kind in ("i", "b"), var
 
 
-class PCTables(UserDict[str, Dataset]):
+class PCTables(Mapping[str, Dataset]):
     def __init__(self) -> None:
-        super().__init__()
-
         fnames = sorted((Path(__file__).parent / "_PC").glob("*.csv"))
         assert fnames
 
@@ -39,15 +37,18 @@ class PCTables(UserDict[str, Dataset]):
                 pass
             else:
                 mod.postproc(ds)
-            self.data[name] = ds
+            self.__dict__[name] = ds
 
-        self["level"] = next(iter(self.data.values())).level
+        self.level = next(iter(self.__dict__.values())).level
 
-    def __getattr__(self, item: str) -> Dataset:
-        try:
-            return self.data[item]
-        except KeyError:
-            raise AttributeError(f"no table 'PC.{item}'") from None
+    def __getitem__(self, item: str) -> Dataset:
+        return self.__dict__[item]
+
+    def __iter__(self) -> Iterator[str]:
+        return iter(self.__dict__)
+
+    def __len__(self) -> int:
+        return len(self.__dict__)
 
     def __repr__(self) -> str:
         msg = "Available tables:"
@@ -129,24 +130,6 @@ class Tables:
         return ds
 
     @cached_property
-    def _earn_income(self) -> Dataset:
-        """Earn income table, with extra DCs for levels -1 and 22~25."""
-        fname = Path(__file__).parent / "earn_income.csv"
-        df = pd.read_csv(fname, index_col=0)
-        ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
-        ds = ds.rename({"dim_1": "proficiency"})
-        ds.coords["proficiency"] = ds.proficiency.astype("U")
-        return ds
-
-    @cached_property
-    def EARN_INCOME(self) -> Dataset:
-        return self._earn_income.sel(level=slice(0, 21))
-
-    @cached_property
-    def DC(self) -> DataArray:
-        return self._earn_income.DC.sel(level=slice(0, None))
-
-    @cached_property
     def SIMPLE_NPC(self) -> DataArray:
         # Level -2 henchman, everything is Low
         # At-level opponent, everything is Moderate
@@ -164,3 +147,21 @@ class Tables:
             .sel(level=range(1, 21), mm="mean", drop=True)
             .transpose("level", "challenge", "limited")
         )
+
+    @cached_property
+    def _earn_income(self) -> Dataset:
+        """Earn income table, with extra DCs for levels -1 and 22~25."""
+        fname = Path(__file__).parent / "earn_income.csv"
+        df = pd.read_csv(fname, index_col=0)
+        ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
+        ds = ds.rename({"dim_1": "proficiency"})
+        ds.coords["proficiency"] = ds.proficiency.astype("U")
+        return ds
+
+    @cached_property
+    def DC(self) -> DataArray:
+        return self._earn_income.DC.sel(level=slice(0, None))
+
+    @cached_property
+    def EARN_INCOME(self) -> Dataset:
+        return self._earn_income.sel(level=slice(0, 21))

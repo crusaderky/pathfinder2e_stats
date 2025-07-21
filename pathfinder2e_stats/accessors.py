@@ -4,15 +4,16 @@ from collections.abc import Hashable
 
 import numpy as np
 import xarray
+from xarray import DataArray
 
 
 def value_counts(
-    obj: xarray.DataArray,
+    obj: DataArray,
     dim: Hashable,
     *,
     new_dim: Hashable = "unique_value",
     normalize: bool = False,
-) -> xarray.DataArray:
+) -> DataArray:
     """pandas-style value_counts.
 
     See api.rst for full documentation"""
@@ -44,9 +45,9 @@ def value_counts(
 class ValueCountsAccessor:
     """Add .value_counts(...) method to DataArray"""
 
-    _obj: xarray.DataArray
+    _obj: DataArray
 
-    def __init__(self, obj: xarray.DataArray):
+    def __init__(self, obj: DataArray):
         self._obj = obj
 
     def __call__(
@@ -55,5 +56,5 @@ class ValueCountsAccessor:
         *,
         new_dim: Hashable = "unique_value",
         normalize: bool = False,
-    ) -> xarray.DataArray:
+    ) -> DataArray:
         return value_counts(self._obj, dim, new_dim=new_dim, normalize=normalize)

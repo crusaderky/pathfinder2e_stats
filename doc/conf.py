@@ -182,6 +182,7 @@ html_sidebars: dict = {
     "notebooks/getting_started": [],
     "api": [],
     "armory": [],
+    "notebooks/tables": [],
     "develop": [],
     "whats-new": [],
 }

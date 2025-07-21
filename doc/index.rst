@@ -73,7 +73,7 @@ Table of contents
    notebooks/index
    api
    armory
-   tables
+   notebooks/tables
    develop
    whats-new
 

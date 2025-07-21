@@ -1,5 +1,5 @@
-Advanced Notebooks
-==================
+Notebooks
+=========
 
 If you've finished :doc:`getting_started`, we can start dissecting some actual complex
 problems. Below there are a few examples.
