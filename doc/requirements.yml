@@ -5,7 +5,7 @@ channels:
 - nodefaults
 dependencies:
 - python 3.13.*
-- python >=3.11
+- python *
 - pip *
 - sphinx *
 - pydata-sphinx-theme *
@@ -14,12 +14,12 @@ dependencies:
 - matplotlib *
 - hvplot *
 - scipy *
-- numpy >=1.24
-- pandas >=1.5
-- xarray >=2023.1.0
+- numpy *
+- pandas *
+- xarray *
 - pip
 - pip:
   - numpy>=1.24
-  - pandas>=1.5
-  - xarray>=2023.1.0
+  - pandas>=2.1
+  - xarray>=2024.10.0
 
