@@ -86,7 +86,7 @@ Class Features
 --------------
 These class features add damage of a specific type.
 For class features that add flat damage to the weapon,
-like a Barbarian's :prd_actions:`Rage <2802>`, see :doc:`tables`.
+like a Barbarian's :prd_actions:`Rage <2802>`, see :doc:`notebooks/tables`.
 
 .. automodule:: pathfinder2e_stats.armory.class_features
    :members:

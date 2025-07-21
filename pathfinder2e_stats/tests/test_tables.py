@@ -18,7 +18,7 @@ def test_PC():
     # Items can be accessed via attribute or key
     assert t[k0] is getattr(t, k0)
 
-    with pytest.raises(AttributeError, match="no table 'PC.nonexistent'"):
+    with pytest.raises(AttributeError, match="no attribute 'nonexistent'"):
         _ = t.nonexistent
     with pytest.raises(KeyError, match="'nonexistent'"):
         _ = t["nonexistent"]
@@ -58,9 +58,13 @@ def test_PC_repr():
     assert "- ability_bonus\n" in s
 
 
-def test_html_repr():
+def test_PC_html_repr():
     s = tables.PC._repr_html_()
     assert "<li>ability_bonus</li>" in s
+
+
+def test_PC_code_completion():
+    assert "ability_bonus" in dir(tables.PC)
 
 
 @pytest.mark.xfail(PANDAS_3, reason="https://github.com/pydata/xarray/issues/10553")

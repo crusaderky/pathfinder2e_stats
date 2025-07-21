@@ -97,6 +97,7 @@ ignore = [
   "N806", # Variable should be lowercase
   "N816", # Variable in global scope should not be mixedCase
   "PD011", # Use `.to_numpy()` instead of `.values`
+  "PD013", # `.melt` is preferred to `.stack`; provides same functionality
   "PD901", # Avoid using the generic variable name `df` for DataFrames
   "PT006", # Wrong type passed to first argument of `pytest.mark.parametrize`; expected `tuple`
   "PLC0414", # Import alias does not rename original package
