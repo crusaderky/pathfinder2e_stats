@@ -80,6 +80,8 @@ def _to_dataframes(
     if isinstance(obj, DataArray):
         if name is None:
             name = str(obj.name) if obj.name is not None else "(unnamed)"
+            if name in obj.coords:  # Invalid
+                name = "values"
         obj = obj.to_dataset(name=name)
 
     # Reorder dimensions, making sure that they follow the same first-seen order

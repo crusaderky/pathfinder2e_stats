@@ -317,3 +317,12 @@ def test_to_dataframes_max_cols():
     a = xarray.DataArray(np.arange(300 * 300).reshape(300, 300))
     df = next(_to_dataframes(a))
     assert df.shape == (8, 100)
+
+
+def test_to_dataframes_dataarray_same_name():
+    """Test special case of tables.PC.level"""
+    a = xarray.DataArray([1, 2], dims=["level"], coords={"level": [1, 2]}, name="level")
+    df = next(_to_dataframes(a))
+    assert df.shape == (2, 1)
+    assert df.index.name == "level"
+    assert df.columns == pd.Index(["values"], name="variable")
