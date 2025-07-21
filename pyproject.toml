@@ -19,8 +19,8 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.24",
-  "pandas>=1.5",
-  "xarray>=2023.1.0",
+  "pandas>=2.1",
+  "xarray>=2024.10.0",
 ]
 dynamic = ["version"]
 
@@ -162,10 +162,10 @@ channels = ["https://prefix.dev/conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
 
 [tool.pixi.dependencies]
-python = ">=3.11"
-numpy = ">=1.24"
-pandas = ">=1.5"
-xarray = ">=2023.1.0"
+python = "*"
+numpy = "*"
+pandas = "*"
+xarray = "*"
 
 [tool.pixi.feature.lint.dependencies]
 lefthook = "*"
@@ -190,6 +190,7 @@ smoke-test = { cmd = "python smoke_test.py", description = "Test import the libr
 [tool.pixi.feature.tests.dependencies]
 pytest = "*"
 pytest-cov = "*"
+ipython = "*"
 
 [tool.pixi.feature.tests.tasks]
 tests = { cmd = "pytest -v", description = "Run tests" }
@@ -230,6 +231,7 @@ python = "=3.13"
 [tool.pixi.feature.nogil.dependencies]
 python-freethreading = "=3.13" # TODO python 3.14 prereleases?
 pytest-run-parallel = "*"
+ipython = "*"
 
 [tool.pixi.feature.nogil.pypi-dependencies]
 # FIXME Need pandas >=3.0
@@ -240,8 +242,8 @@ xarray = "*"
 [tool.pixi.feature.mindeps.dependencies]
 python = "=3.11"
 numpy = "==1.24.0"
-pandas = "==1.5.1"
-xarray = "==2023.1.0"
+pandas = "==2.1.0"
+xarray = "==2024.10.0"
 
 [tool.pixi.feature.upstream.dependencies]
 python = "=3.13" # TODO python 3.14 prereleases?
@@ -272,3 +274,4 @@ py311 = { features = ["py311", "smoke", "tests"] }
 py313 = { features = ["py313", "smoke", "tests"], solve-group = "py313" }
 nogil = { features = ["nogil", "smoke", "tests"], no-default-feature = true }
 upstream = { features = ["upstream", "smoke", "tests"], no-default-feature = true }
+smoke = { features = ["smoke"] }
