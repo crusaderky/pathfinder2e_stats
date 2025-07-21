@@ -144,6 +144,21 @@ def test_display_accessor(monkeypatch):
     html.clear()
 
 
+def assert_frame_equal_anyint(df1, df2):
+    """Variant of assert_frame_equal that ignores
+    int32 vs int64 differences on old Windows stack.
+    """
+    for df in (df1, df2):
+        for col in df.columns:
+            if df[col].dtype == np.int32:
+                df[col] = df[col].astype(np.int64)
+        if not isinstance(df.index, pd.MultiIndex) and df.index.dtype == np.int32:
+            df.index = df.index.astype(np.int64)
+        if not isinstance(df.columns, pd.MultiIndex) and df.columns.dtype == np.int32:
+            df.columns = df.columns.astype(np.int64)
+    assert_frame_equal(df1, df2)
+
+
 def test_to_dataframes():
     ds = xarray.Dataset(
         {
@@ -159,7 +174,7 @@ def test_to_dataframes():
     dfs = list(_to_dataframes(ds))
     assert len(dfs) == 3
 
-    assert_frame_equal(
+    assert_frame_equal_anyint(
         dfs[0],
         pd.DataFrame(
             [[13, "foo"]],
@@ -168,7 +183,7 @@ def test_to_dataframes():
         ),
     )
 
-    assert_frame_equal(
+    assert_frame_equal_anyint(
         dfs[1],
         pd.DataFrame(
             [
@@ -189,7 +204,7 @@ def test_to_dataframes():
         ),
     )
 
-    assert_frame_equal(
+    assert_frame_equal_anyint(
         dfs[2],
         pd.DataFrame(
             [[11], [12]],
@@ -201,7 +216,7 @@ def test_to_dataframes():
 
 def test_to_dataframes_name():
     df = next(_to_dataframes(xarray.DataArray([1, 2])))
-    assert_frame_equal(
+    assert_frame_equal_anyint(
         df,
         pd.DataFrame(
             [[1], [2]],
@@ -245,7 +260,7 @@ def test_to_dataframes_max_rows():
 def test_to_dataframes_scalar(describe):
     ds = xarray.Dataset(data_vars={"x": 1, "y": 2.5})
     df = next(_to_dataframes(ds, describe=describe))
-    assert_frame_equal(
+    assert_frame_equal_anyint(
         df,
         pd.DataFrame(
             [[1, 2.5]],
@@ -273,7 +288,7 @@ def test_to_dataframes_reorder():
     )
     dfs = list(_to_dataframes(ds))
     assert len(dfs) == 1
-    assert_frame_equal(
+    assert_frame_equal_anyint(
         dfs[0],
         pd.DataFrame(
             [
