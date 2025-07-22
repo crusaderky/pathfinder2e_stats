@@ -5,9 +5,12 @@ from collections.abc import Iterator, Mapping
 from functools import cached_property
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import xarray
 from xarray import DataArray, Dataset
+
+ROOT_DIR = Path(__file__).parent
 
 
 def _ensure_var_dtypes(ds: Dataset) -> None:
@@ -20,7 +23,7 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
 
 class PCTables(Mapping[str, Dataset]):
     def __init__(self) -> None:
-        fnames = sorted((Path(__file__).parent / "_PC").glob("*.csv"))
+        fnames = sorted((ROOT_DIR / "_PC").glob("*.csv"))
         assert fnames
 
         for fname in fnames:
@@ -105,7 +108,7 @@ class Tables:
     def NPC(self) -> Dataset:
         names = []
         vars = []
-        fnames = sorted((Path(__file__).parent / "_NPC").glob("*.csv"))
+        fnames = sorted((ROOT_DIR / "_NPC").glob("*.csv"))
         assert fnames
 
         for fname in fnames:
@@ -158,7 +161,7 @@ class Tables:
     @cached_property
     def _earn_income(self) -> Dataset:
         """Earn income table, with extra DCs for levels -1 and 22~25."""
-        fname = Path(__file__).parent / "earn_income.csv"
+        fname = ROOT_DIR / "earn_income.csv"
         df = pd.read_csv(fname, index_col=0)
         ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
         ds = ds.rename({"dim_1": "proficiency"})
@@ -166,8 +169,33 @@ class Tables:
         return ds
 
     @cached_property
-    def DC(self) -> DataArray:
-        return self._earn_income.DC.sel(level=slice(0, None))
+    def DC(self) -> Dataset:
+        from pathfinder2e_stats.tools import rank2level  # noqa: PLC0415
+
+        simple_df = pd.read_csv(ROOT_DIR / "simple_DCs.csv", index_col=0)["DC"]
+        adjust_df = pd.read_csv(ROOT_DIR / "DC_adjustments.csv")
+        rank = DataArray(np.arange(1, 11), dims=["rank"])
+        dc_by_level = self._earn_income.DC.sel(level=slice(0, None))
+        return Dataset(
+            coords={"rank": rank},
+            data_vars={
+                "simple": DataArray(simple_df),
+                "by_level": dc_by_level,
+                "by_rank": dc_by_level.sel(level=rank2level(rank) - 1).drop_vars(
+                    "level"
+                ),
+                "difficulty_adjustment": DataArray(
+                    adjust_df[["difficulty", "adjustment"]].set_index("difficulty")[
+                        "adjustment"
+                    ]
+                ),
+                "rarity_adjustment": DataArray(
+                    adjust_df.loc[
+                        ~pd.isna(adjust_df["rarity"]), ["rarity", "adjustment"]
+                    ].set_index("rarity")["adjustment"]
+                ),
+            },
+        )
 
     @cached_property
     def EARN_INCOME(self) -> Dataset:

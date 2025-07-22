@@ -134,13 +134,23 @@ def test_SIMPLE_NPC():
 
 
 def test_DC():
+    for v in tables.DC.data_vars.values():
+        assert v.dtype.kind == "i", v
+
+    assert tables.DC.difficulty_adjustment.values.tolist() == [-10, -5, -2, 0, 2, 5, 10]
+    assert tables.DC.rarity_adjustment.values.tolist() == [0, 2, 5, 10]
+    assert tables.DC.simple.values.tolist() == [10, 15, 20, 30, 40]
+
     assert tables.DC.level[0] == 0
     assert tables.DC.level[-1] == 25
-    assert tables.DC[0] == 14
-    assert tables.DC[-1] == 50
-    assert tables.DC.coords["level"][0] == 0
-    assert tables.DC.coords["level"][-1] == 25
-    assert tables.DC.dtype.kind == "i"
+    assert tables.DC.by_level.coords["level"][0] == 0
+    assert tables.DC.by_level.coords["level"][-1] == 25
+    assert tables.DC.by_level.sel(level=5) == 20
+
+    assert tables.DC["rank"][0] == 1
+    assert tables.DC["rank"][-1] == 10
+    assert tables.DC.by_rank.dims == ("rank",)
+    assert tables.DC.by_rank.sel(rank=3) == 20
 
 
 def test_earn_income():
