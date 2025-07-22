@@ -4,7 +4,6 @@ import importlib
 from collections.abc import Iterator, Mapping
 from functools import cached_property
 from pathlib import Path
-from typing import cast
 
 import pandas as pd
 import xarray
@@ -135,15 +134,14 @@ class Tables:
         return ds
 
     @cached_property
-    def SIMPLE_NPC(self) -> DataArray:
+    def SIMPLE_NPC(self) -> Dataset:
         # Level -2 weak henchman; all stats Low/min/Common
         # Matched level opponent; all stats Moderate/mean/Common
         # Level +2 boss; all stats High/max/Uncommon
         a = xarray.concat(
             [
                 (
-                    self.NPC
-                    .sel(challenge=challenge, mm=mm, rarity=rarity, drop=True)
+                    self.NPC.sel(challenge=challenge, mm=mm, rarity=rarity, drop=True)
                     .shift(level=level, fill_value=0)
                     .expand_dims(challenge=[new_challenge])
                 )
@@ -155,11 +153,7 @@ class Tables:
             ],
             dim="challenge",
         )
-        return (
-            a
-            .sel(level=range(1, 21))
-            .transpose("level", "challenge", "limited")
-        )
+        return a.sel(level=range(1, 21)).transpose("level", "challenge", "limited")
 
     @cached_property
     def _earn_income(self) -> Dataset:
