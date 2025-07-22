@@ -1,26 +1,24 @@
-from __future__ import annotations
-
 import xarray
-from xarray import Dataset
 
 
-def postproc(ds: Dataset) -> None:
-    vars = {}
+def postproc(ds: xarray.Dataset) -> None:
+    vars = []
     for k, start, stop in (
         ("rogue", 1, 6),
-        ("spellcaster_dedication", 2, 3),
         ("others", 1, 3),
+        ("spellcaster_dedication", 2, 3),
     ):
-        vars[k] = xarray.concat(
+        v = xarray.concat(
             [ds[f"{k}/{i}"] for i in range(start, stop + 1)], dim="priority"
         ).T
-        vars[k].coords["priority"] = range(start, stop + 1)
+        v.coords["priority"] = range(start, stop + 1)
+        vars.append(v)
 
-    aligned = xarray.align(*vars.values(), join="outer", fill_value=0)
-    vars = dict(zip(vars, aligned, strict=True))
-    vars["spellcaster_dedication"].loc[{"priority": 1}] = vars["others"].sel(priority=1)
+    vars = list(xarray.align(*vars, join="outer", fill_value=0))
+    vars[2].loc[{"priority": 1}] = vars[1].sel(priority=1)
 
     for k in list(ds.data_vars):
         del ds[k]
-    for k, v in vars.items():
-        ds[k] = v
+    ds["rogue"] = vars[0]
+    ds["others"] = vars[1]
+    ds["spellcaster_dedication"] = vars[2]

@@ -32,6 +32,8 @@ def test_PC():
             for k, v in ds.variables.items():
                 if k in ds.data_vars or k in ("level", "initial", "priority"):
                     assert v.dtype.kind == "i", v
+                elif k == "mastery":
+                    assert v.dtype.kind == "b", v
                 else:
                     assert v.dtype.kind == "U", v
 
@@ -40,7 +42,7 @@ def test_PC():
     assert t.level.coords["level"][0] == 1
 
     # test ffill
-    assert t.weapon_proficiency.fighter.sel(level=6) == 6
+    assert t.weapon_proficiency.fighter.sel(level=6, mastery=True) == 6
     # test fill with zeros
     assert t.attack_item_bonus.bomb.sel(level=1) == 0
 
@@ -70,7 +72,7 @@ def test_PC_code_completion():
 @pytest.mark.xfail(PANDAS_3, reason="https://github.com/pydata/xarray/issues/10553")
 def test_NPC():
     ds = tables.NPC
-    assert set(ds.dims) == {"level", "challenge", "mm", "limited"}
+    assert set(ds.dims) == {"level", "challenge", "mm", "limited", "rarity"}
 
     assert ds.data_vars
     for v in ds.data_vars.values():
@@ -111,35 +113,44 @@ def test_SIMPLE_NPC():
     ds = tables.SIMPLE_NPC
     assert set(ds.dims) == {"level", "challenge", "limited"}
 
-    # Test that levels have been clipped to PC levels
+    # Levels have been clipped to PC levels
     assert ds.level[0] == 1
     assert ds.level[-1] == 20
 
     # Challenge levels have been trimmed and reversed
-    assert ds.challenge.values.tolist() == [
-        "Low",
-        "Moderate",
-        "High",
-    ]
+    assert ds.challenge.values.tolist() == ["Weak", "Matched", "Boss"]
 
     assert ds.data_vars
     for v in ds.data_vars.values():
         # recall_knowledge has gained challenge compared to tables.NPC
         assert v.dims in (("level", "challenge"), ("level", "challenge", "limited"))
 
-    # Test shifting
+    # AC was shifted by level and challenge
     assert ds.AC.sel(level=1).values.tolist() == [12, 15, 19]
-    assert ds.recall_knowledge.sel(level=1).values.tolist() == [13, 15, 18]
+    # HP was shifted by level, challenge, and mm
+    assert ds.HP.sel(level=1).values.tolist() == [5, 20, 59]
+    # Recall Knowledge was shifted by level and rarity
+    assert ds.recall_knowledge.sel(level=1).values.tolist() == [13, 15, 20]
 
 
 def test_DC():
+    for v in tables.DC.data_vars.values():
+        assert v.dtype.kind == "i", v
+
+    assert tables.DC.difficulty_adjustment.values.tolist() == [-10, -5, -2, 0, 2, 5, 10]
+    assert tables.DC.rarity_adjustment.values.tolist() == [0, 2, 5, 10]
+    assert tables.DC.simple.values.tolist() == [10, 15, 20, 30, 40]
+
     assert tables.DC.level[0] == 0
     assert tables.DC.level[-1] == 25
-    assert tables.DC[0] == 14
-    assert tables.DC[-1] == 50
-    assert tables.DC.coords["level"][0] == 0
-    assert tables.DC.coords["level"][-1] == 25
-    assert tables.DC.dtype.kind == "i"
+    assert tables.DC.by_level.coords["level"][0] == 0
+    assert tables.DC.by_level.coords["level"][-1] == 25
+    assert tables.DC.by_level.sel(level=5) == 20
+
+    assert tables.DC["rank"][0] == 1
+    assert tables.DC["rank"][-1] == 10
+    assert tables.DC.by_rank.dims == ("rank",)
+    assert tables.DC.by_rank.sel(rank=3) == 20
 
 
 def test_earn_income():

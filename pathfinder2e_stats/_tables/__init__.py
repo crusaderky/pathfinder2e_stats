@@ -4,11 +4,13 @@ import importlib
 from collections.abc import Iterator, Mapping
 from functools import cached_property
 from pathlib import Path
-from typing import cast
 
+import numpy as np
 import pandas as pd
 import xarray
 from xarray import DataArray, Dataset
+
+ROOT_DIR = Path(__file__).parent
 
 
 def _ensure_var_dtypes(ds: Dataset) -> None:
@@ -21,7 +23,7 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
 
 class PCTables(Mapping[str, Dataset]):
     def __init__(self) -> None:
-        fnames = sorted((Path(__file__).parent / "_PC").glob("*.csv"))
+        fnames = sorted((ROOT_DIR / "_PC").glob("*.csv"))
         assert fnames
 
         for fname in fnames:
@@ -69,13 +71,13 @@ def _read_NPC_table(fname: Path) -> DataArray:
     df = pd.read_csv(
         fname,
         index_col=0,
-        header=[0, 1] if fname.name == "HP.csv" else 0,
+        header=[0, 1] if fname.name == "2-07-HP.csv" else 0,
     )
 
     arr = DataArray(df)
 
     dim_1 = arr.coords["dim_1"]
-    if fname.name == "HP.csv":
+    if fname.name == "2-07-HP.csv":
         arr = arr.unstack("dim_1", fill_value=1337)  # noqa: PD010
         # Undo alphabetical sorting
         arr = arr.sel(challenge=["High", "Moderate", "Low"])
@@ -106,11 +108,11 @@ class Tables:
     def NPC(self) -> Dataset:
         names = []
         vars = []
-        fnames = sorted((Path(__file__).parent / "_NPC").glob("*.csv"))
+        fnames = sorted((ROOT_DIR / "_NPC").glob("*.csv"))
         assert fnames
 
         for fname in fnames:
-            names.append(fname.name.removesuffix(".csv"))
+            names.append(fname.name.removesuffix(".csv").split("-")[-1])
             vars.append(_read_NPC_table(fname))
 
         vars = list(xarray.align(*vars, join="outer", fill_value=0))
@@ -126,32 +128,40 @@ class Tables:
             )
         )
 
-        ds["recall_knowledge"] = self._earn_income.DC.sel(level=ds.level)
+        ds["recall_knowledge"] = self._earn_income.DC.sel(level=ds.level) + DataArray(
+            [0, 2, 5, 10],
+            dims=["rarity"],
+            coords={"rarity": ["Common", "Uncommon", "Rare", "Unique"]},
+        )
+
         return ds
 
     @cached_property
-    def SIMPLE_NPC(self) -> DataArray:
-        # Level -2 henchman, everything is Low
-        # At-level opponent, everything is Moderate
-        # Level +2 boss, everything is High
+    def SIMPLE_NPC(self) -> Dataset:
+        # Level -2 weak henchman; all stats Low/min/Common
+        # Matched level opponent; all stats Moderate/mean/Common
+        # Level +2 boss; all stats High/max/Uncommon
         a = xarray.concat(
             [
-                self.NPC.sel(challenge="Low").shift({"level": 2}, fill_value=0),
-                self.NPC.sel(challenge="Moderate"),
-                self.NPC.sel(challenge="High").shift({"level": -2}, fill_value=0),
+                (
+                    self.NPC.sel(challenge=challenge, mm=mm, rarity=rarity, drop=True)
+                    .shift(level=level, fill_value=0)
+                    .expand_dims(challenge=[new_challenge])
+                )
+                for (new_challenge, challenge, mm, rarity, level) in [
+                    ("Weak", "Low", "min", "Common", 2),
+                    ("Matched", "Moderate", "mean", "Common", 0),
+                    ("Boss", "High", "max", "Uncommon", -2),
+                ]
             ],
             dim="challenge",
         )
-        return (
-            cast(DataArray, a)
-            .sel(level=range(1, 21), mm="mean", drop=True)
-            .transpose("level", "challenge", "limited")
-        )
+        return a.sel(level=range(1, 21)).transpose("level", "challenge", "limited")
 
     @cached_property
     def _earn_income(self) -> Dataset:
         """Earn income table, with extra DCs for levels -1 and 22~25."""
-        fname = Path(__file__).parent / "earn_income.csv"
+        fname = ROOT_DIR / "earn_income.csv"
         df = pd.read_csv(fname, index_col=0)
         ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
         ds = ds.rename({"dim_1": "proficiency"})
@@ -159,8 +169,33 @@ class Tables:
         return ds
 
     @cached_property
-    def DC(self) -> DataArray:
-        return self._earn_income.DC.sel(level=slice(0, None))
+    def DC(self) -> Dataset:
+        from pathfinder2e_stats.tools import rank2level  # noqa: PLC0415
+
+        simple_df = pd.read_csv(ROOT_DIR / "simple_DCs.csv", index_col=0)["DC"]
+        adjust_df = pd.read_csv(ROOT_DIR / "DC_adjustments.csv")
+        rank = DataArray(np.arange(1, 11), dims=["rank"])
+        dc_by_level = self._earn_income.DC.sel(level=slice(0, None))
+        return Dataset(
+            coords={"rank": rank},
+            data_vars={
+                "simple": DataArray(simple_df),
+                "by_level": dc_by_level,
+                "by_rank": dc_by_level.sel(level=rank2level(rank) - 1).drop_vars(
+                    "level"
+                ),
+                "difficulty_adjustment": DataArray(
+                    adjust_df[["difficulty", "adjustment"]].set_index("difficulty")[
+                        "adjustment"
+                    ]
+                ),
+                "rarity_adjustment": DataArray(
+                    adjust_df.loc[
+                        ~pd.isna(adjust_df["rarity"]), ["rarity", "adjustment"]
+                    ].set_index("rarity")["adjustment"]
+                ),
+            },
+        )
 
     @cached_property
     def EARN_INCOME(self) -> Dataset:

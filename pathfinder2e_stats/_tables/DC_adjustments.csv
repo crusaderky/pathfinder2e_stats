@@ -1,0 +1,8 @@
+difficulty,rarity,adjustment
+Incredibly easy,,-10
+Very easy,,-5
+Easy,,-2
+Normal,Common,0
+Hard,Uncommon,2
+Very hard,Rare,5
+Incredibly hard,Unique,10
