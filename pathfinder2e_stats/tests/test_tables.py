@@ -30,8 +30,12 @@ def test_PC():
         if k != "level":
             assert ds.data_vars
             for k, v in ds.variables.items():
-                if k in ds.data_vars or k in ("level", "initial", "priority"):
+                if k in ds.data_vars:
                     assert v.dtype.kind == "i", v
+                elif k in ("level", "initial", "priority"):
+                    assert v.dtype.kind == "i", v
+                elif k == "mastery":
+                    assert v.dtype.kind == "b", v
                 else:
                     assert v.dtype.kind == "U", v
 
@@ -40,7 +44,7 @@ def test_PC():
     assert t.level.coords["level"][0] == 1
 
     # test ffill
-    assert t.weapon_proficiency.fighter.sel(level=6) == 6
+    assert t.weapon_proficiency.fighter.sel(level=6, mastery=True) == 6
     # test fill with zeros
     assert t.attack_item_bonus.bomb.sel(level=1) == 0
 

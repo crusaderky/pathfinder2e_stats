@@ -1,10 +1,9 @@
-from __future__ import annotations
+from collections.abc import Hashable
 
 import xarray
-from xarray import Dataset
 
 
-def postproc(ds: Dataset) -> None:
+def postproc(ds: xarray.Dataset) -> None:
     ds["superstition"] = xarray.concat(
         [ds[f"superstition/vs={vs}"] for vs in ("spellcasters", "others")],
         dim="vs",
@@ -20,9 +19,14 @@ def postproc(ds: Dataset) -> None:
     for drained in (0, 1, 2):
         del ds[f"bloodrager_spells/{drained=}"]
 
-    # Sort alphabetically
-    data_vars = dict(sorted(ds.data_vars.items()))
-    for k in data_vars:
-        del ds[k]
+    # Sort alphabetically, except bloodrager sub-variables
+    def key(kv: tuple[Hashable, xarray.DataArray]) -> tuple[str, int]:
+        parts = str(kv[0]).split("_")
+        if parts[0] == "bloodrager":
+            return parts[0], {"weapon": 0, "bleed": 1, "spells": 2}[parts[1]]
+        return parts[0], 0
+
+    data_vars = dict(sorted(ds.data_vars.items(), key=key))
     for k, v in data_vars.items():
+        del ds[k]
         ds[k] = v

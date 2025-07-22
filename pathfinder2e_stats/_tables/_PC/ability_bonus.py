@@ -1,10 +1,7 @@
-from __future__ import annotations
-
 import xarray
-from xarray import Dataset
 
 
-def postproc(ds: Dataset) -> None:
+def postproc(ds: xarray.Dataset) -> None:
     vars = []
     for i in [4, 3, 2, 1]:
         vars.append(ds[f"boosts/{i}"])
