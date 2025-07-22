@@ -69,13 +69,13 @@ def _read_NPC_table(fname: Path) -> DataArray:
     df = pd.read_csv(
         fname,
         index_col=0,
-        header=[0, 1] if fname.name == "HP.csv" else 0,
+        header=[0, 1] if fname.name == "2-07-HP.csv" else 0,
     )
 
     arr = DataArray(df)
 
     dim_1 = arr.coords["dim_1"]
-    if fname.name == "HP.csv":
+    if fname.name == "2-07-HP.csv":
         arr = arr.unstack("dim_1", fill_value=1337)  # noqa: PD010
         # Undo alphabetical sorting
         arr = arr.sel(challenge=["High", "Moderate", "Low"])
@@ -110,7 +110,7 @@ class Tables:
         assert fnames
 
         for fname in fnames:
-            names.append(fname.name.removesuffix(".csv"))
+            names.append(fname.name.removesuffix(".csv").split("-")[-1])
             vars.append(_read_NPC_table(fname))
 
         vars = list(xarray.align(*vars, join="outer", fill_value=0))
@@ -126,25 +126,38 @@ class Tables:
             )
         )
 
-        ds["recall_knowledge"] = self._earn_income.DC.sel(level=ds.level)
+        ds["recall_knowledge"] = self._earn_income.DC.sel(level=ds.level) + DataArray(
+            [0, 2, 5, 10],
+            dims=["rarity"],
+            coords={"rarity": ["Common", "Uncommon", "Rare", "Unique"]},
+        )
+
         return ds
 
     @cached_property
     def SIMPLE_NPC(self) -> DataArray:
-        # Level -2 henchman, everything is Low
-        # At-level opponent, everything is Moderate
-        # Level +2 boss, everything is High
+        # Level -2 weak henchman; all stats Low/min/Common
+        # Matched level opponent; all stats Moderate/mean/Common
+        # Level +2 boss; all stats High/max/Uncommon
         a = xarray.concat(
             [
-                self.NPC.sel(challenge="Low").shift({"level": 2}, fill_value=0),
-                self.NPC.sel(challenge="Moderate"),
-                self.NPC.sel(challenge="High").shift({"level": -2}, fill_value=0),
+                (
+                    self.NPC
+                    .sel(challenge=challenge, mm=mm, rarity=rarity, drop=True)
+                    .shift(level=level, fill_value=0)
+                    .expand_dims(challenge=[new_challenge])
+                )
+                for (new_challenge, challenge, mm, rarity, level) in [
+                    ("Weak", "Low", "min", "Common", 2),
+                    ("Matched", "Moderate", "mean", "Common", 0),
+                    ("Boss", "High", "max", "Uncommon", -2),
+                ]
             ],
             dim="challenge",
         )
         return (
-            cast(DataArray, a)
-            .sel(level=range(1, 21), mm="mean", drop=True)
+            a
+            .sel(level=range(1, 21))
             .transpose("level", "challenge", "limited")
         )
 

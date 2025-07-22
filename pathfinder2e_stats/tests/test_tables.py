@@ -30,9 +30,7 @@ def test_PC():
         if k != "level":
             assert ds.data_vars
             for k, v in ds.variables.items():
-                if k in ds.data_vars:
-                    assert v.dtype.kind == "i", v
-                elif k in ("level", "initial", "priority"):
+                if k in ds.data_vars or k in ("level", "initial", "priority"):
                     assert v.dtype.kind == "i", v
                 elif k == "mastery":
                     assert v.dtype.kind == "b", v
@@ -74,7 +72,7 @@ def test_PC_code_completion():
 @pytest.mark.xfail(PANDAS_3, reason="https://github.com/pydata/xarray/issues/10553")
 def test_NPC():
     ds = tables.NPC
-    assert set(ds.dims) == {"level", "challenge", "mm", "limited"}
+    assert set(ds.dims) == {"level", "challenge", "mm", "limited", "rarity"}
 
     assert ds.data_vars
     for v in ds.data_vars.values():
@@ -115,25 +113,24 @@ def test_SIMPLE_NPC():
     ds = tables.SIMPLE_NPC
     assert set(ds.dims) == {"level", "challenge", "limited"}
 
-    # Test that levels have been clipped to PC levels
+    # Levels have been clipped to PC levels
     assert ds.level[0] == 1
     assert ds.level[-1] == 20
 
     # Challenge levels have been trimmed and reversed
-    assert ds.challenge.values.tolist() == [
-        "Low",
-        "Moderate",
-        "High",
-    ]
+    assert ds.challenge.values.tolist() == ["Weak", "Matched", "Boss"]
 
     assert ds.data_vars
     for v in ds.data_vars.values():
         # recall_knowledge has gained challenge compared to tables.NPC
         assert v.dims in (("level", "challenge"), ("level", "challenge", "limited"))
 
-    # Test shifting
+    # AC was shifted by level and challenge
     assert ds.AC.sel(level=1).values.tolist() == [12, 15, 19]
-    assert ds.recall_knowledge.sel(level=1).values.tolist() == [13, 15, 18]
+    # HP was shifted by level, challenge, and mm
+    assert ds.HP.sel(level=1).values.tolist() == [5, 20, 59]
+    # Recall Knowledge was shifted by level and rarity
+    assert ds.recall_knowledge.sel(level=1).values.tolist() == [13, 15, 20]
 
 
 def test_DC():
