@@ -47,16 +47,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Disregard pixi.lock (upstream only)
-        if: matrix.environment == 'upstream'
+      - name: Disregard pixi.lock (upstream/nogil only)
+        if: matrix.environment == 'upstream' || matrix.environment == 'nogil'
         run: rm pixi.lock
 
       - uses: prefix-dev/setup-pixi@v0.8.10
         with:
-          pixi-version: v0.49.0
+          pixi-version: v0.50.2
           environments: ${{ matrix.environment }}
-          cache: ${{ matrix.environment != 'upstream' }}
-          locked: ${{ matrix.environment != 'upstream' }}
+          cache: ${{ matrix.environment != 'upstream' && matrix.environment != 'nogil' }}
+          locked: ${{ matrix.environment != 'upstream' && matrix.environment != 'nogil' }}
 
       - name: Smoke test
         run: pixi run -e ${{ matrix.environment }} smoke-test
@@ -70,7 +70,7 @@ jobs:
         run: pixi run -e nogil tests --parallel-threads=4
 
       - name: doctests
-        if: matrix.environment != 'nogil' && matrix.environment != 'mindeps' && matrix.environment != 'smoke'
+        if: matrix.environment != 'mindeps' && matrix.environment != 'smoke'
         run: pixi run -e ${{ matrix.environment }} doctests
 
       - name: codecov.io

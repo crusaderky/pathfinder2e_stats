@@ -1,10 +1,6 @@
-import pandas as pd
 import pytest
-from packaging import version
 
 from pathfinder2e_stats import roll, tables
-
-PANDAS_3 = version.parse(pd.__version__) > version.parse("2.3.99")
 
 
 def test_PC():
@@ -69,7 +65,6 @@ def test_PC_code_completion():
     assert "ability_bonus" in dir(tables.PC)
 
 
-@pytest.mark.xfail(PANDAS_3, reason="https://github.com/pydata/xarray/issues/10553")
 def test_NPC():
     ds = tables.NPC
     assert set(ds.dims) == {"level", "challenge", "mm", "limited", "rarity"}
@@ -108,7 +103,6 @@ def test_NPC():
     assert (HP < 700).all()
 
 
-@pytest.mark.xfail(PANDAS_3, reason="https://github.com/pydata/xarray/issues/10553")
 def test_SIMPLE_NPC():
     ds = tables.SIMPLE_NPC
     assert set(ds.dims) == {"level", "challenge", "limited"}

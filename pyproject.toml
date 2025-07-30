@@ -59,7 +59,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers --strict-config -v -r sxfE --color=yes"
+addopts = "--strict-markers --strict-config -v -r sxfE --color=yes --durations=10"
 xfail_strict = true
 python_files = ["test_*.py"]
 testpaths = ["pathfinder2e_stats"]
@@ -193,9 +193,9 @@ pytest-cov = "*"
 ipython = "*"
 
 [tool.pixi.feature.tests.tasks]
-tests = { cmd = "pytest -v", description = "Run tests" }
-doctests = { cmd = "pytest -v --doctest-glob='*.rst' --doctest-modules pathfinder2e_stats doc --ignore=pathfinder2e_stats/tests", description = "Run doctests" }
-tests-cov = { cmd = "pytest -v -ra --cov --cov-report=xml --cov-report=term --durations=20", description = "Run tests with coverage" }
+tests = { cmd = "pytest", description = "Run tests" }
+doctests = { cmd = "pytest --doctest-glob='*.rst' --doctest-modules pathfinder2e_stats doc --ignore=pathfinder2e_stats/tests", description = "Run doctests" }
+tests-cov = { cmd = "pytest -ra --cov --cov-report=xml --cov-report=term", description = "Run tests with coverage" }
 coverage = { cmd = "coverage html", depends-on = ["tests-cov"], description = "Generate test coverage html report" }
 open-coverage = { cmd = "open htmlcov/index.html", depends-on = ["coverage"], description = "Open test coverage report" }
 
@@ -237,7 +237,11 @@ ipython = "*"
 # FIXME Need pandas >=3.0
 # https://github.com/pandas-dev/pandas/issues/61844
 pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-xarray = "*"
+xarray = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+# FIXME Need xarray >= 2025.7.2
+# xarray = "*"
+# TODO after reverting to published versions, update .github/workflows/pytest.yml
+# to stop disregarding pixi.lock
 
 [tool.pixi.feature.mindeps.dependencies]
 python = "=3.11"
