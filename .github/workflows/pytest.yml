@@ -55,8 +55,8 @@ jobs:
         with:
           pixi-version: v0.50.2
           environments: ${{ matrix.environment }}
-          cache: ${{ matrix.environment != 'upstream' }}
-          locked: ${{ matrix.environment != 'upstream' }}
+          cache: ${{ matrix.environment != 'upstream' && matrix.environment != 'nogil' }}
+          locked: ${{ matrix.environment != 'upstream' && matrix.environment != 'nogil' }}
 
       - name: Smoke test
         run: pixi run -e ${{ matrix.environment }} smoke-test
