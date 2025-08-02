@@ -12,8 +12,6 @@ dependencies:
 - myst-nb *
 - jupyterlab *
 - matplotlib *
-- hvplot *
-- scipy *
 - numpy *
 - pandas *
 - xarray *
