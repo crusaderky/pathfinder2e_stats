@@ -72,10 +72,12 @@ def test_spells(func):
     assert s10 != smin
 
 
-@pytest.mark.parametrize("mod", [armory.darts, armory.crossbows, armory.knives])
-def test_critical_specialization_bleed(mod):
+@pytest.mark.parametrize(
+    "mod,faces", [(armory.darts, 6), (armory.crossbows, 8), (armory.knives, 6)]
+)
+def test_critical_specialization_bleed(mod, faces):
     w = mod.critical_specialization(123)
-    assert w == {2: [Damage("bleed", 1, 6, 123, persistent=True)]}
+    assert w == {2: [Damage("bleed", 1, faces, 123, persistent=True)]}
 
 
 def test_critical_specialization_grievous_darts():
