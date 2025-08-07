@@ -20,7 +20,7 @@ from pathfinder2e_stats.dice import roll as roll
 from pathfinder2e_stats.tools import level2rank as level2rank
 from pathfinder2e_stats.tools import rank2level as rank2level
 
-tables = pathfinder2e_stats._tables.Tables()
+tables = pathfinder2e_stats._tables.tables
 
 try:
     __version__ = importlib.metadata.version("pathfinder2e_stats")

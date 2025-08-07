@@ -2,45 +2,54 @@ import pytest
 
 from pathfinder2e_stats import roll, tables
 
+PC_TABLES = [
+    "ability_bonus",
+    "attack_item_bonus",
+    "class_proficiency",
+    "polymorph_attack",
+    "rage",
+    "skill_item_bonus",
+    "skill_proficiency",
+    "spell_proficiency",
+    "untamed_druid_attack",
+    "weapon_dice",
+    "weapon_proficiency",
+    "weapon_specialization",
+]
 
-def test_PC():
-    t = tables.PC
 
-    # Test Mapping interface
-    assert len(t)
-    assert len(t) == len(list(t))
-    k0 = next(iter(t))
-    assert k0 in repr(t)
-    # Items can be accessed via attribute or key
-    assert t[k0] is getattr(t, k0)
+def test_PC_inventory():
+    assert set(tables.PC.__dict__) == set(PC_TABLES) | {"_inventory"}
 
-    with pytest.raises(AttributeError, match="no attribute 'nonexistent'"):
-        _ = t.nonexistent
-    with pytest.raises(KeyError, match="'nonexistent'"):
-        _ = t["nonexistent"]
 
-    for k, ds in t.items():
-        assert ds.level[0] == 1
-        assert ds.level[-1] == 20
+@pytest.mark.parametrize("table", PC_TABLES)
+def test_PC(table):
+    assert table in tables.PC.__annotations__
+    ds = getattr(tables.PC, table)
+    assert ds.level[0] == 1
+    assert ds.level[-1] == 20
+    assert ds.data_vars
 
-        if k != "level":
-            assert ds.data_vars
-            for k, v in ds.variables.items():
-                if k in ds.data_vars or k in ("level", "initial", "priority"):
-                    assert v.dtype.kind == "i", v
-                elif k == "mastery":
-                    assert v.dtype.kind == "b", v
-                else:
-                    assert v.dtype.kind == "U", v
+    for k, v in ds.variables.items():
+        if k in ds.data_vars or k in ("level", "initial", "priority"):
+            assert v.dtype.kind == "i", v
+        elif k == "mastery":
+            assert v.dtype.kind == "b", v
+        else:
+            assert v.dtype.kind == "U", v
 
-    assert t.level[0] == 1
-    assert t.level[-1] == 20
-    assert t.level.coords["level"][0] == 1
 
+def test_PC_levels():
+    assert tables.PC.level[0] == 1
+    assert tables.PC.level[-1] == 20
+    assert tables.PC.level.coords["level"][0] == 1
+
+
+def test_PC_fill():
     # test ffill
-    assert t.weapon_proficiency.fighter.sel(level=6, mastery=True) == 6
+    assert tables.PC.weapon_proficiency.fighter.sel(level=6, mastery=True) == 6
     # test fill with zeros
-    assert t.attack_item_bonus.bomb.sel(level=1) == 0
+    assert tables.PC.attack_item_bonus.bomb.sel(level=1) == 0
 
 
 def test_PC_postproc():
@@ -125,6 +134,37 @@ def test_SIMPLE_NPC():
     assert ds.HP.sel(level=1).values.tolist() == [5, 20, 59]
     # Recall Knowledge was shifted by level and rarity
     assert ds.recall_knowledge.sel(level=1).values.tolist() == [13, 15, 20]
+
+
+@pytest.mark.parametrize("table", ["strike_attack_bonus", "spell_attack_bonus"])
+def test_SIMPLE_PC(table):
+    ds = getattr(tables.SIMPLE_PC, table)
+    assert ds.level[0] == 1
+    assert ds.level[-1] == 20
+    assert ds.data_vars
+    assert "level" in ds.coords
+    assert "component" in ds.coords
+    for v in ds.sum("component").data_vars.values():
+        assert v.min() >= 6
+        assert v.max() <= 38
+    assert not set(ds.coords) - {
+        "level",
+        "component",
+        "doctrine",
+        "research_field",
+        "ability",
+        "mastery",
+    }
+
+
+def test_SIMPLE_PC_repr():
+    s = repr(tables.SIMPLE_PC)
+    assert "- strike_attack_bonus\n" in s
+
+
+def test_SIMPLE_PC_html_repr():
+    s = tables.SIMPLE_PC._repr_html_()
+    assert "<li>strike_attack_bonus</li>" in s
 
 
 def test_DC():

@@ -1,0 +1,35 @@
+SIMPLE_PC_table,strike_bonus,strike_bonus,strike_bonus,strike_bonus,strike_bonus,spell_bonus,spell_bonus,spell_bonus,spell_bonus
+PC_table,ability_bonus.boosts,ability_bonus.apex,attack_item_bonus,weapon_proficiency,class_proficiency,ability_bonus.boosts,ability_bonus.apex,spell_proficiency,class_proficiency
+alchemist/bomber,3,TRUE,bomb,TRUE,FALSE,4,FALSE,dedication,FALSE
+alchemist/chirurgeon,3,TRUE,potency_rune,TRUE,FALSE,4,FALSE,dedication,FALSE
+alchemist/mutagenist,3,TRUE,bestial_mutagen,TRUE,FALSE,4,FALSE,dedication,FALSE
+alchemist/toxicologist,3,TRUE,potency_rune,TRUE,FALSE,4,FALSE,dedication,FALSE
+animist,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+barbarian,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+bard,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,dedication,FALSE
+champion,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+cleric/battle creed,3,TRUE,potency_rune,TRUE,FALSE,4,FALSE,%class%,FALSE
+cleric/cloistered cleric,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+cleric/warpriest,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+commander,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+druid,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+exemplar,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+fighter,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+guardian,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+gunslinger/DEX,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+gunslinger/STR,3,FALSE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+inventor,3,TRUE,potency_rune,TRUE,FALSE,4,FALSE,dedication,FALSE
+investigator,3,TRUE,potency_rune,TRUE,FALSE,4,FALSE,dedication,FALSE
+kineticist,4,TRUE,gate_attenuator,FALSE,TRUE,4,TRUE,,TRUE
+magus,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,%class%,FALSE
+monk,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+oracle,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+psychic,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+ranger,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+rogue,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+sorcerer,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+summoner,4,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+swashbuckler,4,TRUE,potency_rune,TRUE,FALSE,4,FALSE,dedication,FALSE
+thaumaturge,4,TRUE,potency_rune,TRUE,FALSE,3,FALSE,dedication,FALSE
+witch,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
+wizard,3,FALSE,potency_rune,TRUE,FALSE,4,TRUE,%class%,FALSE
