@@ -38,7 +38,11 @@ class PCTables(Mapping[str, Dataset]):
             except ModuleNotFoundError:
                 pass
             else:
-                mod.postproc(ds)
+                try:
+                    mod.postproc(ds)
+                except Exception as exc:  # pragma: no cover
+                    raise RuntimeError(f"Error postprocessing {fname}") from exc
+
             self.__dict__[name] = ds
 
         self.level = next(iter(self.__dict__.values())).level
