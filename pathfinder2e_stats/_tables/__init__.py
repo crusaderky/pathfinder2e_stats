@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-from collections.abc import Iterator, Mapping
 from functools import cached_property
 from pathlib import Path
 
@@ -9,6 +8,8 @@ import numpy as np
 import pandas as pd
 import xarray
 from xarray import DataArray, Dataset
+
+from pathfinder2e_stats._tables.SIMPLE_PC import simple_pc
 
 ROOT_DIR = Path(__file__).parent
 
@@ -21,7 +22,39 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
             assert var.dtype.kind in ("i", "b"), var
 
 
-class PCTables(Mapping[str, Dataset]):
+class SubTables:
+    _inventory: tuple[str, ...]
+
+    def __repr__(self) -> str:
+        msg = "Available tables:"
+        for k in self._inventory:
+            msg += f"\n- {k}"
+        return msg
+
+    def _repr_html_(self) -> str:
+        msg = "Available tables:<br>\n"
+        msg += "<ul>\n"
+        for k in self._inventory:
+            msg += f"  <li>{k}</li>\n"
+        msg += "</ul>"
+        return msg
+
+
+class PCTables(SubTables):
+    # Hints for static type checkers
+    ability_bonus: xarray.Dataset
+    attack_item_bonus: xarray.Dataset
+    class_proficiency: xarray.Dataset
+    polymorph_attack: xarray.Dataset
+    rage: xarray.Dataset
+    skill_item_bonus: xarray.Dataset
+    skill_proficiency: xarray.Dataset
+    spell_proficiency: xarray.Dataset
+    untamed_druid_attack: xarray.Dataset
+    weapon_dice: xarray.Dataset
+    weapon_proficiency: xarray.Dataset
+    weapon_specialization: xarray.Dataset
+
     def __init__(self) -> None:
         fnames = sorted((ROOT_DIR / "PC").glob("*.csv"))
         assert fnames
@@ -47,30 +80,24 @@ class PCTables(Mapping[str, Dataset]):
 
             self.__dict__[name] = ds
 
-        self.level = next(iter(self.__dict__.values())).level
+        self._inventory = tuple(self.__dict__)
 
-    def __getitem__(self, item: str) -> Dataset:
-        return self.__dict__[item]
+    @property
+    def level(self) -> xarray.DataArray:
+        """Level of the character, as a DataArray."""
+        return next(iter(self.__dict__.values())).level
 
-    def __iter__(self) -> Iterator[str]:
-        return iter(self.__dict__)
 
-    def __len__(self) -> int:
-        return len(self.__dict__)
+class SimplePCTables(SubTables):
+    _inventory = ("strike_attack_bonus", "spell_attack_bonus")
 
-    def __repr__(self) -> str:
-        msg = "Available tables:"
-        for k in self:
-            msg += f"\n- {k}"
-        return msg
+    @cached_property
+    def strike_attack_bonus(self) -> xarray.Dataset:
+        return simple_pc.strike_attack_bonus(tables.PC)
 
-    def _repr_html_(self) -> str:
-        msg = "Available tables:<br>\n"
-        msg += "<ul>\n"
-        for k in self:
-            msg += f"  <li>{k}</li>\n"
-        msg += "</ul>"
-        return msg
+    @cached_property
+    def spell_attack_bonus(self) -> xarray.Dataset:
+        return simple_pc.spell_attack_bonus(tables.PC)
 
 
 def _read_NPC_table(fname: Path) -> DataArray:
@@ -109,6 +136,10 @@ class Tables:
     @cached_property
     def PC(self) -> PCTables:
         return PCTables()
+
+    @cached_property
+    def SIMPLE_PC(self) -> SimplePCTables:
+        return SimplePCTables()
 
     @cached_property
     def NPC(self) -> Dataset:
@@ -206,3 +237,6 @@ class Tables:
     @cached_property
     def EARN_INCOME(self) -> Dataset:
         return self._earn_income.sel(level=slice(0, 21))
+
+
+tables = Tables()
