@@ -23,7 +23,7 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
 
 class PCTables(Mapping[str, Dataset]):
     def __init__(self) -> None:
-        fnames = sorted((ROOT_DIR / "_PC").glob("*.csv"))
+        fnames = sorted((ROOT_DIR / "PC").glob("*.csv"))
         assert fnames
 
         for fname in fnames:
@@ -34,7 +34,7 @@ class PCTables(Mapping[str, Dataset]):
 
             # Bespoke tweaks
             try:
-                mod = importlib.import_module(f"pathfinder2e_stats._tables._PC.{name}")
+                mod = importlib.import_module(f"pathfinder2e_stats._tables.PC.{name}")
             except ModuleNotFoundError:
                 pass
             else:
@@ -112,7 +112,7 @@ class Tables:
     def NPC(self) -> Dataset:
         names = []
         vars = []
-        fnames = sorted((ROOT_DIR / "_NPC").glob("*.csv"))
+        fnames = sorted((ROOT_DIR / "NPC").glob("*.csv"))
         assert fnames
 
         for fname in fnames:
