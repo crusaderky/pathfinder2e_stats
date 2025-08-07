@@ -1,40 +1,20 @@
 from collections.abc import Collection
+from pathlib import Path
 
+import pandas as pd
 import xarray
 
-MARTIAL = "$martial"
-SPELLCASTER = "$spellcaster"
 
-CLASSES = [
-    # (class name, template it expands to)
-    ("alchemist", MARTIAL),
-    ("animist", SPELLCASTER),
-    ("barbarian", MARTIAL),
-    ("bard", SPELLCASTER),
-    ("champion", MARTIAL),
-    ("cleric", None),
-    ("commander", MARTIAL),
-    ("druid", SPELLCASTER),
-    ("exemplar", MARTIAL),
-    ("fighter", MARTIAL),
-    ("guardian", MARTIAL),
-    ("gunslinger", MARTIAL),
-    ("inventor", MARTIAL),
-    ("investigator", MARTIAL),
-    ("kineticist", None),
-    ("magus", None),
-    ("monk", MARTIAL),
-    ("oracle", SPELLCASTER),
-    ("psychic", SPELLCASTER),
-    ("ranger", MARTIAL),
-    ("rogue", MARTIAL),
-    ("sorcerer", SPELLCASTER),
-    ("summoner", None),
-    ("swashbuckler", MARTIAL),
-    ("thaumaturge", MARTIAL),
-    ("witch", SPELLCASTER),
-    ("wizard", SPELLCASTER),
-]
+def classes_to_templates() -> dict[str, str | None]:
+    """Return a mapping of class names to a default column in various tables:
+
+    - $martial for martial classes
+    - $spellcaster for spellcasting classes
+    - None for classes that are too nuanced and must always be listed
+    """
+    fname = Path(__file__).parent / "_templates.csv"
+    d = pd.read_csv(fname, index_col=0).template.to_dict()
+    return {k: None if pd.isna(v) else v for k, v in d.items()}
 
 
 def postproc_classes(
@@ -69,8 +49,10 @@ def postproc_classes(
     if "mastery" in ds:
         ds["mastery"] = [True, False]
 
+    classes_tpls = classes_to_templates()
+
     # Expand $martial and $spellcaster templates to omitted classes
-    for class_name, tpl in CLASSES:
+    for class_name, tpl in classes_tpls.items():
         if class_name not in ds and tpl is not None and tpl in ds:
             ds[class_name] = ds[tpl]
             to_delete.add(tpl)
@@ -80,11 +62,11 @@ def postproc_classes(
 
     # Sort alphabetically and test for missing classes
     vars = {}
-    for class_name, tpl in CLASSES:
+    for class_name, tpl in classes_tpls.items():
         if class_name in ds:
             vars[class_name] = ds[class_name]
             del ds[class_name]
-        elif not only_spellcasters or tpl == SPELLCASTER:
+        elif not only_spellcasters or tpl == "$spellcaster":
             raise KeyError(class_name)  # pragma: no cover
 
     # Move extra columns to the end

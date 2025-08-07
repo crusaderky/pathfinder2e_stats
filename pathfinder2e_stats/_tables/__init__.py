@@ -27,6 +27,8 @@ class PCTables(Mapping[str, Dataset]):
         assert fnames
 
         for fname in fnames:
+            if fname.name == "_templates.csv":
+                continue
             df = pd.read_csv(fname, index_col=0).ffill().fillna(0).astype(int)
             ds = df.to_xarray()
             _ensure_var_dtypes(ds)
