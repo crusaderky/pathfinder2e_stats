@@ -121,6 +121,12 @@ def test_display_accessor(monkeypatch):
     assert "mean" not in html[0]
     html.clear()
 
+    # Calculate mean etc. for boolean variables.
+    # This is not the default behaviour in pandas.
+    xarray.DataArray(np.arange(100) > 50).display()
+    assert "mean" in html[0]
+    html.clear()
+
     xarray.Dataset().display()
     assert not html
 
