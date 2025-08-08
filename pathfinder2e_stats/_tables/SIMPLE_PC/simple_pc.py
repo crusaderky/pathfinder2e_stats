@@ -39,16 +39,6 @@ def _get_ability_apex(pctables: PCTables, df: pd.DataFrame) -> xarray.DataArray:
     )
 
 
-def _get_proficiency(
-    pctables: PCTables, df: pd.DataFrame, prof_name: str
-) -> xarray.DataArray:
-    prof = (
-        getattr(pctables, prof_name).to_array("class").sel({"class": _class_name(df)})
-    )
-    mask = xarray.DataArray(df[prof_name].values, dims=["class"])
-    return prof * mask
-
-
 def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset:
     ds = xarray.Dataset(components)
     df = _get_df()
@@ -98,54 +88,91 @@ def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset
     return ds.transpose("level", "component", ...)
 
 
-def strike_attack_bonus(pctables: PCTables) -> xarray.Dataset:
-    """Total strike attack bonus for all classes, with strong assumptions"""
+def weapon_bonus(pctables: PCTables) -> xarray.Dataset:
+    """Total attack bonus to weapon strikes for all classes, with strong assumptions"""
     df = _get_df()["strike_bonus"]
 
-    components = {}
-    components["ability_boosts"] = _get_ability_boosts(pctables, df)
-    components["ability_apex"] = _get_ability_apex(pctables, df)
-
-    components["item"] = (
-        pctables.attack_item_bonus.to_array("variable")
-        .sel(variable=df["attack_item_bonus"].values)
-        .T.rename({"variable": "class"})
-        .drop_vars("class")
-    )
-
-    for prof_name in ("weapon_proficiency", "class_proficiency"):
-        components[prof_name] = _get_proficiency(pctables, df, prof_name)
+    components = {
+        "proficiency": (
+            pctables.weapon_proficiency.to_array("class").sel(
+                {"class": _class_name(df)}
+            )
+        ),
+        "ability_boosts": _get_ability_boosts(pctables, df),
+        "ability_apex": _get_ability_apex(pctables, df),
+        "item": (
+            pctables.attack_item_bonus.to_array("variable")
+            .sel(variable=df["attack_item_bonus"].values)
+            .T.rename({"variable": "class"})
+            .drop_vars("class")
+        ),
+    }
 
     return _merge_components(components)
 
 
-def spell_attack_bonus(pctables: PCTables) -> xarray.Dataset:
-    """Total spell attack bonus for all classes, with strong assumptions"""
+def spell_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
+    """Total spell attack bonus / spell DC for all classes, with strong assumptions"""
     df = _get_df()["spell_bonus"]
 
     components = {}
-    components["ability_boosts"] = _get_ability_boosts(pctables, df)
-    components["ability_apex"] = _get_ability_apex(pctables, df)
-    components["spell_proficiency"] = xarray.concat(
-        [
-            pctables.spell_proficiency.to_array("class").sel(
-                {"class": _class_name(df[df.spell_proficiency == r"%class%"])}
-            ),
-            pctables.spell_proficiency.dedication
-            * xarray.ones_like(
-                _class_name(df[df.spell_proficiency == "dedication"]),
-                dtype=int,
-            ),
-            pctables.spell_proficiency.dedication
-            * xarray.zeros_like(
-                _class_name(df[df.spell_proficiency == ""]),
-                dtype=int,
-            ),
-        ],
-        dim="class",
-    ).sortby("class")
-    components["class_proficiency"] = _get_proficiency(
-        pctables, df, "class_proficiency"
+    if as_DC:
+        components["base_DC"] = xarray.DataArray(10)
+
+    components.update(
+        {
+            "proficiency": xarray.concat(
+                [
+                    pctables.spell_proficiency.to_array("class").sel(
+                        {"class": _class_name(df[df.spell_proficiency == r"%class%"])}
+                    ),
+                    pctables.spell_proficiency.dedication
+                    * xarray.ones_like(
+                        _class_name(df[df.spell_proficiency == "dedication"]),
+                        dtype=int,
+                    ),
+                    pctables.spell_proficiency.dedication
+                    * xarray.zeros_like(
+                        _class_name(df[df.spell_proficiency == ""]),
+                        dtype=int,
+                    ),
+                ],
+                dim="class",
+            ).sortby("class"),
+            "ability_boosts": _get_ability_boosts(pctables, df),
+            "ability_apex": _get_ability_apex(pctables, df),
+        }
     )
 
     return _merge_components(components)
+
+
+def impulse_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
+    """Total impulse attack bonus and impulse DC for kineticist and dedications"""
+    cls_names = ["kineticist", "kineticist_dedication"]
+
+    components = {"level": pctables.level}
+    if as_DC:
+        components["base_DC"] = xarray.DataArray(10)
+
+    components.update(
+        {
+            "proficiency": (pctables.class_proficiency[cls_names].to_array("class")),
+            "ability_boosts": pctables.ability_bonus.boosts.sel(initial=[4, 3])
+            .rename({"initial": "class"})
+            .drop_vars("class"),
+            "ability_apex": xarray.concat(
+                [
+                    pctables.ability_bonus.apex,
+                    xarray.zeros_like(pctables.ability_bonus.apex),
+                ],
+                dim="class",
+            ),
+        }
+    )
+    if not as_DC:
+        components["gate_attenuator"] = pctables.attack_item_bonus.gate_attenuator
+
+    da = xarray.concat(components.values(), dim="component", coords="all")
+    da.coords["component"] = list(components)
+    return da.to_dataset("class")
