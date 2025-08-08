@@ -1,4 +1,5 @@
 import pytest
+import xarray
 
 from pathfinder2e_stats import roll, tables
 
@@ -17,9 +18,13 @@ PC_TABLES = [
     "weapon_specialization",
 ]
 
-
-def test_PC_inventory():
-    assert set(tables.PC.__dict__) == set(PC_TABLES) | {"_inventory"}
+SIMPLE_PC_TABLES = [
+    "weapon_attack_bonus",
+    "spell_attack_bonus",
+    "spell_DC",
+    "impulse_attack_bonus",
+    "impulse_DC",
+]
 
 
 @pytest.mark.parametrize("table", PC_TABLES)
@@ -60,6 +65,50 @@ def test_PC_postproc():
     assert ds.boosts.dims == ("level", "initial")
 
 
+@pytest.mark.parametrize("table", SIMPLE_PC_TABLES)
+def test_SIMPLE_PC(table):
+    ds = getattr(tables.SIMPLE_PC, table)
+    assert ds.level[0] == 1
+    assert ds.level[-1] == 20
+    assert ds.data_vars
+    assert "level" in ds.coords
+    assert "component" in ds.coords
+    for v in ds.sum("component").data_vars.values():
+        offset = 0 if table.endswith("_bonus") else 10
+        assert v.min() >= 6 + offset
+        assert v.max() <= 38 + offset
+    assert not set(ds.coords) - {
+        "level",
+        "component",
+        "doctrine",
+        "research_field",
+        "ability",
+        "mastery",
+    }
+
+
+def test_SIMPLE_PC_bonus_vs_offset():
+    xarray.testing.assert_equal(
+        tables.SIMPLE_PC.spell_attack_bonus.sum("component") + 10,
+        tables.SIMPLE_PC.spell_DC.sum("component"),
+    )
+    # Gate attenuator means the difference is between 6 and 10
+    impulse_delta = tables.SIMPLE_PC.impulse_DC.sum(
+        "component"
+    ) - tables.SIMPLE_PC.impulse_attack_bonus.sum("component")
+    assert (impulse_delta >= 6).all()
+    assert (impulse_delta <= 10).all()
+
+
+def test_PC_iter():
+    assert set(tables.PC.__dict__) == set(PC_TABLES)
+    assert set(tables.PC) == set(PC_TABLES) | {"level"}
+
+
+def test_SIMPLE_PC_iter():
+    assert set(tables.SIMPLE_PC) == set(SIMPLE_PC_TABLES)
+
+
 def test_PC_repr():
     s = repr(tables.PC)
     assert "- ability_bonus\n" in s
@@ -70,8 +119,14 @@ def test_PC_html_repr():
     assert "<li>ability_bonus</li>" in s
 
 
-def test_PC_code_completion():
-    assert "ability_bonus" in dir(tables.PC)
+def test_SIMPLE_PC_repr():
+    s = repr(tables.SIMPLE_PC)
+    assert "- impulse_DC\n" in s
+
+
+def test_SIMPLE_PC_html_repr():
+    s = tables.SIMPLE_PC._repr_html_()
+    assert "<li>impulse_DC</li>" in s
 
 
 def test_NPC():
@@ -134,37 +189,6 @@ def test_SIMPLE_NPC():
     assert ds.HP.sel(level=1).values.tolist() == [5, 20, 59]
     # Recall Knowledge was shifted by level and rarity
     assert ds.recall_knowledge.sel(level=1).values.tolist() == [13, 15, 20]
-
-
-@pytest.mark.parametrize("table", ["strike_attack_bonus", "spell_attack_bonus"])
-def test_SIMPLE_PC(table):
-    ds = getattr(tables.SIMPLE_PC, table)
-    assert ds.level[0] == 1
-    assert ds.level[-1] == 20
-    assert ds.data_vars
-    assert "level" in ds.coords
-    assert "component" in ds.coords
-    for v in ds.sum("component").data_vars.values():
-        assert v.min() >= 6
-        assert v.max() <= 38
-    assert not set(ds.coords) - {
-        "level",
-        "component",
-        "doctrine",
-        "research_field",
-        "ability",
-        "mastery",
-    }
-
-
-def test_SIMPLE_PC_repr():
-    s = repr(tables.SIMPLE_PC)
-    assert "- strike_attack_bonus\n" in s
-
-
-def test_SIMPLE_PC_html_repr():
-    s = tables.SIMPLE_PC._repr_html_()
-    assert "<li>strike_attack_bonus</li>" in s
 
 
 def test_DC():

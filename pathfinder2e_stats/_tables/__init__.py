@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+from collections.abc import Iterator
 from functools import cached_property
 from pathlib import Path
 
@@ -23,18 +24,19 @@ def _ensure_var_dtypes(ds: Dataset) -> None:
 
 
 class SubTables:
-    _inventory: tuple[str, ...]
+    def __iter__(self) -> Iterator[str]:
+        return (k for k in dir(self) if not k.startswith("_"))
 
     def __repr__(self) -> str:
         msg = "Available tables:"
-        for k in self._inventory:
+        for k in self:
             msg += f"\n- {k}"
         return msg
 
     def _repr_html_(self) -> str:
         msg = "Available tables:<br>\n"
         msg += "<ul>\n"
-        for k in self._inventory:
+        for k in self:
             msg += f"  <li>{k}</li>\n"
         msg += "</ul>"
         return msg
@@ -80,8 +82,6 @@ class PCTables(SubTables):
 
             self.__dict__[name] = ds
 
-        self._inventory = tuple(self.__dict__)
-
     @property
     def level(self) -> xarray.DataArray:
         """Level of the character, as a DataArray."""
@@ -89,15 +89,25 @@ class PCTables(SubTables):
 
 
 class SimplePCTables(SubTables):
-    _inventory = ("strike_attack_bonus", "spell_attack_bonus")
-
     @cached_property
-    def strike_attack_bonus(self) -> xarray.Dataset:
-        return simple_pc.strike_attack_bonus(tables.PC)
+    def weapon_attack_bonus(self) -> xarray.Dataset:
+        return simple_pc.weapon_bonus(tables.PC)
 
     @cached_property
     def spell_attack_bonus(self) -> xarray.Dataset:
-        return simple_pc.spell_attack_bonus(tables.PC)
+        return simple_pc.spell_bonus(tables.PC, as_DC=False)
+
+    @cached_property
+    def spell_DC(self) -> xarray.Dataset:
+        return simple_pc.spell_bonus(tables.PC, as_DC=True)
+
+    @cached_property
+    def impulse_attack_bonus(self) -> xarray.Dataset:
+        return simple_pc.impulse_bonus(tables.PC, as_DC=False)
+
+    @cached_property
+    def impulse_DC(self) -> xarray.Dataset:
+        return simple_pc.impulse_bonus(tables.PC, as_DC=True)
 
 
 def _read_NPC_table(fname: Path) -> DataArray:
