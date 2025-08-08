@@ -3,7 +3,7 @@ name = "pathfinder2e_stats"
 authors = [{ name = "Guido Imperiale", email = "crusaderky@gmail.com" }]
 license = "Apache-2.0"
 description = "Statistical tools for Pathfinder 2nd edition"
-keywords = ["pathfinder", "statistics"]
+keywords = ["pathfinder", "paizo", "statistics", "TTRPG", "tabletop", "board games"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Operating System :: OS Independent",
@@ -25,9 +25,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-Homepage = "https://github.com/cusaderky/pathfinder2e_stats"
-"Bug Tracker" = "https://github.com/cusaderky/pathfinder2e_stats/issues"
-Changelog = "https://pathfinder2e-stats.readthedocs.io/en/latest/whats-new.html"
+homepage = "https://github.com/crusaderky/pathfinder2e_stats"
+issues = "https://github.com/crusaderky/pathfinder2e_stats/issues"
+documentation = "https://pathfinder2e-stats.readthedocs.io/"
+changelog = "https://pathfinder2e-stats.readthedocs.io/en/latest/whats-new.html"
 
 [project.readme]
 text = "Statistical tools for Pathfinder 2nd Edition"
@@ -262,9 +263,9 @@ twine = "*"
 [tool.pixi.feature.dist.tasks]
 dist-clear = { cmd = "rm -rf build dist" }
 build = { cmd = "python -m build", description = "Build pypi artifacts" }
-twine-check = { cmd = "python -m twine check dist/*" }
 dist = { depends-on = ["dist-clear", "build", "twine-check"] }
-twine-upload = { depends-on = ["dist"], cmd = "python -m twine upload dist/*" }
+twine-check = { cmd = "python -m twine check dist/*" }
+twine-upload = { cmd = "python -m twine upload dist/*" }
 
 [tool.pixi.environments]
 default = { features = ["py313", "smoke", "docs", "tests", "jupyter"], solve-group = "py313" }
