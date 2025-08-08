@@ -83,4 +83,9 @@ License
 
 This software is available under the open source `Apache License`__.
 
+This software uses trademarks, copyrights, and other material identified as
+Intellectual Property owned by Paizo Inc. and used by this software under the terms
+of the `ORC License`__.
+
 __ http://www.apache.org/licenses/LICENSE-2.0.html
+__ https://paizo.com/orclicense
