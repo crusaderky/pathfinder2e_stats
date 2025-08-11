@@ -17,7 +17,7 @@ import pathfinder2e_stats
 
 print("python exec:", sys.executable)
 print("sys.path:", sys.path)
-print("pathfinder2e_stats version: ", pathfinder2e_stats.__version__)
+print("pathfinder2e-stats version: ", pathfinder2e_stats.__version__)
 
 
 # -- General configuration ------------------------------------------------
@@ -69,8 +69,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "pathfinder2e_stats"
-copyright = f"2024-{datetime.datetime.now().year}, pathfinder2e_stats Developers"
+project = "pathfinder2e-stats"
+copyright = f"2024-{datetime.datetime.now().year}, pathfinder2e-stats Developers"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -136,7 +136,7 @@ html_theme_options = {"show_toc_level": 2}  # Work around autoclass sidebar bug
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "pathfinder2e_stats"
+html_title = "pathfinder2e-stats"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 # html_short_title = None
@@ -240,9 +240,9 @@ latex_elements: dict[str, str] = {
 latex_documents = [
     (
         "index",
-        "pathfinder2e_stats.tex",
-        "pathfinder2e_stats Documentation",
-        "pathfinder2e_stats Developers",
+        "pathfinder2e-stats.tex",
+        "pathfinder2e-stats Documentation",
+        "pathfinder2e-stats Developers",
         "manual",
     )
 ]
@@ -275,9 +275,9 @@ latex_documents = [
 man_pages = [
     (
         "index",
-        "pathfinder2e_stats",
-        "pathfinder2e_stats Documentation",
-        ["pathfinder2e_stats Developers"],
+        "pathfinder2e-stats",
+        "pathfinder2e-stats Documentation",
+        ["pathfinder2e-stats Developers"],
         1,
     )
 ]
@@ -294,10 +294,10 @@ man_pages = [
 texinfo_documents = [
     (
         "index",
-        "pathfinder2e_stats",
-        "pathfinder2e_stats Documentation",
-        "pathfinder2e_stats Developers",
-        "pathfinder2e_stats",
+        "pathfinder2e-stats",
+        "pathfinder2e-stats Documentation",
+        "pathfinder2e-stats Developers",
+        "pathfinder2e-stats",
         "Statistical tools for Pathfinder 2nd edition",
         "Miscellaneous",
     )
