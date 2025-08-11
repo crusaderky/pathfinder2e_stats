@@ -59,4 +59,4 @@ Time required: about an hour.
         conda create -n pathfinder2e-stats-test pathfinder2e-stats
         conda activate pathfinder2e-stats-test
         conda list
-        python -c 'import pathfinder2e-stats'
+        python -c 'import pathfinder2e_stats'
