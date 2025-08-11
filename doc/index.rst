@@ -24,6 +24,7 @@ intended for people with a passion for numbers who want to reverse-engineer the 
 balance, as well as for game masters who want to better tweak the challenge level of
 their homebrew content.
 
+
 What this software is not
 -------------------------
 - This is not a virtual tabletop (VTT);

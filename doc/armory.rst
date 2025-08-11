@@ -16,11 +16,13 @@ This module will always be incomplete. Feel free to open a PR to add more, but d
 to have to manually write your own damage profiles using :func:`Damage` for less common
 weapons and spells.
 
+
 Axes
 ----
 .. automodule:: pathfinder2e_stats.armory.axes
    :members:
    :undoc-members:
+
 
 Bows
 ----
@@ -28,11 +30,13 @@ Bows
    :members:
    :undoc-members:
 
+
 Crossbows
 ---------
 .. automodule:: pathfinder2e_stats.armory.crossbows
    :members:
    :undoc-members:
+
 
 Darts
 -----
@@ -40,11 +44,13 @@ Darts
    :members:
    :undoc-members:
 
+
 Hammers
 -------
 .. automodule:: pathfinder2e_stats.armory.hammers
    :members:
    :undoc-members:
+
 
 Knives
 ------
@@ -52,11 +58,13 @@ Knives
    :members:
    :undoc-members:
 
+
 Picks
 -----
 .. automodule:: pathfinder2e_stats.armory.picks
    :members:
    :undoc-members:
+
 
 Swords
 ------
@@ -64,11 +72,13 @@ Swords
    :members:
    :undoc-members:
 
+
 Property Runes
 --------------
 .. automodule:: pathfinder2e_stats.armory.runes
    :members:
    :undoc-members:
+
 
 Cantrips
 --------
@@ -76,11 +86,13 @@ Cantrips
    :members:
    :undoc-members:
 
+
 Slot Spells
 -----------
 .. automodule:: pathfinder2e_stats.armory.spells
    :members:
    :undoc-members:
+
 
 Class Features
 --------------
