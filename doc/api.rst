@@ -6,9 +6,11 @@ Basic dice rolls
 .. autofunction:: pathfinder2e_stats.roll
 .. autofunction:: pathfinder2e_stats.d20
 
+
 Degrees of Success
 ------------------
 .. autoclass:: pathfinder2e_stats.DoS
+
 
 Rolling checks
 --------------
@@ -16,6 +18,7 @@ Rolling checks
 .. autofunction:: pathfinder2e_stats.map_outcome
 .. autofunction:: pathfinder2e_stats.outcome_counts
 .. autofunction:: pathfinder2e_stats.sum_bonuses
+
 
 Damage profiles
 ---------------
@@ -31,14 +34,17 @@ Damage profiles
     :members:
     :undoc-members:
 
+
 Rolling for damage
 ------------------
 .. autofunction:: pathfinder2e_stats.damage
+
 
 Utility functions
 -----------------
 .. autofunction:: pathfinder2e_stats.level2rank
 .. autofunction:: pathfinder2e_stats.rank2level
+
 
 Xarray extensions
 -----------------
@@ -102,6 +108,7 @@ new methods:
 
     :param transpose:
         If True, transpose rows and columns just before displaying. Default: False
+
 
 Configuration
 -------------

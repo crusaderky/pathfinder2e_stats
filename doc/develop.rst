@@ -1,8 +1,31 @@
 Development Guidelines
 ======================
 
-Install
--------
+Reporting issues
+----------------
+
+``pathfinder2e_stats`` strives to be faithful to the Pathfinder 2e rules as written
+(RAW), as of the latest edition of the manuals plus the official errata and
+clarifications. Deviation from the RAW should be treated as a bug.
+
+If you find a bug or want to suggest a new feature, please report it on the
+`GitHub issues page <https://github.com/crusaderky/pathfinder2e_stats/issues>`_.
+
+Before you report an issue, please check if it can still be reproduced with the
+latest version of this software.
+
+For bug reports, please include the following information:
+
+- A description of the bug
+- The expected behavior. In case of rules-related bugs, please include
+  a link to the relevant rule(s) on `aonprd <https://2e.aonprd.com/>`_.
+- The actual behavior
+- Steps to reproduce the bug (preferably with a minimal example)
+- Any relevant error messages or stack traces
+
+
+Deploying a development environment
+-----------------------------------
 
 1. Clone this repository with git:
 
@@ -24,6 +47,7 @@ Install
    git pull upstream main
    git push origin main
 
+
 Test
 ----
 
@@ -32,6 +56,7 @@ Test using pixi:
 .. code-block:: bash
 
    pixi run tests
+   pixi run doctests
 
 Test with coverage:
 
@@ -44,6 +69,7 @@ Test with coverage and open HTML report in your browser:
 .. code-block:: bash
 
    pixi run open-coverage
+
 
 Code Formatting
 ---------------
@@ -66,6 +92,7 @@ git commit. This can be done by running:
 Now the code linters will be run each time you commit changes.
 You can skip these checks with ``git commit --no-verify`` or with
 the short version ``git commit -n``.
+
 
 Documentation
 -------------
