@@ -34,5 +34,5 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pathfinder2e_stats-docs
+          name: pathfinder2e-stats-docs
           path: build/html

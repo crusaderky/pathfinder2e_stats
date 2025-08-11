@@ -9,7 +9,7 @@ If you're new to Python
 
    .. code-block:: bash
 
-        $ conda install -c conda-forge pathfinder2e_stats jupyterlab matplotlib hvplot scipy
+        $ conda install -c conda-forge pathfinder2e-stats jupyterlab matplotlib
         $ jupyter lab
 
 4. Create a new notebook; then in the first cell run
@@ -34,13 +34,13 @@ Installing with conda
 ---------------------
 .. code-block:: bash
 
-    conda install pathfinder2e_stats
+    conda install pathfinder2e-stats
 
 Installing with pip
 -------------------
 .. code-block:: bash
 
-    pip install pathfinder2e_stats
+    pip install pathfinder2e-stats
 
 .. _mindeps_policy:
 

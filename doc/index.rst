@@ -1,7 +1,7 @@
-pathfinder2e_stats: Statistical tools for Pathfinder
+pathfinder2e-stats: Statistical tools for Pathfinder
 ====================================================
 
-``pathfinder2e_stats`` is a data science library for the
+``pathfinder2e-stats`` is a data science library for the
 `Pathfinder <https://paizo.com/pathfinder/>`_ tabletop role-playing game (TTRPG),
 second edition.
 It is a toolkit to apply numerical statistical analysis to the game,
@@ -36,7 +36,7 @@ What this software is not
 
 Intended audience
 -----------------
-``pathfinder2e_stats`` is intended for Pathfinder players and game masters
+``pathfinder2e-stats`` is intended for Pathfinder players and game masters
 who are also familiar with data science workflows.
 At the bare minimum, you need to be comfortable with one of the following
 technology stacks:
@@ -47,7 +47,7 @@ technology stacks:
 
 **If you have no idea what any of the above means, this software is not for you.**
 
-``pathfinder2e_stats`` is built on top of `xarray <https://xarray.pydata.org/>`_.
+``pathfinder2e-stats`` is built on top of `xarray <https://xarray.pydata.org/>`_.
 If you're not familiar with xarray, but you're already proficient with `pandas
 <https://pandas.pydata.org/>`_, you should be able to pick it up quickly by reading the
 `xarray tutorials <https://docs.xarray.dev/en/stable/getting-started-guide/index.html>`_.
