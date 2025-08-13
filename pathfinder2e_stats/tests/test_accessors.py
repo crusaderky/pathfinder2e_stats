@@ -43,7 +43,11 @@ def test_value_counts(transpose, normalize):
         assert_identical(expect, actual)
 
 
-@pytest.mark.xfail(sys.version_info >= (3, 14), reason="pandas#61638", strict=True)
+PY_314 = sys.version_info >= (3, 14)
+GIL_ENABLED = getattr(sys, "_is_gil_enabled", lambda: True)()
+
+
+@pytest.mark.xfail(PY_314, reason="pandas#61638", strict=GIL_ENABLED)
 def test_pandas_61638():
     """Trip when https://github.com/pandas-dev/pandas/issues/61368 is fixed"""
     xarray.DataArray(np.arange(100) > 50).display()
