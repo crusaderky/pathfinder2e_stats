@@ -51,6 +51,11 @@ class Damage:
         Before expanding the damage, you will need to call the :meth:`hands`
         method to clarify how many hands you're using.
         Default: no `fatal aim` trait.
+    :param int boost:
+        Number of faces on the extra dice to add after taking an interact action to
+        charge the weapon with the ``boost dX`` trait. Before expanding the damage, you
+        will need to call the :meth:`apply_boost` method to clarify if you're using the
+        boost or not. Default: no `boost` trait.
     :param bool basic_save:
         False (default)
             This is a weapon or an attack spell that follows the normal rules for
@@ -117,6 +122,7 @@ class Damage:
     deadly: int = 0
     fatal: int = 0
     fatal_aim: int = 0
+    boost: int = 0
     basic_save: bool = False
 
     def __post_init__(self) -> None:
@@ -137,6 +143,7 @@ class Damage:
             self.deadly,
             self.fatal,
             self.fatal_aim,
+            self.boost,
         ):
             if faces not in {0, 2, 4, 6, 8, 10, 12}:
                 raise ValueError(f"Invalid dice faces: {faces}")
@@ -181,6 +188,8 @@ class Damage:
             s += f" fatal d{self.fatal}"
         if self.fatal_aim:
             s += f" fatal aim d{self.fatal_aim}"
+        if self.boost:
+            s += f" boost d{self.boost}"
 
         if self.basic_save:
             s += ", with a basic saving throw"
@@ -281,15 +290,57 @@ class Damage:
             return self.copy(fatal=self.fatal_aim if hands == 2 else 0, fatal_aim=0)
         raise ValueError("Weapon does not have the two-hands or fatal aim traits")
 
-    def _auto_two_hands(self) -> Damage:
-        if self.two_hands or self.fatal_aim:
+    @overload
+    def apply_boost(self, do_boost: Literal[False], /) -> Damage: ...
+    @overload
+    def apply_boost(self, do_boost: Literal[True], /) -> DamageList: ...
+
+    def apply_boost(self, do_boost: bool, /) -> Damage | DamageList:
+        """Clarify whether an interact action to boost damage was used or not.
+
+        This method must exclusively be called for weapons with the ``boost dX`` trait.
+
+        :param bool do_boost:
+            True if the interact action to boost damage was used; False otherwise.
+
+        You should always call this method explicitly for weapons with the
+        ``boost dX`` trait.
+        """
+        if not self.boost:
+            raise ValueError("Weapon does not have the boost trait")
+        res = self.copy(boost=0)
+        if do_boost:
+            return DamageList(
+                [
+                    res,
+                    res.copy(faces=self.boost, bonus=0, deadly=0, fatal=0, fatal_aim=0),
+                ]
+            )
+        return res
+
+    def _auto_optionals(self) -> Damage:
+        """Apply a sane default for on-the-fly choices for the
+        two-hands, fatal aim, and boost traits, with a warning.
+        """
+        res = self
+
+        if res.two_hands or res.fatal_aim:
             warnings.warn(
                 "Assuming weapon is held in two hands. "
                 "You should explicitly call .hands(2) or .hands(1).",
                 stacklevel=2,
             )
-            return self.hands(2)
-        return self
+            res = res.hands(2)
+
+        if res.boost:
+            warnings.warn(
+                "Assuming weapon is not being boosted. "
+                "You should explicitly call .apply_boost(True) or .apply_boost(False).",
+                stacklevel=2,
+            )
+            res = res.apply_boost(False)
+
+        return res
 
     def reduce_die(self) -> Damage:
         """Reduce the damage die size by 1 step.
@@ -360,7 +411,7 @@ class Damage:
 
         You typically don't need to call this method explicitly.
         """
-        self = self._auto_two_hands()  # noqa: PLW0642
+        self = self._auto_optionals()  # noqa: PLW0642
         base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
         out = {}
 
@@ -403,7 +454,7 @@ class Damage:
 
     def __add__(self, other: DamageLike) -> DamageList | ExpandedDamage:
         """Add two damage specs together"""
-        d = self._auto_two_hands()
+        d = self._auto_optionals()
         return DamageList([d]) + other
 
 

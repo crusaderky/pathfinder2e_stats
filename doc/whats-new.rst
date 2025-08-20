@@ -6,6 +6,9 @@ What's New
 v0.2.0 (unreleased)
 -------------------
 
+- Starfinder: added ``boost dX`` trait to :class:`Damage`
+
+
 
 v0.1.1 (2025-08-11)
 -------------------
