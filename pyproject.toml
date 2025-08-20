@@ -235,14 +235,12 @@ pytest-run-parallel = "*"
 ipython = "*"
 
 [tool.pixi.feature.nogil.pypi-dependencies]
-# FIXME Need pandas >=3.0
+# FIXME Need pandas 3
 # https://github.com/pandas-dev/pandas/issues/61844
-pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-xarray = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-# FIXME Need xarray >= 2025.7.2
-# xarray = "*"
 # TODO after reverting to published versions, update .github/workflows/pytest.yml
 # to stop disregarding pixi.lock
+pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple", version = ">=3.0.0.dev0" }
+xarray = "*"
 
 [tool.pixi.feature.mindeps.dependencies]
 python = "=3.11"
@@ -255,7 +253,7 @@ python = "=3.14"
 
 [tool.pixi.feature.upstream.pypi-dependencies]
 numpy = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
+pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple", version = ">=3.0.0.dev0"}
 xarray = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
 
 [tool.pixi.feature.dist.dependencies]
