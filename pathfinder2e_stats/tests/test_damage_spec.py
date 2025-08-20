@@ -99,6 +99,9 @@ def test_damage_repr():
     d = Damage("slashing", 1, 8, two_hands=12)
     assert str(d) == "**Damage** 1d8 slashing two-hands d12"
 
+    d = Damage("slashing", 1, 8, boost=10)
+    assert str(d) == "**Damage** 1d8 slashing boost d10"
+
 
 def test_damage_type_copy():
     d = Damage("fire", 1, 6, 3, persistent=True)
@@ -415,10 +418,16 @@ def test_increase_die():
 
 def test_two_hands():
     d = Damage("slashing", 1, 8, two_hands=12)
+
+    # Defaults to 2 hands
     with pytest.warns(UserWarning, match="two hands"):
-        d.expand()
+        actual = d.expand()
+    assert actual == Damage("slashing", 1, 12).expand()
+
+    # Triggers default on add
     with pytest.warns(UserWarning, match="two hands"):
-        d + Damage("fire", 1, 6)
+        actual = d + Damage("fire", 1, 6)
+    assert actual == Damage("slashing", 1, 12) + Damage("fire", 1, 6)
 
     assert d.hands(1) == Damage("slashing", 1, 8)
     assert d.hands(2) == Damage("slashing", 1, 12)
@@ -434,10 +443,16 @@ def test_two_hands():
 
 def test_fatal_aim():
     d = Damage("piercing", 1, 8, fatal_aim=12)
+
+    # Defaults to 2 hands
     with pytest.warns(UserWarning, match="two hands"):
-        d.expand()
+        actual = d.expand()
+    assert actual == Damage("piercing", 1, 8, fatal=12).expand()
+
+    # Triggers default on add
     with pytest.warns(UserWarning, match="two hands"):
-        d + Damage("fire", 1, 6)
+        actual = d + Damage("fire", 1, 6)
+    assert actual == Damage("piercing", 1, 8, fatal=12) + Damage("fire", 1, 6)
 
     assert d.hands(1) == Damage("piercing", 1, 8)
     assert d.hands(2) == Damage("piercing", 1, 8, fatal=12)
@@ -451,15 +466,51 @@ def test_fatal_aim():
         Damage("piercing", 1, 8, fatal=12, fatal_aim=12)
 
 
+def test_boost():
+    d = Damage("fire", 1, 8, 4, boost=10)
+
+    # Defaults to False
+    with pytest.warns(UserWarning, match="boost"):
+        actual = d.expand()
+    assert actual == Damage("fire", 1, 8, 4).expand()
+
+    # Triggers default on add
+    with pytest.warns(UserWarning, match="boost"):
+        actual = d + Damage("cold", 1, 6)
+    assert actual == Damage("fire", 1, 8, 4) + Damage("cold", 1, 6)
+
+    # Bonus damage is not replicated by boost
+    assert d.apply_boost(False) == Damage("fire", 1, 8, 4)
+    assert d.apply_boost(True) == [Damage("fire", 1, 8, 4), Damage("fire", 1, 10)]
+
+    with pytest.raises(ValueError, match="does not have .* boost"):
+        Damage("fire", 1, 8).apply_boost(True)
+
+    # Deadly and fatal are not replicated
+    d = Damage("fire", 4, 8, 4, boost=10, deadly=6, fatal=12)
+    assert d.apply_boost(False) == Damage("fire", 4, 8, 4, deadly=6, fatal=12)
+    assert d.apply_boost(True) == [
+        Damage("fire", 4, 8, 4, deadly=6, fatal=12),
+        Damage("fire", 4, 10),
+    ]
+
+    # basic_save is replicated
+    d = Damage("fire", 3, 6, 2, boost=8, basic_save=True)
+    assert d.apply_boost(True) == [
+        Damage("fire", 3, 6, 2, basic_save=True),
+        Damage("fire", 3, 8, basic_save=True),
+    ]
+
+
 def test_damage_hash():
-    d = {
-        Damage("fire", 1, 8),
-        Damage("fire", 1, 8),
-        Damage("slashing", 1, 8),
-        Damage("fire", 1, 8, two_hands=12),
-    }
-    assert d == {
+    d = [
         Damage("fire", 1, 8),
         Damage("slashing", 1, 8),
+        Damage("fire", 1, 8, basic_save=True),
         Damage("fire", 1, 8, two_hands=12),
-    }
+        Damage("fire", 1, 8, deadly=12),
+        Damage("fire", 1, 8, fatal=12),
+        Damage("fire", 1, 8, fatal_aim=12),
+        Damage("fire", 1, 8, boost=12),
+    ]
+    assert len(set(d + d)) == len(d)
