@@ -66,6 +66,7 @@ def check(
     allow_critical_failure: bool | DataArray = True,
     allow_failure: bool | DataArray = True,
     allow_critical_success: bool | DataArray = True,
+    primary_target: DataArray | Dataset | None = None,
 ) -> Dataset:
     """Roll a d20 and compare the result to a Difficulty Class (DC).
 
@@ -159,6 +160,8 @@ def check(
     :param allow_failure:
         Passed to :func:`map_outcome` post-processing.
     :param allow_critical_success:
+        Passed to :func:`map_outcome` post-processing.
+    :param primary_target:
         Passed to :func:`map_outcome` post-processing.
     :returns:
         A :class:`~xarray.Dataset` containing the following variables:
@@ -267,8 +270,11 @@ def check(
         ("allow_critical_failure", allow_critical_failure, True),
         ("allow_failure", allow_failure, True),
         ("allow_critical_success", allow_critical_success, True),
+        ("primary_target", primary_target, None),
     ):
         if v is not default:
+            if k == "primary_target" and isinstance(v, Dataset):
+                v = v.outcome
             ds[k] = v
 
     # Normalize and validate independent_dims and dependent_dims
@@ -346,6 +352,7 @@ def check(
         allow_critical_failure=allow_critical_failure,
         allow_failure=allow_failure,
         allow_critical_success=allow_critical_success,
+        primary_target=primary_target,
     )
 
 
@@ -363,6 +370,7 @@ def map_outcome(
     allow_critical_failure: bool | DataArray = True,
     allow_failure: bool | DataArray = True,
     allow_critical_success: bool | DataArray = True,
+    primary_target: DataArray | Dataset | None = None,
 ) -> _Outcome_T:
     """Convert the output of :func:`check` following a set of rules.
 
@@ -370,6 +378,11 @@ def map_outcome(
     :func:`check`.
 
     All parameters can either be scalars or :class:`~xarray.DataArray`.
+
+    .. only:: doctest
+
+        >>> from pathfinder2e_stats import rank2level, seed, Damage, damage
+        >>> seed(0)
 
     :param outcome:
         Either the :class:`~xarray.Dataset` returned by :func:`check` or
@@ -407,6 +420,25 @@ def map_outcome(
     :param allow_critical_success:
         Set to False if there is no critical success effect. If False, all critical
         successes will be mapped to simple successes. Default: True.
+    :param primary_target:
+        Starfinder :srd_classes:`Soldier <5-soldier>` class feature.
+        Use this to map the outcome of the saving throw against Area Fire or Auto-Fire
+        vs. the outcome of the Primary Target Strike. A target hit by the Primary Target
+        Strike downgrades simple successes on the saving throw vs. Area Fire and
+        Auto-Fire to failures. The value of this parameter must be a Dataset as
+        returned by :func:`check`, or a DataArray of degrees of success of the Primary
+        Target Strike (as the ``outcome`` variable of such Dataset).
+
+        Example:
+
+        >>> weapon = Damage("piercing", 1, 10)  # Stellar Cannon
+        >>> primary_target = damage(check(6, DC=15), weapon)  # atk +6 vs. AC15
+        >>> area_fire = damage(
+        ...     # Basic reflex save vs. class DC + tracking
+        ...     check(5, DC=18, primary_target=primary_target),
+        ...     weapon.copy(basic_save=True),
+        ... )
+
     :returns:
         If `outcome` is the :class:`~xarray.Dataset` returned by :func:`check`,
         return a shallow copy of it with the `outcome` variable replaced and the
@@ -417,11 +449,6 @@ def map_outcome(
         the values of `map_`; otherwise it will be int like the input.
 
     **Examples:**
-
-    .. only:: doctest
-
-        >>> from pathfinder2e_stats import rank2level, seed
-        >>> seed(0)
 
     Cast a 5th rank :prd_spells:`Calm <1458>` spell (DC30) and catch in the
     area three targets:
@@ -449,11 +476,11 @@ def map_outcome(
           DC                int64 8B 30
           evasion           (target) bool 3B False False True
           incapacitation    (target) bool 3B False True False
-          natural           (roll, target) int64 2MB 18 13 11 6 7 1 ... 10 9 11 12 12
-          original_outcome  (roll, target) int64 2MB 1 1 1 0 0 -1 -1 ... -1 1 1 0 1 1
-          outcome           (roll, target) int64 2MB 1 2 2 0 1 -1 -1 ... -1 2 2 0 2 2
+          natural           (roll, target) int64 2MB 18 6 4 6 12 15 ... 11 16 14 8 8 6
+          original_outcome  (roll, target) int64 2MB 1 0 0 0 1 1 1 1 ... 1 0 1 1 0 0 1
+          outcome           (roll, target) int64 2MB 1 1 0 0 2 2 1 2 ... 2 0 2 2 0 1 2
       Attributes:
-          legend:    {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'Succe...
+          legend:   {-2: 'No roll', -1: 'Critical failure', 0: 'Failure', 1: 'Succe...
     """
     if isinstance(outcome, Dataset):
         ds = outcome
@@ -465,10 +492,13 @@ def map_outcome(
             ("allow_critical_failure", allow_critical_failure, True),
             ("allow_failure", allow_failure, True),
             ("allow_critical_success", allow_critical_success, True),
+            ("primary_target", primary_target, None),
         ):
             if v is not default:
                 changed = True
                 # Note: when map_outcome is a tail call from check, this is redundant.
+                if k == "primary_target" and isinstance(v, Dataset):
+                    v = v.outcome
                 ds[k] = v
         if not changed:
             return outcome
@@ -481,6 +511,7 @@ def map_outcome(
             allow_critical_failure=allow_critical_failure,
             allow_failure=allow_failure,
             allow_critical_success=allow_critical_success,
+            primary_target=primary_target,
         )
         return ds
 
@@ -501,6 +532,14 @@ def map_outcome(
         outcome,
         DoS.success,
     )
+    if primary_target is not None:
+        if isinstance(primary_target, Dataset):
+            primary_target = primary_target.outcome
+        outcome = xarray.where(
+            (primary_target >= DoS.success) & (outcome == DoS.success),
+            DoS.failure,
+            outcome,
+        )
 
     if map_ is None:
         return outcome

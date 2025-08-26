@@ -2,8 +2,16 @@
 name = "pathfinder2e-stats"
 authors = [{ name = "Guido Imperiale", email = "crusaderky@gmail.com" }]
 license = "Apache-2.0"
-description = "Statistical tools for Pathfinder 2nd edition"
-keywords = ["pathfinder", "paizo", "statistics", "TTRPG", "tabletop", "board games"]
+description = "Statistical tools for Pathfinder and Starfinder 2nd edition"
+keywords = [
+  "pathfinder",
+  "starfinder",
+  "paizo",
+  "statistics",
+  "TTRPG",
+  "tabletop",
+  "board games",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Operating System :: OS Independent",
@@ -32,7 +40,7 @@ documentation = "https://pathfinder2e-stats.readthedocs.io/"
 changelog = "https://pathfinder2e-stats.readthedocs.io/en/latest/whats-new.html"
 
 [project.readme]
-text = "Statistical tools for Pathfinder 2nd Edition"
+text = "Statistical tools for Pathfinder and Starfinder 2nd Edition"
 content-type = "text/plain"
 
 [tool.setuptools]

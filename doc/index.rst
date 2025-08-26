@@ -2,9 +2,10 @@ pathfinder2e-stats: Statistical tools for Pathfinder
 ====================================================
 
 ``pathfinder2e-stats`` is a data science library for the
-`Pathfinder <https://paizo.com/pathfinder/>`_ tabletop role-playing game (TTRPG),
+`Pathfinder <https://paizo.com/pathfinder/>`_ and
+`Starfinder <https://paizo.com/starfinder/>`_ tabletop role-playing games (TTRPG),
 second edition.
-It is a toolkit to apply numerical statistical analysis to the game,
+It is a toolkit to apply numerical statistical analysis to these games,
 using industry standard technology stack and best practices.
 
 It lets you answer questions such as:
@@ -21,8 +22,8 @@ It lets you answer questions such as:
 
 While it *can* be used by powerplayers to optimize their characters, it is mainly
 intended for people with a passion for numbers who want to reverse-engineer the game
-balance, as well as for game masters who want to better tweak the challenge level of
-their homebrew content.
+balance, as well as game masters and writers who want to better tweak the challenge
+level of their homebrew content.
 
 
 What this software is not
@@ -37,8 +38,8 @@ What this software is not
 
 Intended audience
 -----------------
-``pathfinder2e-stats`` is intended for Pathfinder players and game masters
-who are also familiar with data science workflows.
+``pathfinder2e-stats`` is intended for Pathfinder and Starfinder players and
+game masters who are also familiar with data science workflows.
 At the bare minimum, you need to be comfortable with one of the following
 technology stacks:
 
