@@ -15,3 +15,5 @@ so that you may run and tweak them yourself.
    add_injury_to_insult
    bloodrager
    godbreaker
+   SF_magnetar_rifle
+   SF_punishing_salvo

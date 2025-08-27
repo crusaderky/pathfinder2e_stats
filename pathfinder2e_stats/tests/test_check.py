@@ -569,6 +569,38 @@ def test_check_array_input():
     )
 
 
+@pytest.mark.parametrize("as_dataset", [False, True])
+@pytest.mark.parametrize("explicit_map_outcome", [False, True])
+def test_primary_target(as_dataset, explicit_map_outcome):
+    pt = check(7, DC=18)
+
+    if as_dataset:
+        # Add extraneous dims and coords to the dataset to make sure they're ignored
+        # by independent_dims checks
+        pt["ignoreme"] = DataArray([1, 2], dims=["foo"], coords={"foo": [1, 2]})
+    else:
+        pt = pt.outcome
+
+    if explicit_map_outcome:
+        save = map_outcome(check(5, DC=17), primary_target=pt)
+    else:
+        save = check(5, DC=17, primary_target=pt)
+
+    assert_equal(save.primary_target, pt.outcome if as_dataset else pt)
+
+    # Primary target only downgrades simple success
+    mask1 = save.original_outcome == DoS.success
+    mask2 = (pt.outcome if as_dataset else pt) >= DoS.success
+    assert mask1.any()
+    assert not mask1.all()
+    assert mask2.any()
+    assert not mask2.all()
+
+    assert_equal(save.outcome[~mask1], save.original_outcome[~mask1])
+    assert (save.outcome[mask1 & ~mask2] == DoS.success).all()
+    assert (save.outcome[mask1 & mask2] == DoS.failure).all()
+
+
 def test_independent_dims():
     """Test check() parameters independent_dims and dependent_dims.
 
