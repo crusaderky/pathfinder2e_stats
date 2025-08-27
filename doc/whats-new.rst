@@ -6,12 +6,14 @@ What's New
 v0.2.0 (unreleased)
 -------------------
 
-Added support for Starfinder-specific mechanics:
+- Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
+  ``tables.PC.weapon_proficiency``.
+- Added support for Starfinder:
 
-- Added ``boost dX`` trait to :class:`Damage`
-- Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
-  to more easily model the Soldier's Primary Target ability.
-- Added two demo notebooks.
+  - Added ``boost dX`` trait to :class:`Damage`
+  - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
+    to more easily model the Soldier's Primary Target ability.
+  - Added two demo notebooks.
 
 
 v0.1.1 (2025-08-11)
