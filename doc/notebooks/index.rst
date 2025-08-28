@@ -13,7 +13,9 @@ so that you may run and tweak them yourself.
 
    exacting_strike
    add_injury_to_insult
+   barrows_edge
    bloodrager
    godbreaker
+   SF_fangblade
    SF_magnetar_rifle
    SF_punishing_salvo
