@@ -88,6 +88,10 @@ This software is available under the open source `Apache License`__.
 This software uses trademarks, copyrights, and other material identified as
 Intellectual Property owned by Paizo Inc. and used by this software under the terms
 of the `ORC License`__.
+This product is based on the following Licensed Material: Pathfinder Player Core,
+Pathfinder Player Core 2, Pathfinder GM Core, Starfinder Player Core, Starfinder GM
+Core, Secrets of Magic, Dark Archive, Guns & Gears, Rage of Elements, War of Immortals,
+Battlecry!, and any other material published by Paizo Inc.
 
 __ http://www.apache.org/licenses/LICENSE-2.0.html
 __ https://paizo.com/orclicense
