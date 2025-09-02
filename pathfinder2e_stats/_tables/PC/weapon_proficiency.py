@@ -8,6 +8,7 @@ def postproc(ds: xarray.Dataset) -> xarray.Dataset:
         ds,
         extra_columns=[
             "fighter_dedication",
+            "operative_dedication",
             "weapon_proficiency",
         ],
     )

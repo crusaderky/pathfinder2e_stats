@@ -26,3 +26,9 @@ swashbuckler,$martial
 thaumaturge,$martial
 witch,$spellcaster
 wizard,$spellcaster
+envoy,$martial
+mystic,$spellcaster
+operative,$martial
+solarian,$martial
+soldier,$martial
+witchwarper,$spellcaster

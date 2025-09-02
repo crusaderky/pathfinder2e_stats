@@ -32,11 +32,22 @@ def postproc_classes(
     """
     to_delete = set()
 
+    TMP_PROF_MASTERY_KEY = "_tmp_prof_mastery"
+    TMP_PROF_MASTERY_DOMAIN = [
+        "martial/mastery",
+        "advanced/mastery",
+        "martial/other",
+        "advanced/other",
+    ]
+
     # Merge class/subclass columns into single variables with an extra dimension
     for class_name, dim, subclasses in (
         ("cleric", "doctrine", ["battle creed", "cloistered cleric", "warpriest"]),
         ("fighter", "mastery", ["mastery", "other"]),
         ("gunslinger", "mastery", ["mastery", "other"]),
+        ("fighter", TMP_PROF_MASTERY_KEY, TMP_PROF_MASTERY_DOMAIN),
+        ("gunslinger", TMP_PROF_MASTERY_KEY, TMP_PROF_MASTERY_DOMAIN),
+        ("operative", TMP_PROF_MASTERY_KEY, TMP_PROF_MASTERY_DOMAIN),
     ):
         if f"{class_name}/{subclasses[0]}" in ds:
             ds[class_name] = xarray.concat(
@@ -45,6 +56,16 @@ def postproc_classes(
             ).T
             to_delete |= {f"{class_name}/{subclass}" for subclass in subclasses}
             ds[dim] = subclasses
+
+    if TMP_PROF_MASTERY_KEY in ds.dims:
+        ds[TMP_PROF_MASTERY_KEY] = pd.MultiIndex.from_tuples(
+            [v.split("/") for v in TMP_PROF_MASTERY_DOMAIN],
+            names=["category", "mastery"],
+        )
+        ds = ds.unstack(TMP_PROF_MASTERY_KEY)
+        ds["category"] = ds["category"].astype("U")
+        # Undo automatic alphabetical sorting on unstack
+        ds = ds.sel(category=["martial", "advanced"])
 
     if "mastery" in ds:
         ds["mastery"] = [True, False]
