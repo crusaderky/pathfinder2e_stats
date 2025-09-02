@@ -55,6 +55,7 @@ extlinks = {
     # Note: aonsrd and aonprd links use different patterns:
     # :prd_classes:`Alchemist <56>`      -> https://2e.aonprd.com/Classes.aspx?ID=56
     # :srd_classes:`Soldier <5-soldier>` -> https://2e.aonsrd.com/classes/5-soldier
+    "srd_actions": ("https://2e.aonsrd.com/actions/%s", None),
     "srd_classes": ("https://2e.aonsrd.com/classes/%s", None),
     "srd_feats": ("https://2e.aonsrd.com/feats/%s", None),
     "srd_weapons": ("https://2e.aonsrd.com/equipment/weapons/%s", None),

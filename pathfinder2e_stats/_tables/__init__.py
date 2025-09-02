@@ -4,6 +4,7 @@ import importlib
 from collections.abc import Iterator
 from functools import cached_property
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -210,9 +211,12 @@ class Tables:
         """Earn income table, with extra DCs for levels -1 and 22~25."""
         fname = ROOT_DIR / "earn_income.csv"
         df = pd.read_csv(fname, index_col=0)
-        ds = Dataset({"DC": df["DC"], "income_earned": df.iloc[:, 1:]})
+        ds = Dataset({"DC": df["DC"], "pathfinder": df.iloc[:, 1:]})
+        ds["starfinder"] = (
+            cast(DataArray, np.ceil(ds["pathfinder"] * 10)).fillna(0).astype(int)
+        )
         ds = ds.rename({"dim_1": "proficiency"})
-        ds.coords["proficiency"] = ds.proficiency.astype("U")
+        ds["proficiency"] = ds.proficiency.astype("U")
         return ds
 
     @cached_property
