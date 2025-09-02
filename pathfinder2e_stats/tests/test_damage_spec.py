@@ -480,7 +480,7 @@ def test_boost():
     assert actual == Damage("fire", 1, 8, 4) + Damage("cold", 1, 6)
 
     # Bonus damage is not replicated by boost
-    # Boost damage is not double on a critical hit
+    # Boost damage is not doubled on a critical hit
     assert d.apply_boost(False) == Damage("fire", 1, 8, 4)
     assert d.apply_boost(True) == Damage("fire", 1, 8, 4) + {
         DoS.critical_success: [Damage("fire", 1, 10)],
