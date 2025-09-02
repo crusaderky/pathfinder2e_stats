@@ -293,30 +293,44 @@ class Damage:
     @overload
     def apply_boost(self, do_boost: Literal[False], /) -> Damage: ...
     @overload
-    def apply_boost(self, do_boost: Literal[True], /) -> DamageList: ...
+    def apply_boost(self, do_boost: Literal[True], /) -> ExpandedDamage: ...
 
-    def apply_boost(self, do_boost: bool, /) -> Damage | DamageList:
+    def apply_boost(self, do_boost: bool, /) -> Damage | ExpandedDamage:
         """Clarify whether an interact action to boost damage was used or not.
 
         This method must exclusively be called for weapons with the ``boost dX`` trait.
+        You should always call this method explicitly.
 
         :param bool do_boost:
             True if the interact action to boost damage was used; False otherwise.
 
-        You should always call this method explicitly for weapons with the
-        ``boost dX`` trait.
+        .. note::
+
+            If you interact to boost damage and then Area Fire or Auto-Fire, e.g. a
+            :srd_weapons:`Fangblade <14-fangblade>` with
+            :srd_feats:`Whirling Swipe <624-whirling-swipe>`, you should first call
+            ``.copy(basic_save=True)`` and then ``.apply_boost(True)``:
+
+            >>> fangblade = Damage("slashing", 2, 10, 4, boost=12)
+            >>> fangblade.copy(basic_save=True).apply_boost(True)
+            **Success** (2d12)/2 slashing plus (2d10+4)/2 slashing
+            **Failure** 2d12 slashing plus 2d10+4 slashing
+            **Critical failure** (2d10+4)x2 slashing plus 2d12 slashing
         """
         if not self.boost:
             raise ValueError("Weapon does not have the boost trait")
-        res = self.copy(boost=0)
-        if do_boost:
-            return DamageList(
-                [
-                    res,
-                    res.copy(faces=self.boost, bonus=0, deadly=0, fatal=0, fatal_aim=0),
-                ]
-            )
-        return res
+        base = self.copy(boost=0)
+        if not do_boost:
+            return base
+        boost = Damage(self.type, self.dice, self.boost)
+        # Boost dice don't double on critical hits
+        if self.basic_save:
+            return base + {
+                DoS.critical_failure: [boost],
+                DoS.failure: [boost],
+                DoS.success: [boost.copy(multiplier=0.5)],
+            }
+        return base + {DoS.critical_success: [boost], DoS.success: [boost]}
 
     def _auto_optionals(self) -> Damage:
         """Apply a sane default for on-the-fly choices for the
