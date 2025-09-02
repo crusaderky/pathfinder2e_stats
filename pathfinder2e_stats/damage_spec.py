@@ -328,8 +328,6 @@ class Damage:
             return base + {
                 DoS.critical_failure: [boost],
                 DoS.failure: [boost],
-                # FIXME behaviour on a success on the basic saving throw is speculation.
-                # There is no RAW source for this.
                 DoS.success: [boost.copy(multiplier=0.5)],
             }
         return base + {DoS.critical_success: [boost], DoS.success: [boost]}
