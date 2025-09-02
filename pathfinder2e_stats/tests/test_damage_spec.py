@@ -480,8 +480,12 @@ def test_boost():
     assert actual == Damage("fire", 1, 8, 4) + Damage("cold", 1, 6)
 
     # Bonus damage is not replicated by boost
+    # Boost damage is not double on a critical hit
     assert d.apply_boost(False) == Damage("fire", 1, 8, 4)
-    assert d.apply_boost(True) == [Damage("fire", 1, 8, 4), Damage("fire", 1, 10)]
+    assert d.apply_boost(True) == Damage("fire", 1, 8, 4) + {
+        DoS.critical_success: [Damage("fire", 1, 10)],
+        DoS.success: [Damage("fire", 1, 10)],
+    }
 
     with pytest.raises(ValueError, match="does not have .* boost"):
         Damage("fire", 1, 8).apply_boost(True)
@@ -489,17 +493,29 @@ def test_boost():
     # Deadly and fatal are not replicated
     d = Damage("fire", 4, 8, 4, boost=10, deadly=6, fatal=12)
     assert d.apply_boost(False) == Damage("fire", 4, 8, 4, deadly=6, fatal=12)
-    assert d.apply_boost(True) == [
-        Damage("fire", 4, 8, 4, deadly=6, fatal=12),
-        Damage("fire", 4, 10),
-    ]
+    assert d.apply_boost(True) == Damage("fire", 4, 8, 4, deadly=6, fatal=12) + {
+        DoS.critical_success: [Damage("fire", 4, 10)],
+        DoS.success: [Damage("fire", 4, 10)],
+    }
 
-    # basic_save is replicated
+    # Area Fire with boost weapon
     d = Damage("fire", 3, 6, 2, boost=8, basic_save=True)
-    assert d.apply_boost(True) == [
-        Damage("fire", 3, 6, 2, basic_save=True),
-        Damage("fire", 3, 8, basic_save=True),
-    ]
+    assert d.apply_boost(True) == ExpandedDamage(
+        {
+            DoS.success: [
+                Damage("fire", 3, 8, multiplier=0.5),
+                Damage("fire", 3, 6, 2, multiplier=0.5),
+            ],
+            DoS.failure: [
+                Damage("fire", 3, 8),
+                Damage("fire", 3, 6, 2),
+            ],
+            DoS.critical_failure: [
+                Damage("fire", 3, 6, 2, multiplier=2),
+                Damage("fire", 3, 8),
+            ],
+        }
+    )
 
 
 def test_damage_hash():
