@@ -1,3 +1,5 @@
+import math
+
 import pytest
 import xarray
 
@@ -216,7 +218,18 @@ def test_earn_income():
     assert ds.level[0] == 0
     assert ds.level[-1] == 21
     assert ds.sel(level=7).DC == 23
-    assert ds.sel(level=7).income_earned.values.tolist() == [0.4, 2, 2.5, 2.5, 2.5]
+    assert ds.sel(level=7).pathfinder.values.tolist() == [0.4, 2, 2.5, 2.5, 2.5]
     assert ds.DC.dtype.kind == "i"
-    assert ds.income_earned.dtype.kind == "f"
+    assert ds.pathfinder.dtype.kind == "f"
     assert ds.proficiency.dtype.kind == "U"
+
+    # 1 Starfinder credit = 1 SP; CPs are rounded up
+    assert ds.sel(level=2).starfinder.values.tolist() == [1, 3, 3, 3, 3]
+    assert ds.sel(level=7).starfinder.values.tolist() == [4, 20, 25, 25, 25]
+    assert ds.starfinder.dtype.kind == "i"
+
+    # Level 21 is only for critical successes at level 20.
+    # Level 21 Failed is N/A in Pathfinder and 0 in Starfinder due to dtype constraints.
+    crit20 = ds.sel(level=21, proficiency="Failed")
+    assert math.isnan(crit20.pathfinder)
+    assert crit20.starfinder == 0

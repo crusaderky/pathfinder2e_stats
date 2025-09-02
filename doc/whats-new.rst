@@ -14,6 +14,11 @@ v0.2.0 (unreleased)
   - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
     to more easily model the Soldier's Primary Target ability.
   - Added two demo notebooks.
+  - New table ``tables.EARN_INCOME.starfinder`` for Starfinder credits.
+
+**Breaking changes:**
+
+- Renamed ``tables.EARN_INCOME.income_earned`` to ``tables.EARN_INCOME.pathfinder``.
 
 
 v0.1.1 (2025-08-11)
