@@ -202,6 +202,24 @@ def test_expand_deadly_fatal():
     }
 
 
+def test_deadly_area_fire():
+    """Area Fire with a Deadly weapon"""
+    assert Damage("slashing", 1, 6, 4, deadly=8, basic_save=True).expand() == {
+        1: [Damage("slashing", 1, 6, 4, 0.5)],
+        0: [Damage("slashing", 1, 6, 4)],
+        -1: [Damage("slashing", 1, 6, 4, 2), Damage("slashing", 1, 8)],
+    }
+
+
+def test_fatal_area_fire():
+    """Area Fire with a Fatal weapon"""
+    assert Damage("slashing", 1, 6, 4, fatal=10, basic_save=True).expand() == {
+        1: [Damage("slashing", 1, 6, 4, 0.5)],
+        0: [Damage("slashing", 1, 6, 4)],
+        -1: [Damage("slashing", 1, 10, 4, 2), Damage("slashing", 1, 10)],
+    }
+
+
 def test_vicious_swing():
     """Vicious Swing (Fighter feat) adds 1 or more dice of damage, which
     are enlarged by fatal but don't cause deadly to bump up
