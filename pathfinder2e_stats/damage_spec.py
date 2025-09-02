@@ -306,16 +306,16 @@ class Damage:
 
         .. note::
 
-            If you Boost and then Area Fire or Auto-Fire, e.g. a 
-            :srd_weapons:`Fangblade <14-fangblade>` with 
+            If you interact to boost damage and then Area Fire or Auto-Fire, e.g. a
+            :srd_weapons:`Fangblade <14-fangblade>` with
             :srd_feats:`Whirling Swipe <624-whirling-swipe>`, you should first call
-            ``.copy(basic_save=True)`` and then ``.apply_boost(True)``::
+            ``.copy(basic_save=True)`` and then ``.apply_boost(True)``:
 
-                >>> fangblade = Damage("slashing", 2, 10, 4, boost=12)
-                >>> fangblade.copy(basic_save=True).apply_boost(True)
-                **Success** (2d12)/2 slashing plus (2d10+4)/2 slashing
-                **Failure** 2d12 slashing plus 2d10+4 slashing
-                **Critical failure** (2d10+4)x2 slashing plus 2d12 slashing
+            >>> fangblade = Damage("slashing", 2, 10, 4, boost=12)
+            >>> fangblade.copy(basic_save=True).apply_boost(True)
+            **Success** (2d12)/2 slashing plus (2d10+4)/2 slashing
+            **Failure** 2d12 slashing plus 2d10+4 slashing
+            **Critical failure** (2d10+4)x2 slashing plus 2d12 slashing
         """
         if not self.boost:
             raise ValueError("Weapon does not have the boost trait")
