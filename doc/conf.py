@@ -47,11 +47,13 @@ extlinks = {
     "prd_conditions": ("https://2e.aonprd.com/Conditions.aspx?ID=%s", None),
     "prd_equipment": ("https://2e.aonprd.com/Equipment.aspx?ID=%s", None),
     "prd_feats": ("https://2e.aonprd.com/Feats.aspx?ID=%s", None),
+    "prd_ikons": ("https://2e.aonprd.com/Ikons.aspx?ID=%s", None),
     "prd_instincts": ("https://2e.aonprd.com/Instincts.aspx?ID=%s", None),
     "prd_rules": ("https://2e.aonprd.com/Rules.aspx?ID=%s", None),
     "prd_skills": ("https://2e.aonprd.com/Skills.aspx?ID=%s&General=true", None),
     "prd_spells": ("https://2e.aonprd.com/Spells.aspx?ID=%s", None),
     "prd_traits": ("https://2e.aonprd.com/Traits.aspx?ID=%s", None),
+    "prd_weapons": ("https://2e.aonprd.com/Weapons.aspx?ID=%s", None),
     # Note: aonsrd and aonprd links use different patterns:
     # :prd_classes:`Alchemist <56>`      -> https://2e.aonprd.com/Classes.aspx?ID=56
     # :srd_classes:`Soldier <5-soldier>` -> https://2e.aonsrd.com/classes/5-soldier
