@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import pandas as pd
 import xarray
+from xarray import DataArray, Dataset
 
 if TYPE_CHECKING:  # circular import
     from pathfinder2e_stats._tables import PCTables
@@ -19,13 +20,13 @@ def _get_df() -> pd.DataFrame:
     return pd.read_csv(fname, index_col=[0], header=[0, 1]).fillna("")
 
 
-def _class_name(df: pd.DataFrame) -> xarray.DataArray:
-    return xarray.DataArray(df.index.str.replace(r"/.*", "", regex=True)).rename(
+def _class_name(df: pd.DataFrame) -> DataArray:
+    return DataArray(df.index.str.replace(r"/.*", "", regex=True)).rename(
         {"dim_0": "class"}
     )
 
 
-def _get_ability_boosts(pctables: PCTables, df: pd.DataFrame) -> xarray.DataArray:
+def _get_ability_boosts(pctables: PCTables, df: pd.DataFrame) -> DataArray:
     return (
         pctables.ability_bonus.boosts.sel(initial=df["ability_bonus.boosts"].values)
         .rename({"initial": "class"})
@@ -33,14 +34,14 @@ def _get_ability_boosts(pctables: PCTables, df: pd.DataFrame) -> xarray.DataArra
     )
 
 
-def _get_ability_apex(pctables: PCTables, df: pd.DataFrame) -> xarray.DataArray:
-    return pctables.ability_bonus.apex * xarray.DataArray(
+def _get_ability_apex(pctables: PCTables, df: pd.DataFrame) -> DataArray:
+    return pctables.ability_bonus.apex * DataArray(
         df["ability_bonus.apex"].values, dims=["class"]
     )
 
 
-def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset:
-    ds = xarray.Dataset(components)
+def _merge_components(components: dict[str, DataArray]) -> Dataset:
+    ds = Dataset(components)
     df = _get_df()
     rows = []
     dim: Hashable
@@ -91,7 +92,7 @@ def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset
 
         vars[class_name] = da
 
-    ds = xarray.Dataset(dict(sorted(vars.items())))
+    ds = Dataset(dict(sorted(vars.items())))
 
     ds["component"] = ds["component"].astype("U")
     if "mastery" in ds.dims:
@@ -99,7 +100,7 @@ def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset
     return ds.transpose("level", "component", ...)
 
 
-def weapon_bonus(pctables: PCTables) -> xarray.Dataset:
+def weapon_bonus(pctables: PCTables) -> Dataset:
     """Total attack bonus to weapon strikes for all classes, with strong assumptions"""
     df = _get_df()["strike"]
 
@@ -122,13 +123,13 @@ def weapon_bonus(pctables: PCTables) -> xarray.Dataset:
     return _merge_components(components)
 
 
-def spell_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
+def spell_bonus(pctables: PCTables, as_DC: bool) -> Dataset:
     """Total spell attack bonus / spell DC for all classes, with strong assumptions"""
     df = _get_df()["spell"]
 
     components = {}
     if as_DC:
-        components["base_DC"] = xarray.DataArray(10)
+        components["base_DC"] = DataArray(10)
 
     components.update(
         {
@@ -163,12 +164,12 @@ def spell_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
     return res
 
 
-def class_DC(pctables: PCTables) -> xarray.Dataset:
+def class_DC(pctables: PCTables) -> Dataset:
     """Total class DC for all classes, with strong assumptions"""
     df = _get_df()["class"]
 
     components = {
-        "base_DC": xarray.DataArray(10),
+        "base_DC": DataArray(10),
         "proficiency": pctables.class_proficiency.to_array("class").sel(
             {"class": _class_name(df)}
         ),
@@ -179,13 +180,24 @@ def class_DC(pctables: PCTables) -> xarray.Dataset:
     return _merge_components(components)
 
 
-def impulse_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
+def area_fire_DC(pctables: PCTables) -> Dataset:
+    """Total Area Fire or Auto-Fire DC (Starfinder)"""
+    ds = class_DC(pctables)
+    tracking = pctables.attack_item_bonus.improvement.expand_dims(
+        component=["tracking"]
+    )
+    tracking["component"] = tracking["component"].astype("U")
+    tracking_ds = Dataset(dict.fromkeys(ds.data_vars, tracking))
+    return xarray.concat([ds, tracking_ds], dim="component")
+
+
+def impulse_bonus(pctables: PCTables, as_DC: bool) -> Dataset:
     """Total impulse attack bonus and impulse DC for kineticist and dedications"""
     cls_names = ["kineticist", "kineticist_dedication"]
 
     components = {"level": pctables.level}
     if as_DC:
-        components["base_DC"] = xarray.DataArray(10)
+        components["base_DC"] = DataArray(10)
 
     components.update(
         {
