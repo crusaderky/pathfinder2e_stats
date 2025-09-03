@@ -18,14 +18,15 @@ v0.2.0 (unreleased)
   - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
     to more easily model the Soldier's Primary Target ability
   - Added Starfinder classes to ``tables.PC`` and ``tables.SIMPLE_PC``
+  - Added table ``tables.SIMPLE_PC.area_fire_DC``
   - Added table ``tables.EARN_INCOME.starfinder`` for Starfinder credits
-  - Added two demo notebooks
+  - Added demo notebooks for the Soldier
 
 **Breaking changes**
 
 - ``tables.EARN_INCOME``: renamed variable ``income_earned`` to ``pathfinder``
 - ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
-  variables ``fighter`` and ``gunslinger`` have gained a dimension
+  variables ``fighter`` and ``gunslinger`` have gained dimension
   ``category: [martial, advanced]``
 
 **Bugfixes**

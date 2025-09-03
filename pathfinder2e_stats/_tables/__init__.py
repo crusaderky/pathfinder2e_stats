@@ -107,6 +107,10 @@ class SimplePCTables(SubTables):
         return simple_pc.class_DC(tables.PC)
 
     @cached_property
+    def area_fire_DC(self) -> xarray.Dataset:
+        return simple_pc.area_fire_DC(tables.PC)
+
+    @cached_property
     def impulse_attack_bonus(self) -> xarray.Dataset:
         return simple_pc.impulse_bonus(tables.PC, as_DC=False)
 

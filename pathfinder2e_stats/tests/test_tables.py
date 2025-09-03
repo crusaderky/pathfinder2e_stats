@@ -27,6 +27,7 @@ SIMPLE_PC_TABLES = [
     "class_DC",
     "impulse_attack_bonus",
     "impulse_DC",
+    "area_fire_DC",
 ]
 
 
@@ -115,6 +116,7 @@ def test_SIMPLE_PC_dims(table):
         ("spell_attack_bonus", "cleric"): ("doctrine",),
         ("spell_DC", "cleric"): ("doctrine",),
         ("class_DC", "cleric"): ("doctrine",),
+        ("area_fire_DC", "cleric"): ("doctrine",),
     }
     for k, v in ds.data_vars.items():
         expect = ("level", "component", *EXTRA_DIMS.get((table, k), ()))
