@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pathfinder2e_stats.armory._common import _weapon
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
@@ -14,6 +12,10 @@ __all__ = (
     "heavy_crossbow",
     "sukgung",
 )
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
 
 arbalest = _weapon("arbalest", "piercing", 10)

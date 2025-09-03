@@ -8,19 +8,23 @@ v0.2.0 (unreleased)
 
 **New features**
 
-- Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
-  ``tables.PC.weapon_proficiency``
-- Added table ``tables.SIMPLE_PC.class_DC``
-
-- Added support for Starfinder:
+- Added support for **Starfinder**:
 
   - Added ``boost dX`` trait to :class:`Damage`
   - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
-    to more easily model the Soldier's Primary Target ability
-  - Added Starfinder classes to ``tables.PC`` and ``tables.SIMPLE_PC``
-  - Added table ``tables.SIMPLE_PC.area_fire_DC``
-  - Added table ``tables.EARN_INCOME.starfinder`` for Starfinder credits
-  - Added demo notebooks for the Soldier
+    to more easily model the Soldier's Primary Target ability.
+  - Added armory: ``pathfinder2e_stats.starfinder.armory``
+  - Added tables: Starfinder content is featured side by side with Pathfinder content.
+
+    - Added Starfinder classes to ``tables.PC`` and ``tables.SIMPLE_PC``;
+    - Added table ``tables.SIMPLE_PC.area_fire_DC``
+    - Added table ``tables.EARN_INCOME.starfinder`` for Starfinder credits
+
+  - Added a few demo notebooks for the Soldier
+
+- Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
+  ``tables.PC.weapon_proficiency``
+- Added table ``tables.SIMPLE_PC.class_DC``
 
 **Breaking changes**
 
@@ -33,6 +37,7 @@ v0.2.0 (unreleased)
 
 - ``tables.PC``: Fighters are Legendary in all martial weapons at level 19
 - ``tables.SIMPLE_PC``: Thaumaturge now uses Charisma as their key ability
+- Removed spurious objects from IPython type hints in ``armory``
 
 
 v0.1.1 (2025-08-11)

@@ -40,6 +40,7 @@ extensions = [
 extlinks = {
     "issue": ("https://github.com/crusaderky/pathfinder2e_stats/issues/%s", "#"),
     "pull": ("https://github.com/crusaderky/pathfinder2e_stats/pull/%s", "#"),
+    # Pathfinder: 2e.aonprd
     "prd": ("https://2e.aonprd.com/Search.aspx?q=%s&display=full", "%s"),
     "prd_actions": ("https://2e.aonprd.com/Actions.aspx?ID=%s", None),
     "prd_archetypes": ("https://2e.aonprd.com/Archetypes.aspx?ID=%s", None),
@@ -54,9 +55,11 @@ extlinks = {
     "prd_spells": ("https://2e.aonprd.com/Spells.aspx?ID=%s", None),
     "prd_traits": ("https://2e.aonprd.com/Traits.aspx?ID=%s", None),
     "prd_weapons": ("https://2e.aonprd.com/Weapons.aspx?ID=%s", None),
-    # Note: aonsrd and aonprd links use different patterns:
+    # Starfinder: 2e.aonsrd
+    # Note: aonprd and aonsrd links use different patterns:
     # :prd_classes:`Alchemist <56>`      -> https://2e.aonprd.com/Classes.aspx?ID=56
     # :srd_classes:`Soldier <5-soldier>` -> https://2e.aonsrd.com/classes/5-soldier
+    "srd": ("https://2e.aonsrd.com/search/?q=%s&display=full", "%s"),
     "srd_actions": ("https://2e.aonsrd.com/actions/%s", None),
     "srd_archetypes": ("https://2e.aonsrd.com/archetypes/%s", None),
     "srd_classes": ("https://2e.aonsrd.com/classes/%s", None),

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
@@ -11,6 +9,10 @@ __all__ = (
     "precise_strike",
     "sneak_attack",
 )
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
 
 def sneak_attack(level: int = 1, dedication: bool = False) -> Damage:

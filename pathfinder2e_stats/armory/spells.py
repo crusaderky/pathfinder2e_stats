@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Literal
 
 from pathfinder2e_stats.check import DoS
@@ -22,6 +20,10 @@ __all__ = (
     "shocking_grasp",
     "thunderstrike",
 )
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
 
 def biting_words(rank: int = 1) -> Damage:
