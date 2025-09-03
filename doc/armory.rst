@@ -115,9 +115,58 @@ Starfinder
 
 Starfinder items are grouped under ``pf2.armory.starfinder``.
 
+
 Clubs
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.clubs
    :members:
    :undoc-members:
 
+
+Crossbows
+^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.crossbows
+   :members:
+   :undoc-members:
+
+
+Darts
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.darts
+   :members:
+   :undoc-members:
+
+
+Flame
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.flame
+   :members:
+   :undoc-members:
+
+
+Knives
+^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.knives
+   :members:
+   :undoc-members:
+
+
+Plasma
+^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.plasma
+   :members:
+   :undoc-members:
+
+
+Snipers
+^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.snipers
+   :members:
+   :undoc-members:
+
+
+Swords
+^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.swords
+   :members:
+   :undoc-members:
