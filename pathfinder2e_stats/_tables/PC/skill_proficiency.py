@@ -1,7 +1,7 @@
 import xarray
 
 
-def postproc(ds: xarray.Dataset) -> None:
+def postproc(ds: xarray.Dataset) -> xarray.Dataset:
     vars = []
     for k, start, stop in (
         ("rogue", 1, 6),
@@ -22,3 +22,4 @@ def postproc(ds: xarray.Dataset) -> None:
     ds["rogue"] = vars[0]
     ds["others"] = vars[1]
     ds["spellcaster_dedication"] = vars[2]
+    return ds

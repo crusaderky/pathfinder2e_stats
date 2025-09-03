@@ -77,7 +77,7 @@ class PCTables(SubTables):
                 pass
             else:
                 try:
-                    mod.postproc(ds)
+                    ds = mod.postproc(ds)
                 except Exception as exc:  # pragma: no cover
                     raise RuntimeError(f"Error postprocessing {fname}") from exc
 
@@ -103,6 +103,10 @@ class SimplePCTables(SubTables):
         return simple_pc.spell_bonus(tables.PC, as_DC=True)
 
     @cached_property
+    def class_DC(self) -> xarray.Dataset:
+        return simple_pc.class_DC(tables.PC)
+
+    @cached_property
     def impulse_attack_bonus(self) -> xarray.Dataset:
         return simple_pc.impulse_bonus(tables.PC, as_DC=False)
 
@@ -122,7 +126,7 @@ def _read_NPC_table(fname: Path) -> DataArray:
 
     dim_1 = arr.coords["dim_1"]
     if fname.name == "2-07-HP.csv":
-        arr = arr.unstack("dim_1", fill_value=1337)  # noqa: PD010
+        arr = arr.unstack("dim_1", fill_value=1337)
         # Undo alphabetical sorting
         arr = arr.sel(challenge=["High", "Moderate", "Low"])
     elif "High" in dim_1:

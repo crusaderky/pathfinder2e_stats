@@ -3,7 +3,7 @@ from collections.abc import Hashable
 import xarray
 
 
-def postproc(ds: xarray.Dataset) -> None:
+def postproc(ds: xarray.Dataset) -> xarray.Dataset:
     ds["superstition"] = xarray.concat(
         [ds[f"superstition/vs={vs}"] for vs in ("spellcasters", "others")],
         dim="vs",
@@ -30,3 +30,4 @@ def postproc(ds: xarray.Dataset) -> None:
     for k, v in data_vars.items():
         del ds[k]
         ds[k] = v
+    return ds

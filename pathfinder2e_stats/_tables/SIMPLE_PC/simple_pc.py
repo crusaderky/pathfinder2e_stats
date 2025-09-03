@@ -79,10 +79,12 @@ def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset
             [da.level.expand_dims({"component": ["level"]}), da],
             dim="component",
         )
+
         vars[class_name] = da
 
     ds = xarray.Dataset(dict(sorted(vars.items())))
 
+    ds["component"] = ds["component"].astype("U")
     if "mastery" in ds.dims:
         return ds.transpose("level", "component", "mastery", ...)
     return ds.transpose("level", "component", ...)
@@ -90,7 +92,7 @@ def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset
 
 def weapon_bonus(pctables: PCTables) -> xarray.Dataset:
     """Total attack bonus to weapon strikes for all classes, with strong assumptions"""
-    df = _get_df()["strike_bonus"]
+    df = _get_df()["strike"]
 
     components = {
         "proficiency": (
@@ -113,7 +115,7 @@ def weapon_bonus(pctables: PCTables) -> xarray.Dataset:
 
 def spell_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
     """Total spell attack bonus / spell DC for all classes, with strong assumptions"""
-    df = _get_df()["spell_bonus"]
+    df = _get_df()["spell"]
 
     components = {}
     if as_DC:
@@ -147,6 +149,22 @@ def spell_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
     return _merge_components(components)
 
 
+def class_DC(pctables: PCTables) -> xarray.Dataset:
+    """Total class DC for all classes, with strong assumptions"""
+    df = _get_df()["class"]
+
+    components = {
+        "base_DC": xarray.DataArray(10),
+        "proficiency": pctables.class_proficiency.to_array("class").sel(
+            {"class": _class_name(df)}
+        ),
+        "ability_boosts": _get_ability_boosts(pctables, df),
+        "ability_apex": _get_ability_apex(pctables, df),
+    }
+
+    return _merge_components(components)
+
+
 def impulse_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
     """Total impulse attack bonus and impulse DC for kineticist and dedications"""
     cls_names = ["kineticist", "kineticist_dedication"]
@@ -175,4 +193,4 @@ def impulse_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
 
     da = xarray.concat(components.values(), dim="component", coords="all")
     da.coords["component"] = list(components)
-    return da.to_dataset("class")
+    return da.to_dataset("class").transpose("level", "component")
