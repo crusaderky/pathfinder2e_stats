@@ -1,25 +1,21 @@
 from pathfinder2e_stats.armory.starfinder import (
-    clubs,
-    crossbows,
-    darts,
+    club,
+    crossbow,
+    dart,
     flame,
-    knives,
+    knife,
     plasma,
-    snipers,
-    swords,
+    sniper,
+    sword,
 )
 
 __all__ = (
-    "clubs",
-    "crossbows",
-    "darts",
+    "club",
+    "crossbow",
+    "dart",
     "flame",
-    "knives",
+    "knife",
     "plasma",
-    "snipers",
-    "swords",
+    "sniper",
+    "sword",
 )
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__
