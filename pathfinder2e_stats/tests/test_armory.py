@@ -7,8 +7,9 @@ from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage, armory
 mods = [
     mod
     for mod in armory.__dict__.values()
-    if isinstance(mod, ModuleType) and mod is not armory._common
-]
+    if isinstance(mod, ModuleType) and mod not in (armory._common, armory.starfinder)
+] + [mod for mod in armory.starfinder.__dict__.values() if isinstance(mod, ModuleType)]
+
 weapon_mods = [
     armory.axes,
     armory.bows,
@@ -18,6 +19,7 @@ weapon_mods = [
     armory.knives,
     armory.picks,
     armory.swords,
+    armory.starfinder.clubs,
 ]
 spell_mods = [armory.cantrips, armory.spells]
 other_mods = [armory.class_features, armory.runes]
@@ -38,6 +40,25 @@ def test_mods_inventory():
 )
 def test_armory(func):
     assert isinstance(func(), Damage | DamageList | ExpandedDamage)
+
+
+def test_autodoc():
+    assert ":prd:`Battle Axe`" in armory.axes.battle_axe.__doc__
+    assert "1d8 slashing" in armory.axes.battle_axe.__doc__
+    assert ":prd:`Greataxe`" in armory.axes.greataxe.__doc__
+    assert ":srd:`Baton`" in armory.starfinder.clubs.baton.__doc__
+
+
+@pytest.mark.parametrize("mod", [*mods, armory, armory.starfinder])
+def test_dir(mod):
+    """Test that the dir() output, used by IPython autocompletion,
+    does not return any internal objects.
+    """
+    d = dir(mod)
+    assert len(d) == len(set(d)), "duplicates found"
+    for name in d:
+        # _ and __ names are not a problem as they are not suggested by IPython
+        assert name.startswith("_") or name[0].islower(), name
 
 
 @pytest.mark.parametrize(

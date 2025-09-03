@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pathfinder2e_stats.armory._common import _weapon
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
@@ -12,6 +10,10 @@ __all__ = (
     "switchscythe",
     "tricky_pick",
 )
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
 
 light_pick = _weapon("light_pick", "piercing", 4, fatal=8)

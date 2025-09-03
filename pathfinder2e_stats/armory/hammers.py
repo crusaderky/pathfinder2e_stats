@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pathfinder2e_stats.armory._common import _weapon
 
 __all__ = (

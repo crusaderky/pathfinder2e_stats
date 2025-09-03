@@ -16,86 +16,91 @@ This module will always be incomplete. Feel free to open a PR to add more, but d
 to have to manually write your own damage profiles using :func:`Damage` for less common
 weapons and spells.
 
+Pathfinder
+----------
+
+Pathfinder items are found in the main module ``pf2.armory``.
+
 
 Axes
-----
+^^^^
 .. automodule:: pathfinder2e_stats.armory.axes
    :members:
    :undoc-members:
 
 
 Bows
-----
+^^^^
 .. automodule:: pathfinder2e_stats.armory.bows
    :members:
    :undoc-members:
 
 
 Crossbows
----------
+^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.crossbows
    :members:
    :undoc-members:
 
 
 Darts
------
+^^^^^
 .. automodule:: pathfinder2e_stats.armory.darts
    :members:
    :undoc-members:
 
 
 Hammers
--------
+^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.hammers
    :members:
    :undoc-members:
 
 
 Knives
-------
+^^^^^^
 .. automodule:: pathfinder2e_stats.armory.knives
    :members:
    :undoc-members:
 
 
 Picks
------
+^^^^^
 .. automodule:: pathfinder2e_stats.armory.picks
    :members:
    :undoc-members:
 
 
 Swords
-------
+^^^^^^
 .. automodule:: pathfinder2e_stats.armory.swords
    :members:
    :undoc-members:
 
 
 Property Runes
---------------
+^^^^^^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.runes
    :members:
    :undoc-members:
 
 
 Cantrips
---------
+^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.cantrips
    :members:
    :undoc-members:
 
 
 Slot Spells
------------
+^^^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.spells
    :members:
    :undoc-members:
 
 
 Class Features
---------------
+^^^^^^^^^^^^^^
 These class features add damage of a specific type.
 For class features that add flat damage to the weapon,
 like a Barbarian's :prd_actions:`Rage <2802>`, see :doc:`notebooks/tables`.
@@ -103,3 +108,16 @@ like a Barbarian's :prd_actions:`Rage <2802>`, see :doc:`notebooks/tables`.
 .. automodule:: pathfinder2e_stats.armory.class_features
    :members:
    :undoc-members:
+
+
+Starfinder
+----------
+
+Starfinder items are grouped under ``pf2.armory.starfinder``.
+
+Clubs
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.clubs
+   :members:
+   :undoc-members:
+

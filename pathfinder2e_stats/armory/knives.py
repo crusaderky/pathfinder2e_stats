@@ -1,10 +1,12 @@
-from __future__ import annotations
-
 from pathfinder2e_stats.armory._common import _weapon
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
 
 __all__ = ("critical_specialization", "dagger", "flyssa", "kama", "kukri", "sickle")
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
 
 dagger = _weapon("dagger", "piercing", 4)

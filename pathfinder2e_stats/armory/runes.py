@@ -1,9 +1,11 @@
-from __future__ import annotations
-
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
 
 __all__ = ("corrosive", "flaming", "frost", "shock", "vitalizing", "wounding")
+
+
+def __dir__() -> tuple[str, ...]:
+    return __all__
 
 
 def vitalizing(greater: bool = False) -> Damage:
