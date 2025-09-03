@@ -3,5 +3,5 @@ import xarray
 from ._common import postproc_classes
 
 
-def postproc(ds: xarray.Dataset) -> None:
-    postproc_classes(ds)
+def postproc(ds: xarray.Dataset) -> xarray.Dataset:
+    return postproc_classes(ds)

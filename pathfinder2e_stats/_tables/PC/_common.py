@@ -22,7 +22,7 @@ def postproc_classes(
     *,
     extra_columns: Collection[str] = (),
     only_spellcasters: bool = False,
-) -> None:
+) -> xarray.Dataset:
     """Post-process a table that contains exactly one column per class:
 
     - Merge class/subclass columns into single variables with an extra dimension
@@ -78,3 +78,4 @@ def postproc_classes(
     assert not ds.data_vars, f"Unexpected columns: {list(ds.data_vars)}"
 
     ds.update(vars)
+    return ds

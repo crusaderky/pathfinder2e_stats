@@ -106,6 +106,7 @@ ignore = [
   "N803", # Argument name should be lowercase
   "N806", # Variable should be lowercase
   "N816", # Variable in global scope should not be mixedCase
+  "PD010", # `.pivot_table` is preferred to `.pivot` or `.unstack`
   "PD011", # Use `.to_numpy()` instead of `.values`
   "PD013", # `.melt` is preferred to `.stack`; provides same functionality
   "PD901", # Avoid using the generic variable name `df` for DataFrames

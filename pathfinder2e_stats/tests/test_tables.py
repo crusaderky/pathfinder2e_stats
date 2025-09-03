@@ -24,6 +24,7 @@ SIMPLE_PC_TABLES = [
     "weapon_attack_bonus",
     "spell_attack_bonus",
     "spell_DC",
+    "class_DC",
     "impulse_attack_bonus",
     "impulse_DC",
 ]
@@ -54,8 +55,8 @@ def test_PC_levels():
 
 def test_PC_fill():
     # test ffill
-    assert tables.PC.weapon_proficiency.fighter.sel(level=6, mastery=True) == 6
-    # test fill with zeros
+    assert tables.PC.weapon_proficiency.barbarian.sel(level=6) == 4
+    # test bfill with zeros
     assert tables.PC.attack_item_bonus.bomb.sel(level=1) == 0
 
 
@@ -87,6 +88,26 @@ def test_SIMPLE_PC(table):
         "ability",
         "mastery",
     }
+    for dim in ("component", "doctrine", "research_field", "ability"):
+        if dim in ds.coords:
+            assert ds[dim].dtype.kind == "U"
+
+
+@pytest.mark.parametrize("table", SIMPLE_PC_TABLES)
+def test_SIMPLE_PC_dims(table):
+    ds = getattr(tables.SIMPLE_PC, table)
+    EXTRA_DIMS = {
+        ("weapon_attack_bonus", "alchemist"): ("research_field",),
+        ("weapon_attack_bonus", "cleric"): ("doctrine",),
+        ("weapon_attack_bonus", "fighter"): ("mastery",),
+        ("weapon_attack_bonus", "gunslinger"): ("mastery", "ability"),
+        ("spell_attack_bonus", "cleric"): ("doctrine",),
+        ("spell_DC", "cleric"): ("doctrine",),
+        ("class_DC", "cleric"): ("doctrine",),
+    }
+    for k, v in ds.data_vars.items():
+        expect = ("level", "component", *EXTRA_DIMS.get((table, k), ()))
+        assert v.dims == expect, (table, k, v.dims, expect)
 
 
 def test_SIMPLE_PC_bonus_vs_offset():

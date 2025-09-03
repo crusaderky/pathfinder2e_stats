@@ -1,7 +1,7 @@
 import xarray
 
 
-def postproc(ds: xarray.Dataset) -> None:
+def postproc(ds: xarray.Dataset) -> xarray.Dataset:
     vars = []
     for i in [4, 3, 2, 1]:
         vars.append(ds[f"boosts/{i}"])
@@ -12,3 +12,4 @@ def postproc(ds: xarray.Dataset) -> None:
     ds["boosts"] = xarray.concat(vars, dim="initial").T
     ds["initial"] = [4, 3, 2, 1]
     ds["apex"] = apex
+    return ds
