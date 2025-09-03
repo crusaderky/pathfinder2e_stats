@@ -75,8 +75,17 @@ def _merge_components(components: dict[str, xarray.DataArray]) -> xarray.Dataset
             if dim not in ("level", "component") and (da.isel({dim: 0}) == da).all():
                 da = da.isel({dim: 0}, drop=True)
 
+        level = da.level
+        # gunslinger and operative are untrained in advanced weapons outside of
+        # their mastery. Don't add level.
+        level = xarray.where(
+            (da.sel(component="proficiency", drop=True) == 0),
+            0,
+            level,
+        )
+
         da = xarray.concat(
-            [da.level.expand_dims({"component": ["level"]}), da],
+            [level.expand_dims({"component": ["level"]}), da],
             dim="component",
         )
 
@@ -146,7 +155,12 @@ def spell_bonus(pctables: PCTables, as_DC: bool) -> xarray.Dataset:
         }
     )
 
-    return _merge_components(components)
+    res = _merge_components(components)
+
+    # STR/DEX does not matter for spells
+    res["gunslinger"] = res["gunslinger"].isel(ability=0, drop=True)
+    del res["ability"]
+    return res
 
 
 def class_DC(pctables: PCTables) -> xarray.Dataset:

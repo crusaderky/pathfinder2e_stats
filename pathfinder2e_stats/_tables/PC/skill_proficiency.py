@@ -19,6 +19,7 @@ def postproc(ds: xarray.Dataset) -> xarray.Dataset:
 
     for k in list(ds.data_vars):
         del ds[k]
+    ds["envoy"] = vars[0]
     ds["rogue"] = vars[0]
     ds["others"] = vars[1]
     ds["spellcaster_dedication"] = vars[2]

@@ -33,3 +33,9 @@ swashbuckler,4,TRUE,potency_rune,4,FALSE,dedication,4,TRUE
 thaumaturge,3,TRUE,potency_rune,4,FALSE,dedication,4,FALSE
 witch,3,FALSE,potency_rune,4,TRUE,%class%,4,TRUE
 wizard,3,FALSE,potency_rune,4,TRUE,%class%,4,TRUE
+envoy,3,TRUE,improvement,4,FALSE,dedication,4,FALSE
+mystic,3,FALSE,improvement,4,TRUE,%class%,4,TRUE
+operative,4,TRUE,improvement,3,FALSE,dedication,4,TRUE
+solarian,4,TRUE,potency_rune,3,FALSE,dedication,4,TRUE
+soldier,3,FALSE,improvement,3,FALSE,dedication,4,TRUE
+witchwarper,3,FALSE,improvement,4,TRUE,%class%,4,TRUE

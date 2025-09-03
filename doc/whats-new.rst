@@ -17,18 +17,21 @@ v0.2.0 (unreleased)
   - Added ``boost dX`` trait to :class:`Damage`
   - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
     to more easily model the Soldier's Primary Target ability
+  - Added Starfinder classes to ``tables.PC`` and ``tables.SIMPLE_PC``
   - Added table ``tables.EARN_INCOME.starfinder`` for Starfinder credits
   - Added two demo notebooks
 
 **Breaking changes**
 
 - ``tables.EARN_INCOME``: renamed variable ``income_earned`` to ``pathfinder``
+- ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
+  variables ``fighter`` and ``gunslinger`` have gained a dimension
+  ``category: [martial, advanced]``
 
 **Bugfixes**
 
-- ``tables.PC``, ``tables.SIMPLE_PC``: Fighters are Legendary in all martial
-  weapons at level 19
-- ``tables.SIMPLE_PC``: Thaumaturge uses Charisma as their key ability
+- ``tables.PC``: Fighters are Legendary in all martial weapons at level 19
+- ``tables.SIMPLE_PC``: Thaumaturge now uses Charisma as their key ability
 
 
 v0.1.1 (2025-08-11)

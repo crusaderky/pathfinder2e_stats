@@ -58,6 +58,13 @@ def test_PC_fill():
     assert tables.PC.weapon_proficiency.barbarian.sel(level=6) == 4
     # test bfill with zeros
     assert tables.PC.attack_item_bonus.bomb.sel(level=1) == 0
+    # test complete fill with zeros
+    assert (
+        tables.PC.weapon_proficiency.operative.sel(
+            level=6, mastery=False, category="advanced"
+        )
+        == 0
+    )
 
 
 def test_PC_postproc():
@@ -78,7 +85,9 @@ def test_SIMPLE_PC(table):
     assert "component" in ds.coords
     for v in ds.sum("component").data_vars.values():
         offset = 0 if table.endswith("_bonus") else 10
-        assert v.min() >= 6 + offset
+        # Absolute worst is a Gunslinger, untrained with
+        # an Advanced non-finesse weapon
+        assert v.min() >= 3 + offset
         assert v.max() <= 38 + offset
     assert not set(ds.coords) - {
         "level",
@@ -87,8 +96,9 @@ def test_SIMPLE_PC(table):
         "research_field",
         "ability",
         "mastery",
+        "category",
     }
-    for dim in ("component", "doctrine", "research_field", "ability"):
+    for dim in ("component", "doctrine", "research_field", "ability", "category"):
         if dim in ds.coords:
             assert ds[dim].dtype.kind == "U"
 
@@ -99,8 +109,9 @@ def test_SIMPLE_PC_dims(table):
     EXTRA_DIMS = {
         ("weapon_attack_bonus", "alchemist"): ("research_field",),
         ("weapon_attack_bonus", "cleric"): ("doctrine",),
-        ("weapon_attack_bonus", "fighter"): ("mastery",),
-        ("weapon_attack_bonus", "gunslinger"): ("mastery", "ability"),
+        ("weapon_attack_bonus", "fighter"): ("mastery", "category"),
+        ("weapon_attack_bonus", "gunslinger"): ("mastery", "category", "ability"),
+        ("weapon_attack_bonus", "operative"): ("mastery", "category"),
         ("spell_attack_bonus", "cleric"): ("doctrine",),
         ("spell_DC", "cleric"): ("doctrine",),
         ("class_DC", "cleric"): ("doctrine",),
@@ -108,6 +119,28 @@ def test_SIMPLE_PC_dims(table):
     for k, v in ds.data_vars.items():
         expect = ("level", "component", *EXTRA_DIMS.get((table, k), ()))
         assert v.dims == expect, (table, k, v.dims, expect)
+
+
+@pytest.mark.parametrize(
+    "cls,sel,expect",
+    [
+        ("fighter", {}, 5),
+        ("gunslinger", {"ability": "DEX"}, 0),
+        ("gunslinger", {"ability": "STR"}, 0),
+        ("operative", {}, 0),
+    ],
+)
+def test_SIMPLE_PC_untrained(cls, sel, expect):
+    """Gunslingers and operatives are untrained in advanced weapons outside
+    of their mastery. Don't add level.
+    """
+    ds = tables.SIMPLE_PC.weapon_attack_bonus[cls].sel(
+        level=5, component="level", **sel
+    )
+    assert ds.sel(mastery=False, category="advanced") == expect
+    assert ds.sel(mastery=True, category="advanced") == 5
+    assert ds.sel(mastery=False, category="martial") == 5
+    assert ds.sel(mastery=True, category="martial") == 5
 
 
 def test_SIMPLE_PC_bonus_vs_offset():

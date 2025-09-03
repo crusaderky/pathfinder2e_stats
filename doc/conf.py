@@ -56,8 +56,10 @@ extlinks = {
     # :prd_classes:`Alchemist <56>`      -> https://2e.aonprd.com/Classes.aspx?ID=56
     # :srd_classes:`Soldier <5-soldier>` -> https://2e.aonsrd.com/classes/5-soldier
     "srd_actions": ("https://2e.aonsrd.com/actions/%s", None),
+    "srd_archetypes": ("https://2e.aonsrd.com/archetypes/%s", None),
     "srd_classes": ("https://2e.aonsrd.com/classes/%s", None),
     "srd_feats": ("https://2e.aonsrd.com/feats/%s", None),
+    "srd_treasure": ("https://2e.aonsrd.com/treasure/%s", None),
     "srd_weapons": ("https://2e.aonsrd.com/equipment/weapons/%s", None),
 }
 extlinks_detect_hardcoded_links = True
