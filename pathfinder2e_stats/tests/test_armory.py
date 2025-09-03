@@ -20,6 +20,13 @@ weapon_mods = [
     armory.picks,
     armory.swords,
     armory.starfinder.clubs,
+    armory.starfinder.crossbows,
+    armory.starfinder.darts,
+    armory.starfinder.flame,
+    armory.starfinder.knives,
+    armory.starfinder.plasma,
+    armory.starfinder.snipers,
+    armory.starfinder.swords,
 ]
 spell_mods = [armory.cantrips, armory.spells]
 other_mods = [armory.class_features, armory.runes]
@@ -32,7 +39,7 @@ def test_mods_inventory():
 @pytest.mark.parametrize(
     "func",
     [
-        getattr(mod, name)
+        pytest.param(getattr(mod, name), id=f"{mod.__name__}.{name}")
         for mod in mods
         for name in mod.__all__
         if name != "critical_specialization"
@@ -94,11 +101,22 @@ def test_spells(func):
 
 
 @pytest.mark.parametrize(
-    "mod,faces", [(armory.darts, 6), (armory.crossbows, 8), (armory.knives, 6)]
+    "mod,faces,type_",
+    [
+        (armory.darts, 6, "bleed"),
+        (armory.crossbows, 8, "bleed"),
+        (armory.knives, 6, "bleed"),
+        (armory.starfinder.crossbows, 8, "bleed"),
+        (armory.starfinder.darts, 6, "bleed"),
+        (armory.starfinder.flame, 6, "fire"),
+        (armory.starfinder.knives, 6, "bleed"),
+        (armory.starfinder.plasma, 6, "electricity"),
+    ],
 )
-def test_critical_specialization_bleed(mod, faces):
+def test_critical_specialization_persistent_damage(mod, faces, type_):
     w = mod.critical_specialization(123)
-    assert w == {2: [Damage("bleed", 1, faces, 123, persistent=True)]}
+    assert w == {2: [Damage(type_, 1, faces, 123, persistent=True)]}
+    assert f"1d{faces} persistent {type_}" in mod.critical_specialization.__doc__
 
 
 def test_critical_specialization_grievous_darts():
@@ -116,6 +134,15 @@ def test_critical_specialization_picks():
     # Grievous pick, switchscythe, some barbarians can change the damage type
     w = armory.picks.critical_specialization(2, type="slashing")
     assert w == {2: [Damage("slashing", 0, 0, 4)]}
+
+
+def test_critical_specialization_snipers():
+    w = armory.starfinder.snipers.critical_specialization(3)
+    assert w == {2: [Damage("piercing", 0, 0, 6)]}
+
+    # Grievous pick, switchscythe, some barbarians can change the damage type
+    w = armory.starfinder.snipers.critical_specialization(2, type="fire")
+    assert w == {2: [Damage("fire", 0, 0, 4)]}
 
 
 def test_ignition():
