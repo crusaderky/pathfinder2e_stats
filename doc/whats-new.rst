@@ -37,6 +37,7 @@ v0.2.0 (unreleased)
 
 - ``tables.PC``: Fighters are Legendary in all martial weapons at level 19
 - ``tables.SIMPLE_PC``: Thaumaturge now uses Charisma as their key ability
+- Removed spurious objects from IPython type hints in ``armory``
 
 
 v0.1.1 (2025-08-11)
