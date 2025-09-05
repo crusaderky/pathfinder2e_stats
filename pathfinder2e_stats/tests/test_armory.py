@@ -6,30 +6,32 @@ from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage, armory
 
 mods = [
     mod
-    for mod in armory.__dict__.values()
-    if isinstance(mod, ModuleType) and mod not in (armory._common, armory.starfinder)
-] + [mod for mod in armory.starfinder.__dict__.values() if isinstance(mod, ModuleType)]
+    for package in (armory, armory.pathfinder, armory.starfinder)
+    for mod in package.__dict__.values()
+    if isinstance(mod, ModuleType)
+    and mod not in (armory._common, armory.pathfinder, armory.starfinder)
+]
 
 weapon_mods = [
-    armory.axes,
-    armory.bows,
-    armory.crossbows,
-    armory.darts,
-    armory.hammers,
-    armory.knives,
-    armory.picks,
-    armory.swords,
-    armory.starfinder.clubs,
-    armory.starfinder.crossbows,
-    armory.starfinder.darts,
+    armory.pathfinder.axe,
+    armory.pathfinder.bow,
+    armory.pathfinder.crossbow,
+    armory.pathfinder.dart,
+    armory.pathfinder.hammer,
+    armory.pathfinder.knife,
+    armory.pathfinder.pick,
+    armory.pathfinder.sword,
+    armory.starfinder.club,
+    armory.starfinder.crossbow,
+    armory.starfinder.dart,
     armory.starfinder.flame,
-    armory.starfinder.knives,
+    armory.starfinder.knife,
     armory.starfinder.plasma,
-    armory.starfinder.snipers,
-    armory.starfinder.swords,
+    armory.starfinder.sniper,
+    armory.starfinder.sword,
 ]
 spell_mods = [armory.cantrips, armory.spells]
-other_mods = [armory.class_features, armory.runes]
+other_mods = [armory.class_features, armory.critical_specialization, armory.runes]
 
 
 def test_mods_inventory():
@@ -42,7 +44,7 @@ def test_mods_inventory():
         pytest.param(getattr(mod, name), id=f"{mod.__name__}.{name}")
         for mod in mods
         for name in mod.__all__
-        if name != "critical_specialization"
+        if mod is not armory.critical_specialization
     ],
 )
 def test_armory(func):
@@ -50,10 +52,11 @@ def test_armory(func):
 
 
 def test_autodoc():
-    assert ":prd:`Battle Axe`" in armory.axes.battle_axe.__doc__
-    assert "1d8 slashing" in armory.axes.battle_axe.__doc__
-    assert ":prd:`Greataxe`" in armory.axes.greataxe.__doc__
-    assert ":srd:`Baton`" in armory.starfinder.clubs.baton.__doc__
+    assert ":prd:`Fireball`" in armory.spells.fireball.__doc__
+    assert ":prd:`Battle Axe`" in armory.pathfinder.axe.battle_axe.__doc__
+    assert "1d8 slashing" in armory.pathfinder.axe.battle_axe.__doc__
+    assert ":prd:`Greataxe`" in armory.pathfinder.axe.greataxe.__doc__
+    assert ":srd:`Baton`" in armory.starfinder.club.baton.__doc__
 
 
 @pytest.mark.parametrize("mod", [*mods, armory, armory.starfinder])
@@ -70,12 +73,7 @@ def test_dir(mod):
 
 @pytest.mark.parametrize(
     "func",
-    [
-        getattr(mod, name)
-        for mod in weapon_mods
-        for name in mod.__all__
-        if name != "critical_specialization"
-    ],
+    [getattr(mod, name) for mod in weapon_mods for name in mod.__all__],
 )
 def test_weapons(func):
     w = func()
@@ -101,47 +99,45 @@ def test_spells(func):
 
 
 @pytest.mark.parametrize(
-    "mod,faces,type_",
+    "group,faces,type_",
     [
-        (armory.darts, 6, "bleed"),
-        (armory.crossbows, 8, "bleed"),
-        (armory.knives, 6, "bleed"),
-        (armory.starfinder.crossbows, 8, "bleed"),
-        (armory.starfinder.darts, 6, "bleed"),
-        (armory.starfinder.flame, 6, "fire"),
-        (armory.starfinder.knives, 6, "bleed"),
-        (armory.starfinder.plasma, 6, "electricity"),
+        ("crossbow", 8, "bleed"),
+        ("dart", 6, "bleed"),
+        ("knife", 6, "bleed"),
+        ("flame", 6, "fire"),
+        ("plasma", 6, "electricity"),
     ],
 )
-def test_critical_specialization_persistent_damage(mod, faces, type_):
-    w = mod.critical_specialization(123)
+def test_critical_specialization_persistent_damage(group, faces, type_):
+    func = getattr(armory.critical_specialization, group)
+    w = func(123)
     assert w == {2: [Damage(type_, 1, faces, 123, persistent=True)]}
-    assert f"1d{faces} persistent {type_}" in mod.critical_specialization.__doc__
+    assert f"1d{faces} persistent {type_}" in func.__doc__
 
 
-def test_critical_specialization_grievous_darts():
-    w = armory.darts.critical_specialization(123, grievous=True)
+def test_critical_specialization_grievous_dart():
+    w = armory.critical_specialization.dart(123, grievous=True)
     assert w == {2: [Damage("bleed", 2, 6, 123, persistent=True)]}
 
 
-def test_critical_specialization_picks():
-    w = armory.picks.critical_specialization(3)
+def test_critical_specialization_pick():
+    w = armory.critical_specialization.pick(3)
     assert w == {2: [Damage("piercing", 0, 0, 6)]}
 
-    w = armory.picks.critical_specialization(3, grievous=True)
+    w = armory.critical_specialization.pick(3, grievous=True)
     assert w == {2: [Damage("piercing", 0, 0, 12)]}
 
     # Grievous pick, switchscythe, some barbarians can change the damage type
-    w = armory.picks.critical_specialization(2, type="slashing")
+    w = armory.critical_specialization.pick(2, type="slashing")
     assert w == {2: [Damage("slashing", 0, 0, 4)]}
 
 
-def test_critical_specialization_snipers():
-    w = armory.starfinder.snipers.critical_specialization(3)
+def test_critical_specialization_sniper():
+    w = armory.critical_specialization.sniper(3)
     assert w == {2: [Damage("piercing", 0, 0, 6)]}
 
     # Grievous pick, switchscythe, some barbarians can change the damage type
-    w = armory.starfinder.snipers.critical_specialization(2, type="fire")
+    w = armory.critical_specialization.sniper(2, type="fire")
     assert w == {2: [Damage("fire", 0, 0, 4)]}
 
 

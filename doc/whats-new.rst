@@ -28,7 +28,19 @@ v0.2.0 (unreleased)
 
 **Breaking changes**
 
-- ``tables.EARN_INCOME``: renamed variable ``income_earned`` to ``pathfinder``
+- Weapons in the Armory have been reorganized:
+
+  - Since weapons are completely distinct between Pathfinder and Starfinder, and even
+    when mixing classes etc. one would typically pick one content or the other,
+    ``armory.knives.dagger`` has been moved to ``armory.pathfinder.knife.dagger``, etc.;
+    Note the change from plural to singular for the weapon group.
+  - Weapon critical specialization on the other hand is the same between the two games
+    (with just extra entries for Starfinder), so
+    ``armory.knives.critical_specialization`` has been moved to
+    ``armory.critical_specialization.knife``, etc.
+
+- ``tables.EARN_INCOME.income_earned`` has been renamed to
+  ``tables.EARN_INCOME.pathfinder`` to make room for its ``starfinder`` counterpart.
 - ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
   variables ``fighter`` and ``gunslinger`` have gained dimension
   ``category: [martial, advanced]``
