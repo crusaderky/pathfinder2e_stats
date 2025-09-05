@@ -75,6 +75,12 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.pick`.
    :members:
    :undoc-members:
 
+Shield
+^^^^^^
+.. automodule:: pathfinder2e_stats.armory.pathfinder.shield
+   :members:
+   :undoc-members:
+
 Sword
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.sword
@@ -104,11 +110,23 @@ Club
    :members:
    :undoc-members:
 
+Corrosive
+^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.corrosive
+   :members:
+   :undoc-members:
+
 Crossbow
 ^^^^^^^^
 See also: :func:`pathfinder2e_stats.armory.critical_specialization.crossbow`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.crossbow
+   :members:
+   :undoc-members:
+
+Cryo
+^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.cryo
    :members:
    :undoc-members:
 
@@ -120,11 +138,23 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.dart`.
    :members:
    :undoc-members:
 
+Flail
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.flail
+   :members:
+   :undoc-members:
+
 Flame
 ^^^^^
 See also: :func:`pathfinder2e_stats.armory.critical_specialization.flame`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.flame
+   :members:
+   :undoc-members:
+
+Hammer
+^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.hammer
    :members:
    :undoc-members:
 
@@ -144,11 +174,41 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.plasma`.
    :members:
    :undoc-members:
 
+Polearm
+^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.polearm
+   :members:
+   :undoc-members:
+
+Shield
+^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.shield
+   :members:
+   :undoc-members:
+
+Shock
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.shock
+   :members:
+   :undoc-members:
+
 Sniper
 ^^^^^^
 See also: :func:`pathfinder2e_stats.armory.critical_specialization.sniper`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.sniper
+   :members:
+   :undoc-members:
+
+Sonic
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.sonic
+   :members:
+   :undoc-members:
+
+Spear
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.spear
    :members:
    :undoc-members:
 

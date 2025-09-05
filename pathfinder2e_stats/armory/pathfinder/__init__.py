@@ -7,6 +7,7 @@ from pathfinder2e_stats.armory.pathfinder import (
     hammer,
     knife,
     pick,
+    shield,
     sword,
 )
 
@@ -19,5 +20,6 @@ __all__ = (
     "hammer",
     "knife",
     "pick",
+    "shield",
     "sword",
 )
