@@ -31,6 +31,12 @@ Bow
    :members:
    :undoc-members:
 
+Brawling
+^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.pathfinder.brawling
+   :members:
+   :undoc-members:
+
 Crossbow
 ^^^^^^^^
 See also: :func:`pathfinder2e_stats.armory.critical_specialization.crossbow`.
@@ -79,6 +85,18 @@ Sword
 Starfinder weapons
 ------------------
 Starfinder weapons are available under ``armory.starfinder.<group>.<weapon>``.
+
+Axe
+^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.axe
+   :members:
+   :undoc-members:
+
+Brawling
+^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.brawling
+   :members:
+   :undoc-members:
 
 Club
 ^^^^

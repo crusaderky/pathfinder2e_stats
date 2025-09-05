@@ -1,6 +1,7 @@
 from pathfinder2e_stats.armory.pathfinder import (
     axe,
     bow,
+    brawling,
     crossbow,
     dart,
     hammer,
@@ -12,6 +13,7 @@ from pathfinder2e_stats.armory.pathfinder import (
 __all__ = (
     "axe",
     "bow",
+    "brawling",
     "crossbow",
     "dart",
     "hammer",
