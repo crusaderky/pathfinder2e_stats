@@ -76,15 +76,21 @@ def test_dir(mod):
 def test_weapons(func):
     w = func()
     assert w.dice == 1
-    assert w.bonus == 0
+    assert w.bonus in (0, 1)  # kickback weapons deal +1 damage
 
     w = func(2)
     assert w.dice == 2
-    assert w.bonus == 0
+    assert w.bonus in (0, 1)
 
     w = func(2, 3)
     assert w.dice == 2
-    assert w.bonus == 3
+    assert w.bonus in (3, 4)
+
+
+def test_kickback():
+    f = armory.starfinder.ranged.seeker_rifle
+    assert f() == Damage("piercing", 1, 10, 1)
+    assert f(2, 3) == Damage("piercing", 2, 10, 4)
 
 
 @pytest.mark.parametrize(
