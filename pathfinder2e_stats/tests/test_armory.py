@@ -43,6 +43,7 @@ def test_mods_inventory():
         for mod in mods
         for name in mod.__all__
         if mod is not armory.critical_specialization
+        and not (mod is armory.class_features.operative and name == "critical_aim")
     ],
 )
 def test_armory(func):
@@ -231,6 +232,7 @@ def test_harm_heal():
         pytest.param(getattr(mod, name), id=f"{mod.__name__}.{name}")
         for mod in class_feature_mods
         for name in mod.__all__
+        if not (mod is armory.class_features.operative and name == "critical_aim")
     ],
 )
 def test_class_features(func):
@@ -276,6 +278,20 @@ def test_bloody_wounds():
     assert bw(5, dedication=True) == crit_bleed(1)
     assert bw(6, dedication=True) == crit_bleed(2)
     assert bw(20, dedication=True) == crit_bleed(2)
+
+
+def test_critical_aim():
+    ca = armory.class_features.operative.critical_aim
+    a = armory.critical_specialization.dart(123)
+    b = ca(a)
+    assert b == ExpandedDamage(
+        {DoS.success: [Damage("bleed", 1, 6, 123, persistent=True)]}
+    )
+
+    with pytest.raises(ValueError, match="critical specialization"):
+        ca(Damage("piercing", 1, 6))
+    with pytest.raises(ValueError, match="critical specialization"):
+        ca(Damage("piercing", 1, 6).expand())
 
 
 def test_sneak_attack():
