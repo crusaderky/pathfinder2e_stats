@@ -1,25 +1,3 @@
-from pathfinder2e_stats.armory.pathfinder import (
-    axe,
-    bow,
-    brawling,
-    crossbow,
-    dart,
-    hammer,
-    knife,
-    pick,
-    shield,
-    sword,
-)
+from pathfinder2e_stats.armory.pathfinder import melee, ranged
 
-__all__ = (
-    "axe",
-    "bow",
-    "brawling",
-    "crossbow",
-    "dart",
-    "hammer",
-    "knife",
-    "pick",
-    "shield",
-    "sword",
-)
+__all__ = ("melee", "ranged")

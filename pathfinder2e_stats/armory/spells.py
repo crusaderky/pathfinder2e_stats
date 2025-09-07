@@ -3,28 +3,6 @@ from typing import Literal
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
-__all__ = (
-    "biting_words",
-    "blazing_bolt",
-    "blistering_invective",
-    "breathe_fire",
-    "brine_dragon_bile",
-    "dehydrate",
-    "divine_wrath",
-    "fireball",
-    "force_barrage",
-    "harm",
-    "heal",
-    "lightning_bolt",
-    "organsight",
-    "shocking_grasp",
-    "thunderstrike",
-)
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__
-
 
 def biting_words(rank: int = 1) -> Damage:
     return Damage("sonic", rank * 2, 6)

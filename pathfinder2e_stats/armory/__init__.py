@@ -1,4 +1,5 @@
 from types import ModuleType
+from typing import Literal
 
 from pathfinder2e_stats.armory import (
     cantrips,
@@ -25,35 +26,45 @@ def __dir__() -> tuple[str, ...]:
     return __all__
 
 
-def _build_docstrings_for_mod(mod: ModuleType, tag: str) -> None:
-    for name in mod.__all__:
-        func = getattr(mod, name)
-        if not callable(func):
-            continue
+def _setup_mod(mod: ModuleType, tag: str | None) -> None:
+    """Initialize __all__ and __dir__ for an armory module.
 
-        item_name = name.replace("_", " ").title()
-        msg = f"{tag}`{item_name}`\n\n{func()}"
+    Create or prepend to __doc__ the output of str(func()),
+    i.e. the string representation of the Damage object
+    returned by each function with its default parameters.
+    """
+    d = {
+        name: func
+        for name, func in mod.__dict__.items()
+        if callable(func)
+        and not name.startswith("_")
+        and not isinstance(func, type)
+        and func is not Literal
+    }
+    mod.__all__ = list(d)  # type: ignore[attr-defined]
+    mod.__dir__ = lambda: list(d)  # type: ignore[method-assign]
 
-        if not func.__doc__:
-            func.__doc__ = msg
-        else:
-            func.__doc__ = msg + "\n\n" + func.__doc__.strip()
+    # critical_specialization functions always have mandatory parameters
+    if mod is not critical_specialization:
+        assert tag
+        for name, func in d.items():
+            item_name = name.replace("_", " ").title()
+            msg = f"{tag}`{item_name}`\n\n{func()}"
+
+            if not func.__doc__:
+                func.__doc__ = msg
+            else:
+                func.__doc__ = msg + "\n\n" + func.__doc__.strip()
 
 
-def _build_docstrings() -> None:
-    for mod in pathfinder.__dict__.values():
-        if isinstance(mod, ModuleType):
-            _build_docstrings_for_mod(mod, ":prd:")
-    for mod in starfinder.__dict__.values():
-        if isinstance(mod, ModuleType):
-            _build_docstrings_for_mod(mod, ":srd:")
-
-    _build_docstrings_for_mod(cantrips, ":prd:")
-    _build_docstrings_for_mod(class_features.operative, ":srd:")
-    _build_docstrings_for_mod(class_features.rogue, ":prd:")
-    _build_docstrings_for_mod(class_features.swashbuckler, ":prd:")
-    _build_docstrings_for_mod(runes, ":prd:")
-    _build_docstrings_for_mod(spells, ":prd:")
-
-
-_build_docstrings()
+_setup_mod(class_features.operative, ":srd:")
+_setup_mod(class_features.rogue, ":prd:")
+_setup_mod(class_features.swashbuckler, ":prd:")
+_setup_mod(pathfinder.melee, ":prd:")
+_setup_mod(pathfinder.ranged, ":prd:")
+_setup_mod(starfinder.melee, ":srd:")
+_setup_mod(starfinder.ranged, ":srd:")
+_setup_mod(critical_specialization, None)
+_setup_mod(cantrips, ":prd:")
+_setup_mod(runes, ":prd:")
+_setup_mod(spells, ":prd:")

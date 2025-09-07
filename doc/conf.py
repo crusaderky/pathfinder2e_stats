@@ -144,7 +144,7 @@ html_theme = "pydata_sphinx_theme"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-html_theme_options = {"show_toc_level": 2}  # Work around autoclass sidebar bug
+html_theme_options = {"show_toc_level": 3}  # Work around autoclass sidebar bug
 
 # Add any paths that contain custom themes here, relative to this directory.
 # html_theme_path = []

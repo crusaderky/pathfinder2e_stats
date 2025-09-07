@@ -14,37 +14,10 @@ mods = [
 ]
 
 weapon_mods = [
-    armory.pathfinder.axe,
-    armory.pathfinder.bow,
-    armory.pathfinder.brawling,
-    armory.pathfinder.crossbow,
-    armory.pathfinder.dart,
-    armory.pathfinder.hammer,
-    armory.pathfinder.knife,
-    armory.pathfinder.pick,
-    armory.pathfinder.shield,
-    armory.pathfinder.sword,
-    armory.starfinder.axe,
-    armory.starfinder.brawling,
-    armory.starfinder.club,
-    armory.starfinder.corrosive,
-    armory.starfinder.crossbow,
-    armory.starfinder.cryo,
-    armory.starfinder.dart,
-    armory.starfinder.flail,
-    armory.starfinder.flame,
-    armory.starfinder.hammer,
-    armory.starfinder.knife,
-    armory.starfinder.laser,
-    armory.starfinder.plasma,
-    armory.starfinder.polearm,
-    armory.starfinder.projectile,
-    armory.starfinder.shield,
-    armory.starfinder.shock,
-    armory.starfinder.sniper,
-    armory.starfinder.sonic,
-    armory.starfinder.spear,
-    armory.starfinder.sword,
+    armory.pathfinder.melee,
+    armory.pathfinder.ranged,
+    armory.starfinder.melee,
+    armory.starfinder.ranged,
 ]
 class_feature_mods = [
     armory.class_features.operative,
@@ -78,10 +51,10 @@ def test_armory(func):
 
 def test_autodoc():
     assert ":prd:`Fireball`" in armory.spells.fireball.__doc__
-    assert ":prd:`Battle Axe`" in armory.pathfinder.axe.battle_axe.__doc__
-    assert "1d8 slashing" in armory.pathfinder.axe.battle_axe.__doc__
-    assert ":prd:`Greataxe`" in armory.pathfinder.axe.greataxe.__doc__
-    assert ":srd:`Baton`" in armory.starfinder.club.baton.__doc__
+    assert ":prd:`Battle Axe`" in armory.pathfinder.melee.battle_axe.__doc__
+    assert "1d8 slashing" in armory.pathfinder.melee.battle_axe.__doc__
+    assert ":prd:`Greataxe`" in armory.pathfinder.melee.greataxe.__doc__
+    assert ":srd:`Baton`" in armory.starfinder.melee.baton.__doc__
 
 
 @pytest.mark.parametrize("mod", [*mods, armory, armory.starfinder])

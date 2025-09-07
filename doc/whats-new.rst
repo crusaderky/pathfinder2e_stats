@@ -19,8 +19,9 @@ v0.2.0 (unreleased)
   - :doc:`armory`:
 
     - Starfinder weapons added to ``armory.starfinder``
-    - Starfinder Operative features and feats added to
-      ``armory.class_features.operative``
+    - Starfinder weapon critical specialization effects (*flame, plasma, sniper*)
+      added to ``armory.critical_specialization``
+    - Operative features and feats added to ``armory.class_features.operative``
 
   - :doc:`notebooks/tables`: Starfinder content is featured side by side with
     Pathfinder content.
@@ -44,12 +45,22 @@ v0.2.0 (unreleased)
 
   - Since weapons are completely distinct between Pathfinder and Starfinder, and even
     when mixing classes etc. one would typically pick one content or the other,
-    ``armory.knives.dagger`` has been moved to ``armory.pathfinder.knife.dagger``, etc.;
-    Note the change from plural to singular for the weapon group.
+    ``armory.knives.dagger`` has been moved to ``armory.pathfinder.melee.dagger``. Note
+    how weapons are no longer broken by weapon group: while in Pathfinder one can guess
+    most of the times to which group a weapon belongs to, this does not hold for
+    Starfinder: the Battleglove is in the brawling group, but the Polyglove is shock;
+    the Zero Knife is not a knife and the Skyfire Sword is not a sword; etc. So now
+    there are only four weapon modules:
+
+    - ``armory.pathfinder.melee``
+    - ``armory.pathfinder.ranged``
+    - ``armory.starfinder.melee``
+    - ``armory.starfinder.ranged``
+
   - Weapon critical specialization on the other hand is the same between the two games
     (with just extra entries for Starfinder), so
     ``armory.knives.critical_specialization`` has been moved to
-    ``armory.critical_specialization.knife``, etc.
+    ``armory.critical_specialization.knife``, and so on.
   - Class features have been broken down by class.
     ``armory.class_features.sneak_attack`` has been moved to
     ``armory.class_features.rogue.sneak_attack``, etc.

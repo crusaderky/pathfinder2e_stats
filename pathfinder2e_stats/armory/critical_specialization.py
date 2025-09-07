@@ -2,20 +2,6 @@ from collections.abc import Callable
 
 from pathfinder2e_stats.damage_spec import Damage, DoS, ExpandedDamage
 
-__all__ = (
-    "crossbow",
-    "dart",
-    "flame",
-    "knife",
-    "pick",
-    "plasma",
-    "sniper",
-)
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__
-
 
 def _critical_persistent_damage(
     type: str, faces: int
