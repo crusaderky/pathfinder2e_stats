@@ -1,11 +1,5 @@
 from pathfinder2e_stats.damage_spec import Damage
 
-__all__ = ("sneak_attack",)
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__
-
 
 def sneak_attack(level: int = 1, *, dedication: bool = False) -> Damage:
     """Sneak Attack damage (:prd_classes:`Rogue <37>` class feature).

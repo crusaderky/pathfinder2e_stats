@@ -1,18 +1,6 @@
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
-__all__ = (
-    "bleeding_finisher",
-    "confident_finisher",
-    "finisher",
-    "precise_finisher",
-    "precise_strike",
-)
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__
-
 
 def precise_strike(level: int = 1, *, dedication: bool = False) -> Damage:
     """Precise Strike damage (:prd_classes:`Swashbuckler <63>` class feature).

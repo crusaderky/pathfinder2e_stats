@@ -1,12 +1,6 @@
 from pathfinder2e_stats.check import DoS
 from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
 
-__all__ = ("aim", "bloody_wounds")
-
-
-def __dir__() -> tuple[str, ...]:
-    return __all__
-
 
 def aim(
     level: int = 1, *, devastating_aim: bool = False, dedication: bool = False
