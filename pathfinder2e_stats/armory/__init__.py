@@ -48,6 +48,9 @@ def _setup_mod(mod: ModuleType, tag: str | None) -> None:
     if mod is not critical_specialization:
         assert tag
         for name, func in d.items():
+            if not getattr(func, "_setup_doc", True):
+                continue
+
             item_name = name.replace("_", " ").title()
             msg = f"{tag}`{item_name}`\n\n{func()}"
 
