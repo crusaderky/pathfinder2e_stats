@@ -202,9 +202,35 @@ def test_expand_deadly_fatal():
     }
 
 
+def test_area_fire():
+    # Damage.area_fire()
+    d1 = Damage("slashing", 1, 8, 4)
+    e1 = Damage("slashing", 1, 8, 4, basic_save=True)
+    assert d1.area_fire() == e1
+
+    # DamageList.area_fire()
+    d2 = d1 + Damage("fire", 1, 6)
+    e2 = e1 + Damage("fire", 1, 6, basic_save=True)
+    assert d2.area_fire() == e2
+
+    # ExpandedDamage.area_fire()
+    assert d2.expand().area_fire() == {
+        -1: [Damage("slashing", 1, 8, 4, 2), Damage("fire", 1, 6, 0, 2)],
+        0: [Damage("slashing", 1, 8, 4), Damage("fire", 1, 6)],
+        1: [Damage("slashing", 1, 8, 4, 0.5), Damage("fire", 1, 6, 0, 0.5)],
+    }
+
+    with pytest.raises(ValueError, match="basic saving throw"):
+        e1.area_fire()
+
+    # Effects on a miss are discarded
+    d = Damage("slashing", 1, 8, 4) + {0: [Damage("slashing", 0, 0, 4)]}
+    assert d.area_fire() == Damage("slashing", 1, 8, 4, basic_save=True).expand()
+
+
 def test_deadly_area_fire():
     """Area Fire with a Deadly weapon"""
-    assert Damage("slashing", 1, 6, 4, deadly=8, basic_save=True).expand() == {
+    assert Damage("slashing", 1, 6, 4, deadly=8).area_fire().expand() == {
         1: [Damage("slashing", 1, 6, 4, 0.5)],
         0: [Damage("slashing", 1, 6, 4)],
         -1: [Damage("slashing", 1, 6, 4, 2), Damage("slashing", 1, 8)],
@@ -213,7 +239,7 @@ def test_deadly_area_fire():
 
 def test_fatal_area_fire():
     """Area Fire with a Fatal weapon"""
-    assert Damage("slashing", 1, 6, 4, fatal=10, basic_save=True).expand() == {
+    assert Damage("slashing", 1, 6, 4, fatal=10).area_fire().expand() == {
         1: [Damage("slashing", 1, 6, 4, 0.5)],
         0: [Damage("slashing", 1, 6, 4)],
         -1: [Damage("slashing", 1, 10, 4, 2), Damage("slashing", 1, 10)],

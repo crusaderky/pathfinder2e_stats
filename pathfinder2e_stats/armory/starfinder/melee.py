@@ -1,8 +1,8 @@
 from pathfinder2e_stats.armory._common import _weapon
 
 # Axe
-doshko = _weapon("doshko", "piercing", 12)
-fangblade = _weapon("fangblade", "slashing", 10, boost=12)
+doshko = _weapon("doshko", "piercing", 12, critical="axe")
+fangblade = _weapon("fangblade", "slashing", 10, boost=12, critical="axe")
 plasma_doshko = _weapon("plasma_doshko", "fire", 10, critical="plasma")
 
 # Brawling

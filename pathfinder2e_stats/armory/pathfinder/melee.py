@@ -1,10 +1,10 @@
 from pathfinder2e_stats.armory._common import _weapon
 
 # Axe
-battle_axe = _weapon("battle_axe", "slashing", 8)
-dwarven_waraxe = _weapon("dwarven_waraxe", "slashing", 8, two_hands=12)
-greataxe = _weapon("greataxe", "slashing", 12)
-hatchet = _weapon("hatchet", "slashing", 6)
+battle_axe = _weapon("battle_axe", "slashing", 8, critical="axe")
+dwarven_waraxe = _weapon("dwarven_waraxe", "slashing", 8, two_hands=12, critical="axe")
+greataxe = _weapon("greataxe", "slashing", 12, critical="axe")
+hatchet = _weapon("hatchet", "slashing", 6, critical="axe")
 
 # Brawling
 bladed_gauntlet = _weapon("bladed_gauntlet", "slashing", 4)
