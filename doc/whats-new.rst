@@ -13,6 +13,8 @@ v0.2.0 (unreleased)
   - Core mechanics:
 
     - Added ``boost dX`` trait to :class:`Damage`
+    - Added ``area_fire()`` method to :class:`Damage`, :class:`DamageList` and
+      :class:`ExpandedDamage`
     - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
       to more easily model the Soldier's Primary Target ability
 
@@ -38,6 +40,7 @@ v0.2.0 (unreleased)
     ``tables.PC.weapon_proficiency``
   - Added table ``tables.SIMPLE_PC.class_DC``
   - Added more Pathfinder weapons to the :doc:`armory`
+  - Added axe critical specialization effect
 
 **Breaking changes**
 

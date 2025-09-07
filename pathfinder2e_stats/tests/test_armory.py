@@ -124,6 +124,28 @@ def test_critical_specialization_grievous_dart():
     assert w == {2: [Damage("bleed", 2, 6, 123, persistent=True)]}
 
 
+def test_critical_specialization_axe():
+    # bonus, deadly, fatal, etc. are discarded
+    base = Damage("slashing", 2, 12, 6, deadly=8, fatal=12)
+    w = armory.critical_specialization.axe(base)
+    assert w == {2: [Damage("slashing", 2, 12)]}
+
+    # two-hands
+    base = Damage("slashing", 2, 8, 4, two_hands=12)
+    with pytest.warns(UserWarning, match="two hands"):
+        w = armory.critical_specialization.axe(base)
+    assert w == {2: [Damage("slashing", 2, 12)]}
+    w = armory.critical_specialization.axe(base.hands(1))
+    assert w == {2: [Damage("slashing", 2, 8)]}
+    w = armory.critical_specialization.axe(base.hands(2))
+    assert w == {2: [Damage("slashing", 2, 12)]}
+
+    # Property runes, precision, etc.
+    base = Damage("slashing", 2, 12, 4) + Damage("precision", 0, 0, 1)
+    with pytest.raises(ValueError, match="property runes"):
+        armory.critical_specialization.axe(base)
+
+
 def test_critical_specialization_pick():
     w = armory.critical_specialization.pick(3)
     assert w == {2: [Damage("piercing", 0, 0, 6)]}

@@ -303,19 +303,6 @@ class Damage:
 
         :param bool do_boost:
             True if the interact action to boost damage was used; False otherwise.
-
-        .. note::
-
-            If you interact to boost damage and then Area Fire or Auto-Fire, e.g. a
-            :srd_weapons:`Fangblade <14-fangblade>` with
-            :srd_feats:`Whirling Swipe <624-whirling-swipe>`, you should first call
-            ``.copy(basic_save=True)`` and then ``.apply_boost(True)``:
-
-            >>> fangblade = Damage("slashing", 2, 10, 4, boost=12)
-            >>> fangblade.copy(basic_save=True).apply_boost(True)
-            **Success** (2d12)/2 slashing plus (2d10+4)/2 slashing
-            **Failure** 2d12 slashing plus 2d10+4 slashing
-            **Critical failure** (2d10+4)x2 slashing plus 2d12 slashing
         """
         if not self.boost:
             raise ValueError("Weapon does not have the boost trait")
@@ -414,6 +401,14 @@ class Damage:
             }
         return self.copy(dice=self.dice + dice)
 
+    def area_fire(self) -> Damage:
+        """:srd_actions:`Area Fire <17-area-fire>` or
+        :srd_actions:`Auto-Fire <19-auto-fire>` weapon.
+        """
+        if self.basic_save:
+            raise ValueError("Damage already has a basic saving throw")
+        return self.copy(basic_save=True)
+
     def expand(self) -> ExpandedDamage:
         """Convert this :class:`Damage` instance to an
         :class:`ExpandedDamage`.
@@ -493,6 +488,12 @@ class DamageList(UserList[Damage]):
     def _repr_html_(self) -> str:
         """HTML representation for Jupyter notebook"""
         return "<b>Damage</b> " + self._base_repr()
+
+    def area_fire(self) -> DamageList:
+        """:srd_actions:`Area Fire <17-area-fire>` or
+        :srd_actions:`Auto-Fire <19-auto-fire>` weapon.
+        """
+        return DamageList([d.area_fire() for d in self])
 
     def expand(self) -> ExpandedDamage:
         """Convert :class:`DamageList` to :class:`ExpandedDamage`."""
@@ -682,6 +683,22 @@ class ExpandedDamage(UserDict[DoS, list[Damage]]):
             return select_direct
 
         return ExpandedDamage({k: [d for d in v if match(d)] for k, v in self.items()})
+
+    def area_fire(self) -> ExpandedDamage:
+        """:srd_actions:`Area Fire <17-area-fire>` or
+        :srd_actions:`Auto-Fire <19-auto-fire>` weapon.
+        """
+        # Note: any damage originally dealt on a miss, e.g. by a swashbuckler's
+        # finisher, is discarded.
+        return ExpandedDamage(
+            {
+                DoS.critical_failure: self.get(DoS.critical_success, []),
+                DoS.failure: self.get(DoS.success, []),
+                DoS.success: [
+                    d.copy(multiplier=0.5) for d in self.get(DoS.success, [])
+                ],
+            }
+        )
 
     def simplify(self) -> ExpandedDamage:
         """See :meth:`Damage.simplify`."""
