@@ -10,11 +10,20 @@ v0.2.0 (unreleased)
 
 - Added support for **Starfinder**:
 
-  - Added ``boost dX`` trait to :class:`Damage`
-  - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
-    to more easily model the Soldier's Primary Target ability.
-  - Added armory: ``pathfinder2e_stats.starfinder.armory``
-  - Added tables: Starfinder content is featured side by side with Pathfinder content.
+  - Core mechanics:
+
+    - Added ``boost dX`` trait to :class:`Damage`
+    - Added ``primary_target`` parameter to :func:`check` and :func:`map_outcome`
+      to more easily model the Soldier's Primary Target ability
+
+  - :doc:`armory`:
+
+    - Starfinder weapons added to ``armory.starfinder``
+    - Starfinder Operative features and feats added to
+      ``armory.class_features.operative``
+
+  - :doc:`notebooks/tables`: Starfinder content is featured side by side with
+    Pathfinder content.
 
     - Added Starfinder classes to ``tables.PC`` and ``tables.SIMPLE_PC``;
     - Added table ``tables.SIMPLE_PC.area_fire_DC``
@@ -22,14 +31,16 @@ v0.2.0 (unreleased)
 
   - Added a few demo notebooks for the Soldier
 
-- Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
-  ``tables.PC.weapon_proficiency``
-- Added table ``tables.SIMPLE_PC.class_DC``
-- Added more weapons to the :doc:`armory`
+- Pathfinder and shared features:
+
+  - Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
+    ``tables.PC.weapon_proficiency``
+  - Added table ``tables.SIMPLE_PC.class_DC``
+  - Added more Pathfinder weapons to the :doc:`armory`
 
 **Breaking changes**
 
-- Weapons in the Armory have been reorganized:
+- The :doc:`armory` has been reorganized:
 
   - Since weapons are completely distinct between Pathfinder and Starfinder, and even
     when mixing classes etc. one would typically pick one content or the other,
@@ -39,12 +50,17 @@ v0.2.0 (unreleased)
     (with just extra entries for Starfinder), so
     ``armory.knives.critical_specialization`` has been moved to
     ``armory.critical_specialization.knife``, etc.
+  - Class features have been broken down by class.
+    ``armory.class_features.sneak_attack`` has been moved to
+    ``armory.class_features.rogue.sneak_attack``, etc.
 
-- ``tables.EARN_INCOME.income_earned`` has been renamed to
-  ``tables.EARN_INCOME.pathfinder`` to make room for its ``starfinder`` counterpart.
-- ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
-  variables ``fighter`` and ``gunslinger`` have gained dimension
-  ``category: [martial, advanced]``
+- :doc:`notebooks/tables` tweaks:
+
+  - ``tables.EARN_INCOME.income_earned`` has been renamed to
+    ``tables.EARN_INCOME.pathfinder`` to make room for its ``starfinder`` counterpart.
+  - ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
+    variables ``fighter`` and ``gunslinger`` have gained dimension
+    ``category: [martial, advanced]``
 
 **Bugfixes**
 

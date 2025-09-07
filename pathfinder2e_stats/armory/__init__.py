@@ -1,7 +1,6 @@
 from types import ModuleType
 
 from pathfinder2e_stats.armory import (
-    _common,
     cantrips,
     class_features,
     critical_specialization,
@@ -29,6 +28,8 @@ def __dir__() -> tuple[str, ...]:
 def _build_docstrings_for_mod(mod: ModuleType, tag: str) -> None:
     for name in mod.__all__:
         func = getattr(mod, name)
+        if not callable(func):
+            continue
 
         item_name = name.replace("_", " ").title()
         msg = f"{tag}`{item_name}`\n\n{func()}"
@@ -40,20 +41,19 @@ def _build_docstrings_for_mod(mod: ModuleType, tag: str) -> None:
 
 
 def _build_docstrings() -> None:
-    for mod in globals().values():
-        if isinstance(mod, ModuleType) and mod not in {
-            _common,
-            critical_specialization,
-            pathfinder,
-            starfinder,
-        }:
-            _build_docstrings_for_mod(mod, ":prd:")
     for mod in pathfinder.__dict__.values():
         if isinstance(mod, ModuleType):
             _build_docstrings_for_mod(mod, ":prd:")
     for mod in starfinder.__dict__.values():
         if isinstance(mod, ModuleType):
             _build_docstrings_for_mod(mod, ":srd:")
+
+    _build_docstrings_for_mod(cantrips, ":prd:")
+    _build_docstrings_for_mod(class_features.operative, ":srd:")
+    _build_docstrings_for_mod(class_features.rogue, ":prd:")
+    _build_docstrings_for_mod(class_features.swashbuckler, ":prd:")
+    _build_docstrings_for_mod(runes, ":prd:")
+    _build_docstrings_for_mod(spells, ":prd:")
 
 
 _build_docstrings()

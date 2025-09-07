@@ -23,19 +23,16 @@ Axe
 ^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.axe
    :members:
-   :undoc-members:
 
 Bow
 ^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.bow
    :members:
-   :undoc-members:
 
 Brawling
 ^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.brawling
    :members:
-   :undoc-members:
 
 Crossbow
 ^^^^^^^^
@@ -43,7 +40,6 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.crossbow`.
 
 .. automodule:: pathfinder2e_stats.armory.pathfinder.crossbow
    :members:
-   :undoc-members:
 
 Dart
 ^^^^
@@ -51,13 +47,11 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.dart`.
 
 .. automodule:: pathfinder2e_stats.armory.pathfinder.dart
    :members:
-   :undoc-members:
 
 Hammer
 ^^^^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.hammer
    :members:
-   :undoc-members:
 
 Knife
 ^^^^^
@@ -65,7 +59,6 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.knife`.
 
 .. automodule:: pathfinder2e_stats.armory.pathfinder.knife
    :members:
-   :undoc-members:
 
 Pick
 ^^^^
@@ -73,19 +66,16 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.pick`.
 
 .. automodule:: pathfinder2e_stats.armory.pathfinder.pick
    :members:
-   :undoc-members:
 
 Shield
 ^^^^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.shield
    :members:
-   :undoc-members:
 
 Sword
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.pathfinder.sword
    :members:
-   :undoc-members:
 
 
 Starfinder weapons
@@ -96,25 +86,21 @@ Axe
 ^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.axe
    :members:
-   :undoc-members:
 
 Brawling
 ^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.brawling
    :members:
-   :undoc-members:
 
 Club
 ^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.club
    :members:
-   :undoc-members:
 
 Corrosive
 ^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.corrosive
    :members:
-   :undoc-members:
 
 Crossbow
 ^^^^^^^^
@@ -122,13 +108,11 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.crossbow`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.crossbow
    :members:
-   :undoc-members:
 
 Cryo
 ^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.cryo
    :members:
-   :undoc-members:
 
 Dart
 ^^^^
@@ -136,13 +120,11 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.dart`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.dart
    :members:
-   :undoc-members:
 
 Flail
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.flail
    :members:
-   :undoc-members:
 
 Flame
 ^^^^^
@@ -150,13 +132,11 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.flame`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.flame
    :members:
-   :undoc-members:
 
 Hammer
 ^^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.hammer
    :members:
-   :undoc-members:
 
 Knife
 ^^^^^
@@ -164,7 +144,11 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.knife`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.knife
    :members:
-   :undoc-members:
+
+Laser
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.laser
+   :members:
 
 Plasma
 ^^^^^^
@@ -172,25 +156,26 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.plasma`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.plasma
    :members:
-   :undoc-members:
 
 Polearm
 ^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.polearm
    :members:
-   :undoc-members:
+
+Projectile
+^^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.starfinder.projectile
+   :members:
 
 Shield
 ^^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.shield
    :members:
-   :undoc-members:
 
 Shock
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.shock
    :members:
-   :undoc-members:
 
 Sniper
 ^^^^^^
@@ -198,25 +183,46 @@ See also: :func:`pathfinder2e_stats.armory.critical_specialization.sniper`.
 
 .. automodule:: pathfinder2e_stats.armory.starfinder.sniper
    :members:
-   :undoc-members:
 
 Sonic
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.sonic
    :members:
-   :undoc-members:
 
 Spear
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.spear
    :members:
-   :undoc-members:
 
 Sword
 ^^^^^
 .. automodule:: pathfinder2e_stats.armory.starfinder.sword
    :members:
-   :undoc-members:
+
+
+Class features
+--------------
+These class features add damage of a specific type.
+For class features that add flat damage to the weapon,
+like a Barbarian's :prd_actions:`Rage <2802>`, see :doc:`notebooks/tables`.
+
+.. automodule:: pathfinder2e_stats.armory.class_features
+   :members:
+
+Operative
+^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.class_features.operative
+   :members:
+
+Rogue
+^^^^^
+.. automodule:: pathfinder2e_stats.armory.class_features.rogue
+   :members:
+
+Swashbuckler
+^^^^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.class_features.swashbuckler
+   :members:
 
 
 Other
@@ -231,32 +237,18 @@ effects.
 
 .. automodule:: pathfinder2e_stats.armory.critical_specialization
    :members:
-   :undoc-members:
 
 Weapon property runes
 ^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.runes
    :members:
-   :undoc-members:
 
 Cantrips
 ^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.cantrips
    :members:
-   :undoc-members:
 
 Slot spells
 ^^^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.spells
    :members:
-   :undoc-members:
-
-Class features
-^^^^^^^^^^^^^^
-These class features add damage of a specific type.
-For class features that add flat damage to the weapon,
-like a Barbarian's :prd_actions:`Rage <2802>`, see :doc:`notebooks/tables`.
-
-.. automodule:: pathfinder2e_stats.armory.class_features
-   :members:
-   :undoc-members:

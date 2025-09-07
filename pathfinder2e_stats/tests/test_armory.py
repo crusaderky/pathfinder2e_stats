@@ -6,10 +6,11 @@ from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage, armory
 
 mods = [
     mod
-    for package in (armory, armory.pathfinder, armory.starfinder)
+    for package in (armory, armory.class_features, armory.pathfinder, armory.starfinder)
     for mod in package.__dict__.values()
     if isinstance(mod, ModuleType)
-    and mod not in (armory._common, armory.pathfinder, armory.starfinder)
+    and mod
+    not in (armory._common, armory.class_features, armory.pathfinder, armory.starfinder)
 ]
 
 weapon_mods = [
@@ -34,8 +35,10 @@ weapon_mods = [
     armory.starfinder.flame,
     armory.starfinder.hammer,
     armory.starfinder.knife,
+    armory.starfinder.laser,
     armory.starfinder.plasma,
     armory.starfinder.polearm,
+    armory.starfinder.projectile,
     armory.starfinder.shield,
     armory.starfinder.shock,
     armory.starfinder.sniper,
@@ -43,12 +46,21 @@ weapon_mods = [
     armory.starfinder.spear,
     armory.starfinder.sword,
 ]
+class_feature_mods = [
+    armory.class_features.operative,
+    armory.class_features.rogue,
+    armory.class_features.swashbuckler,
+]
 spell_mods = [armory.cantrips, armory.spells]
-other_mods = [armory.class_features, armory.critical_specialization, armory.runes]
+other_mods = [armory.critical_specialization, armory.runes]
 
 
 def test_mods_inventory():
-    assert set(mods) == set(weapon_mods) | set(spell_mods) | set(other_mods)
+    assert set(mods) == {
+        m
+        for mm in (weapon_mods, class_feature_mods, spell_mods, other_mods)
+        for m in mm
+    }
 
 
 @pytest.mark.parametrize(
@@ -212,8 +224,61 @@ def test_harm_heal():
     assert armory.spells.heal(healing_hands=True).faces == 10
 
 
+@pytest.mark.parametrize(
+    "func",
+    [
+        pytest.param(getattr(mod, name), id=f"{mod.__name__}.{name}")
+        for mod in class_feature_mods
+        for name in mod.__all__
+    ],
+)
+def test_class_features(func):
+    d = func()
+    for level in range(1, 21):
+        d2 = func(level)
+        assert type(d2) is type(d)
+
+
+def test_aim():
+    aim = armory.class_features.operative.aim
+    # Bump at level 5, 11, and 17
+    assert aim(1) == Damage("precision", 1, 4)
+    assert aim(4) == Damage("precision", 1, 4)
+    assert aim(5) == Damage("precision", 2, 4)
+    assert aim(16) == Damage("precision", 3, 4)
+    assert aim(17) == Damage("precision", 4, 4)
+    assert aim(20) == Damage("precision", 4, 4)
+
+    assert aim(20, devastating_aim=True) == Damage("precision", 4, 6)
+    assert aim(4, dedication=True) == Damage("precision", 1, 4)
+    assert aim(6, dedication=True) == Damage("precision", 2, 4)
+    assert aim(20, dedication=True) == Damage("precision", 2, 4)
+    assert aim(20, devastating_aim=True, dedication=True) == Damage("precision", 2, 6)
+
+
+def test_bloody_wounds():
+    bw = armory.class_features.operative.bloody_wounds
+
+    def crit_bleed(n: int) -> ExpandedDamage:
+        return ExpandedDamage(
+            {DoS.critical_success: [Damage("bleed", 0, 0, n, persistent=True)]}
+        )
+
+    # Bump at level 5, 11, and 17
+    assert bw(4) == crit_bleed(1)
+    assert bw(5) == crit_bleed(2)
+    assert bw(16) == crit_bleed(3)
+    assert bw(17) == crit_bleed(4)
+    assert bw(20) == crit_bleed(4)
+
+    assert bw(4, dedication=True) == crit_bleed(1)
+    assert bw(5, dedication=True) == crit_bleed(1)
+    assert bw(6, dedication=True) == crit_bleed(2)
+    assert bw(20, dedication=True) == crit_bleed(2)
+
+
 def test_sneak_attack():
-    sa = armory.class_features.sneak_attack
+    sa = armory.class_features.rogue.sneak_attack
     assert sa(1) == Damage("precision", 1, 6)
     assert sa(4) == Damage("precision", 1, 6)
     assert sa(5) == Damage("precision", 2, 6)
@@ -225,7 +290,7 @@ def test_sneak_attack():
 
 
 def test_precise_strike():
-    ps = armory.class_features.precise_strike
+    ps = armory.class_features.swashbuckler.precise_strike
     assert ps(1) == Damage("precision", 0, 0, 2)
     assert ps(4) == Damage("precision", 0, 0, 2)
     assert ps(5) == Damage("precision", 0, 0, 3)
@@ -235,7 +300,7 @@ def test_precise_strike():
 
 
 def test_finisher():
-    f = armory.class_features.finisher
+    f = armory.class_features.swashbuckler.finisher
     assert f(1) == Damage("precision", 2, 6)
     assert f(4) == Damage("precision", 2, 6)
     assert f(5) == Damage("precision", 3, 6)
