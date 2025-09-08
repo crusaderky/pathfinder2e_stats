@@ -1,4 +1,4 @@
-from pathfinder2e_stats.armory._common import _weapon
+from pathfinder2e_stats.armory._common import _scatter_weapon, _weapon
 from pathfinder2e_stats.damage_spec import Damage
 
 # Bow
@@ -67,3 +67,14 @@ def dart_umbrella(dice: int = 0, bonus: int = 0) -> Damage:  # noqa: ARG001
 
 # Knife
 chakram = _weapon("chakram", "slashing", 8, critical="knife")
+
+# Sling
+backpack_catapult = _weapon("backpack_catapult", "bludgeoning", 12)
+bola = _weapon("bola", "bludgeoning", 6)
+halfling_sling_staff = _weapon("halfling_sling_staff", "bludgeoning", 10)
+kestros = _weapon("kestros", "piercing", 6)
+sling = _weapon("sling", "bludgeoning", 6)
+spraysling = _scatter_weapon("spraysling", "bludgeoning", 6)
+sun_sling = _weapon("sun_sling", "piercing", 8)
+thunder_sling = _weapon("thunder_sling", "piercing", 6)
+wrecker = _weapon("wrecker", "bludgeoning", 6)

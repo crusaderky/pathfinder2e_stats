@@ -84,11 +84,12 @@ stiletto_pen = _weapon("stiletto_pen", "piercing", 4, critical="dart")
 tamchal_chakram = _weapon("tamchal_chakram", "slashing", 6, deadly=6, critical="dart")
 war_javelin = _weapon("war_javelin", "piercing", 6, critical="dart")
 
-# Firearm
-# TODO melee use of combination weapons
+# Firearm (melee use of combination weapons)
+
 
 # Flail
-mikazuki = _weapon("mikazuki", "bludgeoning", 6)
+mikazuki = _weapon("mikazuki", "bludgeoning", 6)  # combination weapon
+wrecker = _weapon("wrecker", "bludgeoning", 8)  # combination weapon
 # TODO missing entries
 
 # Hammer
@@ -117,19 +118,42 @@ switchscythe = _weapon("switchscythe", "piercing", 6, fatal=10, critical="pick")
 tricky_pick = _weapon("tricky_pick", "piercing", 6, fatal=10, critical="pick")
 
 # Polearm
-# TODO missing entries
+bec_de_corbin = _weapon("bec_de_corbin", "piercing", 8)
+boarding_pike = _weapon("boarding_pike", "piercing", 10)
+capturing_spetum = _weapon("capturing_spetum", "piercing", 10)
+donchak = _weapon("donchak", "slashing", 8)
+fauchard = _weapon("fauchard", "slashing", 8, deadly=8)
+fighting_oar = _weapon("fighting_oar", "bludgeoning", 8)
+glaive = _weapon("glaive", "slashing", 8, deadly=8)
+guisarme = _weapon("guisarme", "slashing", 10)
+halberd = _weapon("halberd", "piercing", 10)
+horsechopper = _weapon("horsechopper", "slashing", 8)
+naginata = _weapon("naginata", "slashing", 8, deadly=8)
+ranseur = _weapon("ranseur", "piercing", 10)
+scythe = _weapon("scythe", "slashing", 10, deadly=10)
+shuan_ji = _weapon("shuan_ji", "slashing", 6)
 
 # Shield
 shield_bash = _weapon("shield bash", "bludgeoning", 4)
 shield_boss = _weapon("shield boss", "bludgeoning", 6)
 shield_spikes = _weapon("shield spikes", "piercing", 6)
 
-# Sling
-# TODO melee use of combination weapons
-
 # Spear
-lancer = _weapon("lancer", "piercing", 6)
-# TODO missing entries
+breaching_pike = _weapon("breaching_pike", "piercing", 6)
+broadspear = _weapon("broadspear", "piercing", 10)
+dancers_spear = _weapon("dancers_spear", "piercing", 6)
+dueling_spear = _weapon("dueling_spear", "piercing", 8)
+elven_branched_spear = _weapon("elven_branched_spear", "piercing", 6, deadly=8)
+filchers_fork = _weapon("filchers_fork", "piercing", 4, deadly=6)
+forked_bipod = _weapon("forked_bipod", "piercing", 4, deadly=6)
+gill_hook = _weapon("gill_hook", "piercing", 10)
+injection_spear = _weapon("injection_spear", "piercing", 8)
+lance = _weapon("lance", "piercing", 8, deadly=8)
+lancer = _weapon("lancer", "piercing", 6)  # combination weapon
+longspear = _weapon("longspear", "piercing", 8)
+spear = _weapon("spear", "piercing", 6)
+trident = _weapon("trident", "piercing", 8)
+war_lance = _weapon("war_lance", "piercing", 8, deadly=8)
 
 # Sword
 shortsword = _weapon("shortsword", "slashing", 6)

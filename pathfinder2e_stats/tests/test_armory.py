@@ -80,6 +80,7 @@ def test_weapons(func):
         armory.pathfinder.melee.macuahuitl,
         armory.pathfinder.ranged.blowgun,
         armory.pathfinder.ranged.dart_umbrella,
+        armory.pathfinder.ranged.spraysling,
     ):
         return
 
@@ -119,6 +120,16 @@ def test_macuahuitl():
     )
     assert f(3, 10) == Damage("slashing", 3, 8, 10) + Damage(
         "bleed", 0, 0, 2, persistent=True
+    )
+
+
+def test_spraysling():
+    f = armory.pathfinder.ranged.spraysling
+    assert f() == Damage("bludgeoning", 1, 6) + Damage(
+        "bludgeoning", 0, 0, 1, splash=True
+    )
+    assert f(2, 3) == Damage("bludgeoning", 2, 6, 3) + Damage(
+        "bludgeoning", 0, 0, 2, splash=True
     )
 
 
