@@ -71,11 +71,18 @@ def test_dir(mod):
 
 
 @pytest.mark.parametrize(
-    "func",
-    [getattr(mod, name) for mod in weapon_mods for name in mod.__all__],
+    "func", [getattr(mod, name) for mod in weapon_mods for name in mod.__all__]
 )
 def test_weapons(func):
     w = func()
+
+    if func in (
+        armory.pathfinder.melee.macuahuitl,
+        armory.pathfinder.ranged.blowgun,
+        armory.pathfinder.ranged.dart_umbrella,
+    ):
+        return
+
     assert w.dice == 1
     assert w.bonus in (0, 1)  # kickback weapons deal +1 damage
 
@@ -92,6 +99,27 @@ def test_kickback():
     f = armory.starfinder.ranged.seeker_rifle
     assert f() == Damage("piercing", 1, 10, 1)
     assert f(2, 3) == Damage("piercing", 2, 10, 4)
+
+
+@pytest.mark.parametrize(
+    "func", [armory.pathfinder.ranged.blowgun, armory.pathfinder.ranged.dart_umbrella]
+)
+def test_blowgun(func):
+    w = func()
+    assert w == Damage("piercing", 0, 0, 1)
+    w = func(10, 20)
+    assert w == Damage("piercing", 0, 0, 21)
+
+
+def test_macuahuitl():
+    f = armory.pathfinder.melee.macuahuitl
+    assert f() == Damage("slashing", 1, 8) + Damage("bleed", 0, 0, 1, persistent=True)
+    assert f(2, 10) == Damage("slashing", 2, 8, 10) + Damage(
+        "bleed", 0, 0, 1, persistent=True
+    )
+    assert f(3, 10) == Damage("slashing", 3, 8, 10) + Damage(
+        "bleed", 0, 0, 2, persistent=True
+    )
 
 
 @pytest.mark.parametrize(
