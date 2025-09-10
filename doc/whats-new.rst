@@ -36,6 +36,7 @@ v0.2.0 (unreleased)
 
 - Pathfinder and shared features:
 
+  - Added ``scatter`` trait to :class:`Damage`
   - Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
     ``tables.PC.weapon_proficiency``
   - Added table ``tables.SIMPLE_PC.class_DC``
