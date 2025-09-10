@@ -77,9 +77,17 @@ def test_weapons(func):
     w = func()
 
     if func in (
+        armory.pathfinder.melee.fire_poi,
         armory.pathfinder.melee.macuahuitl,
         armory.pathfinder.ranged.blowgun,
         armory.pathfinder.ranged.dart_umbrella,
+        # scatter weapons
+        armory.pathfinder.ranged.blunderbuss,
+        armory.pathfinder.ranged.dragon_mouth_pistol,
+        armory.pathfinder.ranged.dwarven_scattergun,
+        armory.pathfinder.ranged.explosive_dogslicer,
+        armory.pathfinder.ranged.flingflenser,
+        armory.pathfinder.ranged.spoon_gun,
         armory.pathfinder.ranged.spraysling,
     ):
         return
@@ -130,6 +138,20 @@ def test_spraysling():
     )
     assert f(2, 3) == Damage("bludgeoning", 2, 6, 3) + Damage(
         "bludgeoning", 0, 0, 2, splash=True
+    )
+
+
+def test_fire_poi():
+    f = armory.pathfinder.melee.fire_poi
+    assert f() == (
+        Damage("bludgeoning", 1, 4)
+        + Damage("fire", 1, 4)
+        + {DoS.critical_success: [Damage("fire", 0, 0, 1, persistent=True)]}
+    )
+    assert f(2, 3) == (
+        Damage("bludgeoning", 2, 4, 3)
+        + Damage("fire", 1, 4)
+        + {DoS.critical_success: [Damage("fire", 0, 0, 1, persistent=True)]}
     )
 
 

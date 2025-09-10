@@ -1,5 +1,6 @@
 from pathfinder2e_stats.armory._common import _weapon
-from pathfinder2e_stats.damage_spec import Damage, DamageList
+from pathfinder2e_stats.check import DoS
+from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
 # Axe
 adze = _weapon("adze", "slashing", 10, critical="axe")
@@ -19,9 +20,7 @@ panabas = _weapon("panabas", "slashing", 6, two_hands=10, critical="axe")
 # Brawling
 bladed_gauntlet = _weapon("bladed_gauntlet", "slashing", 4)
 fangwire = _weapon("fangwire", "slashing", 4, deadly=8)
-fist = _weapon("fist", "bludgeoning", 4)
 gauntlet = _weapon("gauntlet", "bludgeoning", 4)
-gauntlet_bow = _weapon("gauntlet_bow", "bludgeoning", 4)  # Melee use
 knuckle_duster = _weapon("knuckle_duster", "bludgeoning", 4)
 pantograph_gauntlet = _weapon("pantograph_gauntlet", "bludgeoning", 4, deadly=6)
 spiked_gauntlet = _weapon("spiked_gauntlet", "piercing", 4)
@@ -84,13 +83,40 @@ stiletto_pen = _weapon("stiletto_pen", "piercing", 4, critical="dart")
 tamchal_chakram = _weapon("tamchal_chakram", "slashing", 6, deadly=6, critical="dart")
 war_javelin = _weapon("war_javelin", "piercing", 6, critical="dart")
 
-# Firearm (melee use of combination weapons)
-
-
 # Flail
-mikazuki = _weapon("mikazuki", "bludgeoning", 6)  # combination weapon
-wrecker = _weapon("wrecker", "bludgeoning", 8)  # combination weapon
-# TODO missing entries
+bladed_diabolo = _weapon("bladed_diabolo", "slashing", 4)
+bladed_scarf = _weapon("bladed_scarf", "slashing", 6)
+combat_fishing_pole = _weapon("combat_fishing_pole", "bludgeoning", 8)
+combat_grapnel = _weapon("combat_grapnel", "piercing", 6)
+combat_lure = _weapon("combat_lure", "bludgeoning", 6)
+dwarven_dorn_dergar = _weapon("dwarven_dorn_dergar", "bludgeoning", 10)
+flail = _weapon("flail", "bludgeoning", 6)
+flying_talon = _weapon("flying_talon", "piercing", 4)
+gnome_flickmace = _weapon("gnome_flickmace", "bludgeoning", 6)
+meteor_hammer = _weapon("meteor_hammer", "bludgeoning", 8)
+monkeys_fist = _weapon("monkeys_fist", "bludgeoning", 6)
+poi = _weapon("poi", "bludgeoning", 4)
+sansetsukon = _weapon("sansetsukon", "bludgeoning", 8)
+scorpion_whip = _weapon("scorpion_whip", "slashing", 4)
+scourge = _weapon("scourge", "slashing", 4)
+shaith_lash = _weapon("shaith_lash", "slashing", 6, deadly=6)
+spiked_chain = _weapon("spiked_chain", "slashing", 8)
+spirit_thresher = _weapon("spirit_thresher", "bludgeoning", 12)
+three_section_naginata = _weapon("three_section_naginata", "slashing", 8, deadly=8)
+urumi = _weapon("urumi", "slashing", 6, deadly=6)
+war_flail = _weapon("war_flail", "bludgeoning", 10)
+whip = _weapon("whip", "slashing", 4)
+whip_claw = _weapon("whip_claw", "slashing", 6)
+zhuazhi_bang = _weapon("zhuazhi_bang", "piercing", 6)
+
+
+def fire_poi(dice: int = 1, bonus: int = 0) -> ExpandedDamage:
+    return (
+        Damage("bludgeoning", dice, 4, bonus)
+        + Damage("fire", 1, 4)
+        + {DoS.critical_success: [Damage("fire", 0, 0, 1, persistent=True)]}
+    )
+
 
 # Hammer
 earthbreaker = _weapon("earthbreaker", "bludgeoning", 6, two_hands=10)
@@ -102,12 +128,36 @@ orc_skewermaul = _weapon("orc_skewermaul", "bludgeoning", 6, two_hands=10)
 warhammer = _weapon("warhammer", "bludgeoning", 8)
 
 # Knife
+bayonet = _weapon("bayonet", "piercing", 4, critical="knife")
+bladed_hoop = _weapon("bladed_hoop", "slashing", 6, two_hands=8, critical="knife")
+clan_dagger = _weapon("clan_dagger", "piercing", 4, critical="knife")
+claw_blade = _weapon("claw_blade", "slashing", 4, deadly=8, critical="knife")
+corset_knife = _weapon("corset_knife", "piercing", 4, critical="knife")
 dagger = _weapon("dagger", "piercing", 4, critical="knife")
+feng_huo_lun = _weapon("feng_huo_lun", "slashing", 4, critical="knife")
+fighting_fan = _weapon("fighting_fan", "slashing", 4, deadly=6, critical="knife")
+flyssa = _weapon("flyssa", "slashing", 6, critical="knife")
 kama = _weapon("kama", "slashing", 6, critical="knife")
+karambit = _weapon("karambit", "piercing", 4, fatal=8, critical="knife")
+katar = _weapon("katar", "piercing", 4, deadly=6, critical="knife")
+kris = _weapon("kris", "piercing", 4, deadly=8, critical="knife")
 kukri = _weapon("kukri", "slashing", 6, critical="knife")
-flyssa = _weapon("flyssa", "piercing", 6, critical="knife")
+kusarigama = _weapon("kusarigama", "slashing", 8, critical="knife")
+lion_scythe = _weapon("lion_scythe", "slashing", 6, critical="knife")
+main_gauche = _weapon("main_gauche", "piercing", 4, critical="knife")
+orc_knuckle_dagger = _weapon("orc_knuckle_dagger", "piercing", 6, critical="knife")
+piranha_kiss = _weapon("piranha_kiss", "slashing", 6, critical="knife")
+sai = _weapon("sai", "piercing", 4, critical="knife")
+scizore = _weapon("scizore", "slashing", 6, critical="knife")
+shauth_blade = _weapon("shauth_blade", "slashing", 4, deadly=8, critical="knife")
+shears = _weapon("shears", "slashing", 4, deadly=8, critical="knife")
 sickle = _weapon("sickle", "slashing", 4, critical="knife")
-# TODO missing entries
+starknife = _weapon("starknife", "piercing", 4, deadly=6, critical="knife")
+throwing_knife = _weapon("throwing_knife", "piercing", 4, critical="knife")
+visap = _weapon("visap", "slashing", 4, critical="knife")
+war_razor = _weapon("war_razor", "slashing", 4, deadly=8, critical="knife")
+wheel_spikes = _weapon("wheel_spikes", "piercing", 4, critical="knife")
+wish_knife = _weapon("wish_knife", "piercing", 4, critical="knife")
 
 # Pick
 greatpick = _weapon("greatpick", "piercing", 10, fatal=12, critical="pick")
@@ -149,16 +199,76 @@ forked_bipod = _weapon("forked_bipod", "piercing", 4, deadly=6)
 gill_hook = _weapon("gill_hook", "piercing", 10)
 injection_spear = _weapon("injection_spear", "piercing", 8)
 lance = _weapon("lance", "piercing", 8, deadly=8)
-lancer = _weapon("lancer", "piercing", 6)  # combination weapon
 longspear = _weapon("longspear", "piercing", 8)
 spear = _weapon("spear", "piercing", 6)
 trident = _weapon("trident", "piercing", 8)
 war_lance = _weapon("war_lance", "piercing", 8, deadly=8)
 
 # Sword
-shortsword = _weapon("shortsword", "slashing", 6)
-rapier = _weapon("rapier", "piercing", 6, deadly=8)
-longsword = _weapon("longsword", "slashing", 8)
+aldori_dueling_sword = _weapon("aldori_dueling_sword", "slashing", 8)
+asp_coil = _weapon("asp_coil", "slashing", 6)
 bastard_sword = _weapon("bastard_sword", "slashing", 8, two_hands=12)
+bladesweeper = _weapon("bladesweeper", "slashing", 10)
+butterfly_sword = _weapon("butterfly_sword", "slashing", 4)
+buugeng = _weapon("buugeng", "slashing", 4)
+chain_sword = _weapon("chain_sword", "slashing", 6)
+dandpatta = _weapon("dandpatta", "slashing", 6)
+dogslicer = _weapon("dogslicer", "slashing", 6)
+elven_curve_blade = _weapon("elven_curve_blade", "slashing", 8)
+exquisite_sword_cane = _weapon("exquisite_sword_cane", "piercing", 6)
+falcata = _weapon("falcata", "slashing", 8, fatal=12)
+falchion = _weapon("falchion", "slashing", 10)
+gladius = _weapon("gladius", "piercing", 6, deadly=10)
 greatsword = _weapon("greatsword", "slashing", 12)
-# TODO missing entries
+hook_sword = _weapon("hook_sword", "slashing", 6)
+jiu_huan_dao = _weapon("jiu_huan_dao", "slashing", 8)
+kalis = _weapon("kalis", "slashing", 8, deadly=8)
+katana = _weapon("katana", "slashing", 6, deadly=8, two_hands=10)
+khopesh = _weapon("khopesh", "slashing", 8)
+liuyedao = _weapon("liuyedao", "slashing", 4, deadly=4)
+longsword = _weapon("longsword", "slashing", 8)
+machete = _weapon("machete", "slashing", 6, deadly=8)
+nodachi = _weapon("nodachi", "slashing", 8, deadly=12)
+polytool = _weapon("polytool", "slashing", 6)
+rapier = _weapon("rapier", "piercing", 6, deadly=8)
+rhoka_sword = _weapon("rhoka_sword", "slashing", 8, deadly=8, two_hands=10)
+sawtooth_saber = _weapon("sawtooth_saber", "slashing", 6)
+scimitar = _weapon("scimitar", "slashing", 6)
+shortsword = _weapon("shortsword", "slashing", 6)
+sickle_saber = _weapon("sickle_saber", "slashing", 6)
+spiral_rapier = _weapon("spiral_rapier", "piercing", 6)
+sword_cane = _weapon("sword_cane", "piercing", 6)
+talwar = _weapon("talwar", "slashing", 6, two_hands=10)
+temple_sword = _weapon("temple_sword", "slashing", 8)
+tengu_gale_blade = _weapon("tengu_gale_blade", "slashing", 6)
+umbrella_injector = _weapon("umbrella_injector", "piercing", 4)
+wakizashi = _weapon("wakizashi", "slashing", 4, deadly=8)
+wheel_blades = _weapon("wheel_blades", "slashing", 4)
+wish_blade = _weapon("wish_blade", "slashing", 6)
+zulfikar = _weapon("zulfikar", "slashing", 6, deadly=8)
+
+# Combination firearms (melee usage)
+axe_musket = _weapon("axe_musket", "slashing", 8, critical="axe")
+black_powder_knuckle_dusters = _weapon("black_powder_knuckle_dusters", "bludgeoning", 4)
+cane_pistol = _weapon("cane_pistol", "bludgeoning", 6)
+dagger_pistol = _weapon("dagger_pistol", "piercing", 4, critical="knife")
+explosive_dogslicer = _weapon("explosive_dogslicer", "slashing", 6)
+gnome_amalgam_musket = _weapon("gnome_amalgam_musket", "bludgeoning", 8)
+gun_sword = _weapon("gun_sword", "slashing", 8)
+hammer_gun = _weapon("hammer_gun", "bludgeoning", 10)
+mace_multipistol = _weapon("mace_multipistol", "bludgeoning", 6)
+piercing_wind = _weapon("piercing_wind", "slashing", 6)
+rapier_pistol = _weapon("rapier_pistol", "piercing", 4, deadly=8)
+three_peaked_tree = _weapon("three_peaked_tree", "piercing", 8)
+triggerbrand = _weapon("triggerbrand", "piercing", 6)
+
+# Other combination weapons (melee usage)
+bow_staff = _weapon("bow_staff", "bludgeoning", 6)
+crescent_cross = _weapon("crescent_cross", "slashing", 4, critical="knife")
+lancer = _weapon("lancer", "piercing", 6)
+mikazuki = _weapon("mikazuki", "bludgeoning", 6)
+wrecker = _weapon("wrecker", "bludgeoning", 8)
+
+# Special
+fist = _weapon("fist", "bludgeoning", 4)  # not a weapon; not necessarily a fist
+gauntlet_bow = _weapon("gauntlet_bow", "bludgeoning", 4)  # works as a gauntlet in melee
