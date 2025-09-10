@@ -29,6 +29,8 @@ def _scatter_weapon(
     name: str,
     type: str,
     faces: int,
+    *,
+    kickback: bool = False,
     **kwargs: Any,
 ) -> Callable[..., DamageList]:
     """Generate a weapon with the scatter trait."""
@@ -43,7 +45,7 @@ def _scatter_weapon(
         """
         return DamageList(
             [
-                Damage(type, dice, faces, bonus, **kwargs),
+                Damage(type, dice, faces, bonus + int(kickback), **kwargs),
                 Damage(type, 0, 0, dice, splash=True),
             ]
         )
