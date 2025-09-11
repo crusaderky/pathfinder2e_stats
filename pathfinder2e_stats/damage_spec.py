@@ -421,8 +421,9 @@ class Damage:
             DoS.success: [extra],
         }
         if self.scatter:
-            splash = Damage(self.type, 0, 0, 1, splash=True)
-            res[DoS.critical_success].append(splash.copy(bonus=2))
+            # Vicious Swing adds to scatter damage
+            splash = Damage(self.type, 0, 0, dice, splash=True)
+            res[DoS.critical_success].append(splash)
             res[DoS.success].append(splash)
         return res.simplify()
 
@@ -472,14 +473,10 @@ class Damage:
                 base.copy(dice=max(1, self.dice - 1), faces=self.deadly, bonus=0)
             )
         if self.scatter:
+            # Unlike regular splash, scatter does not deal any damage on a miss.
+            crit_dice = self.dice + (1 if self.fatal else 0)
             out[DoS.critical_success].append(
-                Damage(
-                    self.type,
-                    0,
-                    0,
-                    self.dice * 2 + (1 if self.fatal else 0),
-                    splash=True,
-                )
+                Damage(self.type, 0, 0, crit_dice, splash=True)
             )
             out[DoS.success].append(Damage(self.type, 0, 0, self.dice, splash=True))
 

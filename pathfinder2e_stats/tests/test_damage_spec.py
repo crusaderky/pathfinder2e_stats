@@ -279,18 +279,17 @@ def test_vicious_swing():
     }
 
     # Deadly, fatal, and scatter
-    assert Damage("slashing", 2, 6, fatal=10, deadly=8, scatter=True).vicious_swing(
-        1
-    ) == {
+    d = Damage("slashing", 2, 6, fatal=10, deadly=8, scatter=True)
+    assert d.vicious_swing(3) == {
         1: [
-            Damage("slashing", 3, 6),
-            Damage("slashing", 0, 0, 3, splash=True),
+            Damage("slashing", 5, 6),
+            Damage("slashing", 0, 0, 5, splash=True),  # Scatter is affected
         ],
         2: [
-            Damage("slashing", 3, 10, 0, 2),
+            Damage("slashing", 5, 10, 0, 2),  # Fatal is affected
             Damage("slashing", 1, 10),
-            Damage("slashing", 1, 8),
-            Damage("slashing", 0, 0, 7, splash=True),
+            Damage("slashing", 1, 8),  # Deadly not affected
+            Damage("slashing", 0, 0, 6, splash=True),  # Scatter is affected
         ],
     }
 
@@ -585,15 +584,16 @@ def test_boost():
 
 
 def test_scatter():
-    """Unlike regular splash damage, scatter damage is doubled
-    on a crit and does not apply on a fail
-    """
+    """Unlike regular splash damage, scatter damage does not apply on a fail"""
     d = Damage("fire", 3, 8, 4, scatter=True)
     assert d.expand() == {
-        1: [Damage("fire", 3, 8, 4), Damage("fire", 0, 0, 3, splash=True)],
+        1: [
+            Damage("fire", 3, 8, 4),
+            Damage("fire", 0, 0, 3, splash=True),
+        ],
         2: [
             Damage("fire", 3, 8, 4, multiplier=2),
-            Damage("fire", 0, 0, 6, splash=True),
+            Damage("fire", 0, 0, 3, splash=True),
         ],
     }
 
@@ -602,11 +602,14 @@ def test_scatter_fatal():
     """Fatal dice add to the scatter damage"""
     d = Damage("fire", 3, 8, 4, fatal=12, scatter=True)
     assert d.expand() == {
-        1: [Damage("fire", 3, 8, 4), Damage("fire", 0, 0, 3, splash=True)],
+        1: [
+            Damage("fire", 3, 8, 4),
+            Damage("fire", 0, 0, 3, splash=True),
+        ],
         2: [
             Damage("fire", 3, 12, 4, multiplier=2),
             Damage("fire", 1, 12),
-            Damage("fire", 0, 0, 7, splash=True),
+            Damage("fire", 0, 0, 4, splash=True),
         ],
     }
 
@@ -615,11 +618,14 @@ def test_scatter_deadly():
     """Deadly dice are not weapon dice and do not add to the scatter damage"""
     d = Damage("fire", 3, 8, 4, deadly=10, scatter=True)
     assert d.expand() == {
-        1: [Damage("fire", 3, 8, 4), Damage("fire", 0, 0, 3, splash=True)],
+        1: [
+            Damage("fire", 3, 8, 4),
+            Damage("fire", 0, 0, 3, splash=True),
+        ],
         2: [
             Damage("fire", 3, 8, 4, multiplier=2),
             Damage("fire", 2, 10),
-            Damage("fire", 0, 0, 6, splash=True),
+            Damage("fire", 0, 0, 3, splash=True),
         ],
     }
 
@@ -636,7 +642,7 @@ def test_scatter_boost():
         2: [
             Damage("fire", 3, 8, 4, multiplier=2),
             Damage("fire", 3, 10),
-            Damage("fire", 0, 0, 6, splash=True),
+            Damage("fire", 0, 0, 3, splash=True),
         ],
     }
 
@@ -645,6 +651,9 @@ def test_damage_hash():
     d = [
         Damage("fire", 1, 8),
         Damage("slashing", 1, 8),
+        Damage("fire", 1, 8, splash=True),
+        Damage("fire", 1, 8, persistent=True),
+        Damage("fire", 1, 8, scatter=True),
         Damage("fire", 1, 8, basic_save=True),
         Damage("fire", 1, 8, two_hands=12),
         Damage("fire", 1, 8, deadly=12),
