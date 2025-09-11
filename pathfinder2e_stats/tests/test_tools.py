@@ -77,12 +77,12 @@ def test_parse_independent_dependent_dims():
 
     with pytest.raises(
         ValueError,
-        match="foo.*must be listed in either independent_dims or dependent_dims",
+        match=r"foo.*must be listed in either independent_dims or dependent_dims",
     ):
         p([], [])
-    with pytest.raises(ValueError, match="foo.*already exists with size 2"):
+    with pytest.raises(ValueError, match=r"foo.*already exists with size 2"):
         p({"foo": 3}, [])
-    with pytest.raises(ValueError, match="foo.*both independent and dependent"):
+    with pytest.raises(ValueError, match=r"foo.*both independent and dependent"):
         p(["foo"], ["foo"])
     with pytest.raises(KeyError, match="notfound"):
         p(["foo", "notfound"], ())
@@ -91,11 +91,11 @@ def test_parse_independent_dependent_dims():
     with pytest.raises(KeyError, match="notfound"):
         p([], ["foo", "notfound"])
     with pytest.raises(
-        ValueError, match="roll.*always independent.*parameter `independent_dims`"
+        ValueError, match=r"roll.*always independent.*parameter `independent_dims`"
     ):
         p(["foo", "roll"], [])
     with pytest.raises(
-        ValueError, match="roll.*always independent.*parameter `dependent_dims`"
+        ValueError, match=r"roll.*always independent.*parameter `dependent_dims`"
     ):
         p([], ["foo", "roll"])
 
@@ -130,19 +130,19 @@ def test_parse_independent_dependent_dims_config_check():
 
     set_config(check_independent_dims=["foo"], check_dependent_dims=["foo"])
     with pytest.raises(
-        ValueError, match="foo.*check_independent_dims.*check_dependent_dims"
+        ValueError, match=r"foo.*check_independent_dims.*check_dependent_dims"
     ):
         p([], [])
 
     set_config(check_independent_dims=["foo", "roll"], check_dependent_dims=[])
     with pytest.raises(
-        ValueError, match="roll.*always independent.*check_independent_dims"
+        ValueError, match=r"roll.*always independent.*check_independent_dims"
     ):
         p([], [])
 
     set_config(check_independent_dims=["foo"], check_dependent_dims=["roll"])
     with pytest.raises(
-        ValueError, match="roll.*always independent.*check_dependent_dims"
+        ValueError, match=r"roll.*always independent.*check_dependent_dims"
     ):
         p([], [])
 
@@ -177,19 +177,19 @@ def test_parse_independent_dependent_dims_config_damage():
 
     set_config(damage_independent_dims=["foo"], damage_dependent_dims=["foo"])
     with pytest.raises(
-        ValueError, match="foo.*damage_independent_dims.*damage_dependent_dims"
+        ValueError, match=r"foo.*damage_independent_dims.*damage_dependent_dims"
     ):
         p([], [])
 
     set_config(damage_independent_dims=["foo", "roll"], damage_dependent_dims=[])
     with pytest.raises(
-        ValueError, match="roll.*always independent.*damage_independent_dims"
+        ValueError, match=r"roll.*always independent.*damage_independent_dims"
     ):
         p([], [])
 
     set_config(damage_independent_dims=["foo"], damage_dependent_dims=["roll"])
     with pytest.raises(
-        ValueError, match="roll.*always independent.*damage_dependent_dims"
+        ValueError, match=r"roll.*always independent.*damage_dependent_dims"
     ):
         p([], [])
 

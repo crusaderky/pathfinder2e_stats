@@ -43,11 +43,11 @@ def test_damage_type_validation():
     with pytest.raises(ValueError, match="faces"):
         Damage("fire", 1, 6, fatal_aim=20)
 
-    with pytest.raises(ValueError, match="persistent.*splash"):
+    with pytest.raises(ValueError, match=r"persistent.*splash"):
         Damage("fire", 0, 0, 1, persistent=True, splash=True)
-    with pytest.raises(ValueError, match="persistent.*scatter"):
+    with pytest.raises(ValueError, match=r"persistent.*scatter"):
         Damage("fire", 0, 0, 1, persistent=True, scatter=True)
-    with pytest.raises(ValueError, match="splash.*scatter"):
+    with pytest.raises(ValueError, match=r"splash.*scatter"):
         Damage("fire", 0, 0, 1, splash=True, scatter=True)
 
     Damage("fire", 0, 0, 1)
@@ -504,7 +504,7 @@ def test_two_hands():
         d.hands(3)
     with pytest.raises(ValueError, match="hands"):
         d.hands(True)
-    with pytest.raises(ValueError, match="does not have .* two-hands"):
+    with pytest.raises(ValueError, match=r"does not have .* two-hands"):
         Damage("slashing", 1, 8).hands(2)
 
 
@@ -554,7 +554,7 @@ def test_boost():
         DoS.success: [Damage("fire", 1, 10)],
     }
 
-    with pytest.raises(ValueError, match="does not have .* boost"):
+    with pytest.raises(ValueError, match=r"does not have .* boost"):
         Damage("fire", 1, 8).apply_boost(True)
 
     # Deadly and fatal are not replicated
