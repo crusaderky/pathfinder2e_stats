@@ -1,4 +1,4 @@
-from pathfinder2e_stats.armory._common import _scatter_weapon, _weapon
+from pathfinder2e_stats.armory._common import _weapon
 from pathfinder2e_stats.damage_spec import Damage
 
 # Bow
@@ -72,7 +72,7 @@ big_boom_gun = _weapon("big_boom_gun", "piercing", 6, fatal=12)
 black_powder_knuckle_dusters = _weapon(
     "black_powder_knuckle_dusters", "piercing", 4, fatal=8
 )
-blunderbuss = _scatter_weapon("blunderbuss", "piercing", 8)
+blunderbuss = _weapon("blunderbuss", "piercing", 8, scatter=True)
 cane_pistol = _weapon("cane_pistol", "piercing", 4, fatal=8)
 clan_pistol = _weapon("clan_pistol", "piercing", 6, fatal=10)
 coat_pistol = _weapon("coat_pistol", "piercing", 4, fatal=8)
@@ -80,12 +80,16 @@ dagger_pistol = _weapon("dagger_pistol", "piercing", 4, fatal=8)
 dawnsilver_tree = _weapon("dawnsilver_tree", "piercing", 6, fatal=10)
 double_barreled_musket = _weapon("double_barreled_musket", "piercing", 6, fatal=10)
 double_barreled_pistol = _weapon("double_barreled_pistol", "piercing", 4, fatal=8)
-dragon_mouth_pistol = _scatter_weapon("dragon_mouth_pistol", "piercing", 6)
+dragon_mouth_pistol = _weapon("dragon_mouth_pistol", "piercing", 6, scatter=True)
 dueling_pistol = _weapon("dueling_pistol", "piercing", 6, fatal=10)
-dwarven_scattergun = _scatter_weapon("dwarven_scattergun", "piercing", 8, kickback=True)
-explosive_dogslicer = _scatter_weapon("explosive_dogslicer", "slashing", 6, fatal=10)
+dwarven_scattergun = _weapon(
+    "dwarven_scattergun", "piercing", 8, kickback=True, scatter=True
+)
+explosive_dogslicer = _weapon(
+    "explosive_dogslicer", "slashing", 6, fatal=10, scatter=True
+)
 fire_lance = _weapon("fire_lance", "piercing", 6, fatal=10)
-flingflenser = _scatter_weapon("flingflenser", "slashing", 6, fatal=10)
+flingflenser = _weapon("flingflenser", "slashing", 6, fatal=10, scatter=True)
 flintlock_musket = _weapon("flintlock_musket", "piercing", 6, fatal=10)
 flintlock_pistol = _weapon("flintlock_pistol", "piercing", 4, fatal=8)
 gnome_amalgam_musket = _weapon("gnome_amalgam_musket", "piercing", 6, fatal=10)
@@ -101,7 +105,7 @@ piercing_wind = _weapon("piercing_wind", "piercing", 6, fatal_aim=10)
 rapier_pistol = _weapon("rapier_pistol", "piercing", 4, fatal=8)
 shield_pistol = _weapon("shield_pistol", "piercing", 4, fatal=8)
 slide_pistol = _weapon("slide_pistol", "piercing", 6, fatal=10)
-spoon_gun = _scatter_weapon("spoon_gun", "piercing", 4)
+spoon_gun = _weapon("spoon_gun", "piercing", 4, scatter=True)
 three_peaked_tree = _weapon("three_peaked_tree", "piercing", 6, fatal=10)
 triggerbrand = _weapon("triggerbrand", "piercing", 4, fatal=8)
 
@@ -114,7 +118,7 @@ bola = _weapon("bola", "bludgeoning", 6)
 halfling_sling_staff = _weapon("halfling_sling_staff", "bludgeoning", 10)
 kestros = _weapon("kestros", "piercing", 6)
 sling = _weapon("sling", "bludgeoning", 6)
-spraysling = _scatter_weapon("spraysling", "bludgeoning", 6)
+spraysling = _weapon("spraysling", "bludgeoning", 6, scatter=True)
 sun_sling = _weapon("sun_sling", "piercing", 8)
 thunder_sling = _weapon("thunder_sling", "piercing", 6)
 wrecker = _weapon("wrecker", "bludgeoning", 6)

@@ -30,6 +30,17 @@ class Damage:
         Splash damage is applied on a simple miss and doesn't
         double on a critical hit. It is tracked separately by
         :func:`damage`. Default: False.
+    :param bool scatter:
+        This weapon fires a cluster of pellets in a wide spray. On a hit, the primary
+        target of attacks with a scatter weapon take the listed damage, and the target
+        and all other creatures within the listed radius around it take 1 point of
+        splash damage per weapon damage die, of the same type as the initial attack.
+
+        .. note::
+
+           This is a trait of a weapon, which makes it deal regular damage
+           *plus* splash damage. Note that, unlike the splash trait, scatter weapons
+           don't do any damage on a miss.
 
     The following parameters can only be used when using :class:`Damage` on its own,
     and never while manually building an :class:`ExpandedDamage`:
@@ -118,6 +129,7 @@ class Damage:
     multiplier: float = 1
     persistent: bool = False
     splash: bool = False
+    scatter: bool = False
     two_hands: int = 0
     deadly: int = 0
     fatal: int = 0
@@ -153,8 +165,10 @@ class Damage:
             )
         if self.multiplier not in (0.5, 1, 2):
             raise ValueError(f"multiplier must be 0.5, 1, or 2; got {self.multiplier}")
-        if self.persistent and self.splash:
-            raise ValueError("Damage can't be both persistent and splash")
+        if self.persistent + self.splash + self.scatter > 1:
+            raise ValueError(
+                "Damage can't be persistent, splash, and scatter at the same time"
+            )
         if self.fatal and self.fatal_aim:
             raise ValueError("Can't have both fatal and fatal aim traits")
 
@@ -177,6 +191,8 @@ class Damage:
             s += f" persistent {self.type}"
         elif self.splash:
             s += f" {self.type} splash"
+        elif self.scatter:
+            s += f" {self.type} scatter"
         else:
             s += f" {self.type}"
 
@@ -227,6 +243,7 @@ class Damage:
                 types_by_appearance.setdefault(d.type, len(types_by_appearance)),
                 -d.multiplier,  # Doubled damage first
                 -d.faces,  # Largest die size first
+                d.scatter,
                 d.two_hands,
                 d.deadly,
                 d.fatal,
@@ -392,14 +409,23 @@ class Damage:
           **Critical success** (3d8)x2 slashing plus 2d8 slashing
           **Success** 3d8 slashing
         """
-        if self.deadly:
-            return self + {
-                DoS.critical_success: [
-                    Damage(self.type, dice, self.fatal or self.faces, multiplier=2)
-                ],
-                DoS.success: [Damage(self.type, dice, self.faces)],
-            }
-        return self.copy(dice=self.dice + dice)
+        if not self.deadly:
+            return self.copy(dice=self.dice + dice)
+
+        # Extra dice don't increase deadly dice and don't add extra splash damage,
+        # but they are increased by fatal and add to scatter damage
+        res = self + {
+            DoS.critical_success: [
+                Damage(self.type, dice, self.fatal or self.faces, multiplier=2),
+            ],
+            DoS.success: [Damage(self.type, dice, self.faces)],
+        }
+        if self.scatter:
+            # Vicious Swing adds to scatter damage
+            splash = Damage(self.type, 0, 0, dice, splash=True)
+            res[DoS.critical_success].append(splash)
+            res[DoS.success].append(splash)
+        return res.simplify()
 
     def area_fire(self) -> Damage:
         """:srd_actions:`Area Fire <17-area-fire>` or
@@ -413,7 +439,7 @@ class Damage:
         """Convert this :class:`Damage` instance to an
         :class:`ExpandedDamage`.
 
-        This resolves the `two-hands`, `deadly`, `fatal`, and `fatal_aim`
+        This resolves the `two-hands`, `deadly`, `fatal`, `fatal_aim`, and `scatter`
         traits, as well as applying the success profile for weapon strikes
         (``basic_save=False``), spells with a basic saving throw (``basic_save=True``),
         and splash damage.
@@ -421,7 +447,9 @@ class Damage:
         You typically don't need to call this method explicitly.
         """
         self = self._auto_optionals()  # noqa: PLW0642
-        base = self.copy(deadly=0, fatal=0, multiplier=1, basic_save=False)
+        base = self.copy(
+            deadly=0, fatal=0, scatter=False, multiplier=1, basic_save=False
+        )
         out = {}
 
         if self.splash:
@@ -444,6 +472,13 @@ class Damage:
             out[DoS.critical_success].append(
                 base.copy(dice=max(1, self.dice - 1), faces=self.deadly, bonus=0)
             )
+        if self.scatter:
+            # Unlike regular splash, scatter does not deal any damage on a miss.
+            crit_dice = self.dice + (1 if self.fatal else 0)
+            out[DoS.critical_success].append(
+                Damage(self.type, 0, 0, crit_dice, splash=True)
+            )
+            out[DoS.success].append(Damage(self.type, 0, 0, self.dice, splash=True))
 
         if self.basic_save:
             out[DoS.critical_failure] = out.pop(DoS.critical_success)
