@@ -39,7 +39,8 @@ class Damage:
         .. note::
 
            This is a trait of a weapon, which makes it deal regular damage
-           *plus* splash damage with the special rules defined above.
+           *plus* splash damage. Note that, unlike the splash trait, scatter weapons
+           don't do any damage on a miss.
 
     The following parameters can only be used when using :class:`Damage` on its own,
     and never while manually building an :class:`ExpandedDamage`:
@@ -413,12 +414,11 @@ class Damage:
 
         # Extra dice don't increase deadly dice and don't add extra splash damage,
         # but they are increased by fatal and add to scatter damage
-        extra = Damage(self.type, dice, self.faces)
-        res = self.expand() + {
+        res = self + {
             DoS.critical_success: [
-                extra.copy(faces=self.fatal or self.faces, multiplier=2)
+                Damage(self.type, dice, self.fatal or self.faces, multiplier=2),
             ],
-            DoS.success: [extra],
+            DoS.success: [Damage(self.type, dice, self.faces)],
         }
         if self.scatter:
             # Vicious Swing adds to scatter damage
