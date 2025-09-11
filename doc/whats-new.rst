@@ -40,8 +40,8 @@ v0.2.0 (unreleased)
   - Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
     ``tables.PC.weapon_proficiency``
   - Added table ``tables.SIMPLE_PC.class_DC``
-  - Added more Pathfinder weapons to the :doc:`armory`
-  - Added axe critical specialization effect
+  - Added all current Pathfinder weapons to the :doc:`armory`
+  - Added axe critical specialization effect to the :doc:`armory`
 
 **Breaking changes**
 
