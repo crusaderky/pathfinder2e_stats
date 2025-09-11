@@ -181,7 +181,8 @@ def test_expand_bonus_only():
 
 def test_expand_splash():
     d = Damage("fire", 1, 6, 2, splash=True)
-    assert d.expand() == {0: [d], 1: [d], 2: [d]}
+    # Only the primary target takes damage on a miss
+    assert d.expand() == {0: [d.copy(splash=False)], 1: [d], 2: [d]}
 
 
 @pytest.mark.parametrize("dice,deadly_dice", [(1, 1), (2, 1), (3, 2), (4, 3)])
@@ -312,7 +313,7 @@ def test_damage_list():
 def test_damage_list_expand():
     splash = Damage("fire", 0, 0, 1, splash=True)
     assert (Damage("slashing", 1, 6, deadly=8) + splash).expand() == {
-        0: [splash],
+        0: [splash.copy(splash=False)],  # No damage to secondary targets
         1: [Damage("slashing", 1, 6), splash],
         2: [Damage("slashing", 1, 6, 0, 2), Damage("slashing", 1, 8), splash],
     }
@@ -375,7 +376,7 @@ def test_damage_list_plus_expanded():
     dl = Damage("fire", 1, 6) + Damage("fire", 0, 0, 1, splash=True)
     ed = {2: [Damage("fire", 1, 4, persistent=True)]}
     assert dl + ed == {
-        0: [Damage("fire", 0, 0, 1, splash=True)],
+        0: [Damage("fire", 0, 0, 1)],  # No splash on secondary targets on a miss
         1: [Damage("fire", 1, 6), Damage("fire", 0, 0, 1, splash=True)],
         2: [
             Damage("fire", 1, 6, 0, 2),
@@ -408,12 +409,12 @@ def test_expanded_damage_repr():
     expect_txt = """
     **Critical success** (1d6)x2 fire plus 1 fire splash
     **Success** 1d6 fire plus 1 fire splash
-    **Failure** 1 fire splash
+    **Failure** 1 fire
     """
     expect_html = """
     <b>Critical success</b> (1d6)x2 fire plus 1 fire splash<br>
     <b>Success</b> 1d6 fire plus 1 fire splash<br>
-    <b>Failure</b> 1 fire splash
+    <b>Failure</b> 1 fire
     """
 
     assert repr(d) == str(d) == dedent(expect_txt).strip()
@@ -422,7 +423,7 @@ def test_expanded_damage_repr():
     assert d.to_dict_of_str() == {
         "Critical success": "(1d6)x2 fire plus 1 fire splash",
         "Success": "1d6 fire plus 1 fire splash",
-        "Failure": "1 fire splash",
+        "Failure": "1 fire",
     }
 
 
@@ -433,6 +434,7 @@ def test_expanded_damage_filter():
         + Damage("fire", 1, 4, persistent=True)
     ).expand()
     assert d.filter("direct") == {
+        0: [Damage("fire", 0, 0, 1)],  # No splash on secondary targets on a miss
         1: [Damage("fire", 1, 6)],
         2: [Damage("fire", 1, 6, 0, 2)],
     }
@@ -441,12 +443,12 @@ def test_expanded_damage_filter():
         2: [Damage("fire", 1, 4, 0, 2, persistent=True)],
     }
     assert d.filter("splash") == {
-        0: [Damage("fire", 0, 0, 1, splash=True)],
         1: [Damage("fire", 0, 0, 1, splash=True)],
         2: [Damage("fire", 0, 0, 1, splash=True)],
     }
     for which in (("direct", "persistent"), ("persistent", "direct")):
         assert d.filter(*which) == {
+            0: [Damage("fire", 0, 0, 1)],
             1: [Damage("fire", 1, 6), Damage("fire", 1, 4, persistent=True)],
             2: [
                 Damage("fire", 1, 6, 0, 2),

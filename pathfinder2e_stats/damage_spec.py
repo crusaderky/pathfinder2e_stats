@@ -453,7 +453,9 @@ class Damage:
         out = {}
 
         if self.splash:
-            out[DoS.failure] = [base]
+            # splash trait: on a failure, the main target takes splash damage,
+            # but not the surrounding ones.
+            out[DoS.failure] = [base.copy(splash=False)]
         out[DoS.success] = [base]
         if self.fatal:
             out[DoS.critical_success] = [
