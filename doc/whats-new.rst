@@ -79,6 +79,7 @@ v0.2.0 (unreleased)
 
 **Bugfixes**
 
+- splash damage no longer damages secondary targets on a miss
 - ``tables.PC``: Fighters are Legendary in all martial weapons at level 19
 - ``tables.SIMPLE_PC``: Thaumaturge now uses Charisma as their key ability
 - Removed spurious objects from IPython type hints in ``armory``

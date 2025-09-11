@@ -55,18 +55,28 @@ def test_splash_damage():
         Damage("fire", 1, 8) + Damage("fire", 0, 0, 1, splash=True),
         splash_damage_targets=4,
     )
-    assert actual.total_damage[actual.outcome == -1].sum() == 0
-    assert actual.total_damage[actual.outcome == 0].min() == 4
-    assert actual.total_damage[actual.outcome == 0].max() == 4
+    assert actual.total_damage[actual.outcome == -1].max() == 0
 
-    # Main target splash has been added to direct damage
+    # Secondary targets don't get splash damage on a failure
     assert actual.direct_damage[actual.outcome == 0].min() == 1
     assert actual.direct_damage[actual.outcome == 0].max() == 1
-    assert actual.splash_damage[actual.outcome == 0].min() == 1
-    assert actual.splash_damage[actual.outcome == 0].max() == 1
+    assert actual.splash_damage[actual.outcome == 0].max() == 0
+    assert actual.total_damage[actual.outcome == 0].min() == 1
+    assert actual.total_damage[actual.outcome == 0].max() == 1
 
+    # Main target splash has been added to direct damage
+    assert actual.direct_damage[actual.outcome == 1].min() == 1 + 1
+    assert actual.direct_damage[actual.outcome == 1].max() == 8 + 1
+    assert actual.splash_damage[actual.outcome == 1].min() == 1
+    assert actual.splash_damage[actual.outcome == 1].max() == 1
     assert actual.total_damage[actual.outcome == 1].min() == 1 + 4
     assert actual.total_damage[actual.outcome == 1].max() == 8 + 4
+
+    # Splash damage is not doubled on a critical hit
+    assert actual.direct_damage[actual.outcome == 2].min() == 1 * 2 + 1
+    assert actual.direct_damage[actual.outcome == 2].max() == 8 * 2 + 1
+    assert actual.splash_damage[actual.outcome == 2].min() == 1
+    assert actual.splash_damage[actual.outcome == 2].max() == 1
     assert actual.total_damage[actual.outcome == 2].min() == 1 * 2 + 4
     assert actual.total_damage[actual.outcome == 2].max() == 8 * 2 + 4
 
@@ -75,17 +85,25 @@ def test_splash_damage_no_direct():
     actual = damage(
         check(6, DC=15),
         Damage("fire", 0, 0, 1, splash=True),
+        splash_damage_targets=4,
     )
-    assert actual.total_damage[actual.outcome == -1].sum() == 0
+    assert actual.total_damage[actual.outcome == -1].max() == 0
 
-    # Main target splash has been added to direct damage, even if there's no
-    # direct damage anyway
-    assert actual.direct_damage[actual.outcome > -1].min() == 1
-    assert actual.direct_damage[actual.outcome > -1].max() == 1
-    assert actual.splash_damage[actual.outcome > -1].min() == 1
-    assert actual.splash_damage[actual.outcome > -1].max() == 1
-    assert actual.total_damage[actual.outcome > -1].min() == 2
-    assert actual.total_damage[actual.outcome > -1].max() == 2
+    # Main target splash has been added to direct damage, even if
+    # there's no direct damage anyway.
+    # Secondary targets don't get splash damage on a failure.
+    assert actual.direct_damage[actual.outcome == 0].min() == 1
+    assert actual.direct_damage[actual.outcome == 0].max() == 1
+    assert actual.splash_damage[actual.outcome == 0].max() == 0
+    assert actual.total_damage[actual.outcome == 0].min() == 1
+    assert actual.total_damage[actual.outcome == 0].max() == 1
+    for o in (1, 2):
+        assert actual.direct_damage[actual.outcome == o].min() == 1
+        assert actual.direct_damage[actual.outcome == o].max() == 1
+        assert actual.splash_damage[actual.outcome == o].min() == 1
+        assert actual.splash_damage[actual.outcome == o].max() == 1
+        assert actual.total_damage[actual.outcome == o].min() == 4
+        assert actual.total_damage[actual.outcome == o].max() == 4
 
 
 def test_persistent_damage():
@@ -444,7 +462,9 @@ def test_multiple_targets_splash():
     assert np.unique(actual).size > 10
     for i in range(actual.shape[0]):
         u = np.unique(actual[i])
-        assert u.size == 2, u  # Different targets get the same damage for each outcome
+        # Different targets get the same damage for each outcome, except on a miss,
+        # where only the primary target takes damage
+        assert u.size == 3, u
         assert u[0] == 0, u  # Critical failure
         assert u[1] > 0, u  # Failure, success, critical success
 
@@ -460,7 +480,7 @@ def test_multiple_targets_deadly():
         Damage("slashing", 2, 12, deadly=6),
         dependent_dims=["target"],
     ).total_damage.values
-    assert actual.shape == (50, 1000)
+    assert actual.shape == (50, 1000)  # {roll: 50, target: 1000}
     assert np.unique(actual).size > 10
     for i in range(actual.shape[0]):
         u = np.unique(actual[i])
@@ -481,22 +501,47 @@ def test_multiple_targets_type():
     set_config(roll_size=50)
     actual = damage(
         check(6, DC=15, independent_dims={"target": 1000}),
-        Damage("fire", 10, 12, splash=True) + Damage("cold", 10, 12, splash=True),
+        Damage("fire", 50, 12) + Damage("cold", 50, 12),
         dependent_dims=["target"],
     )
-    d = actual.splash_damage.values
-    assert d.shape == (50, 1000, 2)
+    d = actual.direct_damage.values
+    assert d.shape == (50, 1000, 2)  # {roll: 50, target: 1000, damage_type: 2}
     assert np.unique(d).size > 10
     for i in range(d.shape[0]):
         u_fire = np.unique(d[i, :, 0])
         u_cold = np.unique(d[i, :, 1])
-        assert u_fire.size == 2
+        assert u_fire.size == 3  # [crit fail | fail, success, crit success]
+        assert u_cold.size == 3
+        assert u_fire[0] == 0
+        assert u_fire[1] > 0
+        assert u_fire[2] == u_fire[1] * 2
+        assert u_cold[0] == 0
+        assert u_cold[1] > 0
+        assert u_cold[2] == u_cold[1] * 2
+        assert u_fire[1] != u_cold[1], (u_fire, u_cold)
+
+
+def test_multiple_targets_type_splash():
+    """Same as test_multiple_targets_type, but for splash damage"""
+    set_config(roll_size=50)
+    actual = damage(
+        check(6, DC=15, independent_dims={"target": 1000}),
+        Damage("fire", 50, 12, splash=True) + Damage("cold", 50, 12, splash=True),
+        dependent_dims=["target"],
+    )
+    d = actual.splash_damage.values
+    assert d.shape == (50, 1000, 2)  # {roll: 50, target: 1000, damage_type: 2}
+    assert np.unique(d).size > 10
+    for i in range(d.shape[0]):
+        u_fire = np.unique(d[i, :, 0])
+        u_cold = np.unique(d[i, :, 1])
+        assert u_fire.size == 2  # [crit fail | fail, success | crit success]
         assert u_cold.size == 2
         assert u_fire[0] == 0
         assert u_fire[1] > 0
         assert u_cold[0] == 0
         assert u_cold[1] > 0
-        assert u_fire[1] != u_cold[1]
+        assert u_fire[1] != u_cold[1], (u_fire, u_cold)
 
 
 def test_independent_dims():
