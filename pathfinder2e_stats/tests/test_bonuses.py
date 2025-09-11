@@ -41,9 +41,9 @@ def test_sum_bonuses(args, expect):
 
 
 def test_sum_bonuses_bad_type():
-    with pytest.raises(ValueError, match="untyped.*bad"):
+    with pytest.raises(ValueError, match=r"untyped.*bad"):
         sum_bonuses(("bad", 2))
-    with pytest.raises(ValueError, match="untyped.*bad"):
+    with pytest.raises(ValueError, match=r"untyped.*bad"):
         sum_bonuses(("item", 1), ("bad", 2))
 
 
