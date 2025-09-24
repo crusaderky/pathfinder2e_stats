@@ -1,4 +1,3 @@
-import sys
 
 import numpy as np
 import pandas as pd
@@ -43,20 +42,6 @@ def test_value_counts(transpose, normalize):
         assert_identical(expect, actual)
 
 
-PY_314 = sys.version_info >= (3, 14)
-GIL_ENABLED = getattr(sys, "_is_gil_enabled", lambda: True)()
-
-
-@pytest.mark.xfail(PY_314, reason="pandas#61638", strict=GIL_ENABLED)
-def test_pandas_61638():
-    """Trip when https://github.com/pandas-dev/pandas/issues/61368 is fixed"""
-    xarray.DataArray(np.arange(100) > 50).display()
-
-
-# FIXME https://github.com/pandas-dev/pandas/issues/61368
-@pytest.mark.filterwarnings(
-    "ignore:.*chained assignment.*:pandas.errors.ChainedAssignmentError",
-)
 def test_display_accessor(monkeypatch):
     html = []
 
