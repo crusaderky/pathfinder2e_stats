@@ -63,3 +63,4 @@ doc/_build
 Untitled.ipynb
 htmlcov/
 .~lock.*
+.jupyterlite.doit.db

@@ -91,7 +91,7 @@ exclude_lines = [
 ignore-words-list = [
   "Mot", # Bon Mot
 ]
-skip = "pixi.lock,build,htmlcov"
+skip = "pixi.lock,build,dist,htmlcov"
 
 [tool.ruff]
 exclude = [".eggs"]
@@ -232,6 +232,14 @@ matplotlib = "*"
 ipython = { cmd = "ipython", description = "Launch IPython" }
 jupyter = { cmd = "jupyter lab", env = { PYTHONPATH = "$PIXI_PROJECT_ROOT" }, description = "Launch Jupyter Lab" }
 
+[tool.pixi.feature.jupyterlite.dependencies]
+jupyterlite-core = "*"
+jupyterlite-pyodide-kernel = "*"
+
+[tool.pixi.feature.jupyterlite.tasks]
+jupyterlite-build = { cmd = "jupyter lite build --contents notebooks --output-dir dist/jupyterlite", description = "Build JupyterLite static files" }
+jupyterlite-serve = { cmd = "jupyter lite serve --contents notebooks --output-dir dist/jupyterlite", description = "Build JupyterLite static files and start web server" }
+
 [tool.pixi.feature.py311.dependencies]
 python = "=3.11"
 
@@ -287,3 +295,4 @@ py313 = { features = ["py313", "smoke", "tests"], solve-group = "py313" }
 nogil = { features = ["nogil", "smoke", "tests"], no-default-feature = true }
 upstream = { features = ["upstream", "smoke", "tests"], no-default-feature = true }
 smoke = { features = ["smoke"] }
+jupyterlite = { features = ["py313", "jupyter", "jupyterlite"], solve-group = "py313" }
