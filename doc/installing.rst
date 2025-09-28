@@ -7,7 +7,7 @@ You don't need to install anything to start using pathfinder2e-stats.
 Just follow these steps:
 
 1. Open the `web-based JupyterLite page
-<https://crusaderky.github.io/pathfinder2e_stats>`_
+   <https://crusaderky.github.io/pathfinder2e_stats>`_
 2. Create a new notebook or open a demo one
 3. In the first cell, execute
 
@@ -22,40 +22,37 @@ Just follow these steps:
 Local Installation
 ------------------
 If you are more familiar with Python, it's recommended that you install the package
-locally. You can do this using either `conda <https://docs.conda.io>`_ or
-`pip <https://pip.pypa.io/>`_.
+locally.
 
+You can do this using either `conda <https://docs.conda.io>`_:
+
+.. code-block:: bash
+
+    conda install pathfinder2e-stats
+
+or `pip <https://pip.pypa.io/>`_:
+
+.. code-block:: bash
+
+    pip install pathfinder2e-stats
+ 
 
 Required dependencies
----------------------
+^^^^^^^^^^^^^^^^^^^^^
 - Python 3.11 or later
 - `xarray <https://xarray.pydata.org/>`_
 
 
 Recommended dependencies
-------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^
 - `jupyterlab <https://jupyter.org/>`_ or `spyder <https://www.spyder-ide.org/>`_
 - matplotlib, plotly, hvplot, or some other plotting library for visualizations
-
-
-Installing with conda
----------------------
-.. code-block:: bash
-
-    conda install pathfinder2e-stats
-
-
-Installing with pip
--------------------
-.. code-block:: bash
-
-    pip install pathfinder2e-stats
 
 
 .. _mindeps_policy:
 
 Minimum dependency versions
----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This project adopts a rolling policy based on `SPEC 0
 <https://scientific-python.org/specs/spec-0000/>`_ regarding the minimum
 supported version of its dependencies.
