@@ -8,6 +8,9 @@ v0.2.0 (unreleased)
 
 **New features**
 
+- Added `web-based JupyterLite page <https://crusaderky.github.io/pathfinder2e_stats>`_
+  that lets you run pathfinder2e-stats without installation
+
 - Added support for **Starfinder**:
 
   - Core mechanics:

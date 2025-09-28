@@ -3,22 +3,27 @@ Installation
 
 If you're new to Python
 -----------------------
-1. Install `Anaconda <https://www.anaconda.com/download>`_
-2. Open the Anaconda terminal prompt
-3. Execute
+You don't need to install anything to start using pathfinder2e-stats.
+Just follow these steps:
 
-   .. code-block:: bash
-
-        $ conda install -c conda-forge pathfinder2e-stats jupyterlab matplotlib
-        $ jupyter lab
-
-4. Create a new notebook; then in the first cell run
+1. Open the `web-based JupyterLite page
+<https://crusaderky.github.io/pathfinder2e_stats>`_
+2. Create a new notebook or open a demo one
+3. In the first cell, execute
 
     .. code-block:: python
 
+        %pip install -q pathfinder2e-stats
         import pathfinder2e_stats as pf2
 
    and start hacking! Now read :doc:`getting_started`.
+
+
+Local Installation
+------------------
+If you are more familiar with Python, it's recommended that you install the package
+locally. You can do this using either `conda <https://docs.conda.io>`_ or
+`pip <https://pip.pypa.io/>`_.
 
 
 Required dependencies

@@ -4,9 +4,9 @@ Notebooks
 If you've finished :doc:`../getting_started`, we can start dissecting some actual complex
 problems. Below there are a few examples.
 
-These notebooks are all `available here
-<https://github.com/crusaderky/pathfinder2e_stats/tree/main/notebooks>`_
-so that you may run and tweak them yourself.
+You can run and tweak these notebooks yourself without needing to install anything,
+thanks to the `web-based JupyterLite page
+<https://crusaderky.github.io/pathfinder2e_stats>`_.
 
 .. toctree::
    :maxdepth: 1
