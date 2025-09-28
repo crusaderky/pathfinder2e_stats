@@ -25,7 +25,7 @@ v0.2.0 (unreleased)
       added to ``armory.critical_specialization``
     - Operative features and feats added to ``armory.class_features.operative``
 
-  - :doc:`notebooks/tables`: Starfinder content is featured side by side with
+  - :doc:`tables`: Starfinder content is featured side by side with
     Pathfinder content.
 
     - Added Starfinder classes to ``tables.PC`` and ``tables.SIMPLE_PC``;
@@ -69,7 +69,7 @@ v0.2.0 (unreleased)
     ``armory.class_features.sneak_attack`` has been moved to
     ``armory.class_features.rogue.sneak_attack``, etc.
 
-- :doc:`notebooks/tables` tweaks:
+- :doc:`tables` tweaks:
 
   - ``tables.EARN_INCOME.income_earned`` has been renamed to
     ``tables.EARN_INCOME.pathfinder`` to make room for its ``starfinder`` counterpart.
