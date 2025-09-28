@@ -196,10 +196,10 @@ html_last_updated_fmt = today_fmt
 # Custom sidebar templates, maps document names to template names.
 html_sidebars: dict = {
     "installing": [],
-    "notebooks/getting_started": [],
+    "getting_started": [],
     "api": [],
     "armory": [],
-    "notebooks/tables": [],
+    "tables": [],
     "develop": [],
     "whats-new": [],
 }
@@ -336,7 +336,7 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
     "numpy": ("https://docs.scipy.org/doc/numpy/", None),
-    "xarray": ("https://xarray.pydata.org/en/stable/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
 
 # Myst-NB configuration

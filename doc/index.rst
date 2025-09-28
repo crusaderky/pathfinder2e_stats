@@ -71,11 +71,11 @@ Table of contents
    :maxdepth: 1
 
    installing
-   notebooks/getting_started
+   getting_started
    notebooks/index
    api
    armory
-   notebooks/tables
+   tables
    develop
    whats-new
 

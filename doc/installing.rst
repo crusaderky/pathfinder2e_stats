@@ -18,7 +18,7 @@ If you're new to Python
 
         import pathfinder2e_stats as pf2
 
-   and start hacking! Now read :doc:`notebooks/getting_started`.
+   and start hacking! Now read :doc:`getting_started`.
 
 
 Required dependencies
