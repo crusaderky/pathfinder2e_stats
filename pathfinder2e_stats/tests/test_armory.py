@@ -1,3 +1,4 @@
+import warnings
 from types import ModuleType
 
 import pytest
@@ -10,7 +11,13 @@ mods = [
     for mod in package.__dict__.values()
     if isinstance(mod, ModuleType)
     and mod
-    not in (armory._common, armory.class_features, armory.pathfinder, armory.starfinder)
+    not in (
+        armory._common,
+        armory.class_features,
+        armory.pathfinder,
+        armory.starfinder,
+        warnings,
+    )
 ]
 
 weapon_mods = [
@@ -367,3 +374,50 @@ def test_finisher():
     assert f(20) == Damage("precision", 6, 6)
     assert f(dedication=True) == Damage("precision", 1, 6)
     assert f(20, dedication=True) == Damage("precision", 1, 6)
+
+
+def test_deprecations_class_features():
+    """Functions moved in 0.2.0"""
+    with pytest.raises(AttributeError):
+        _ = armory.class_features.aim  # Not in 0.1.1
+
+    assert "sneak_attack" not in dir(armory.class_features)
+    with pytest.warns(FutureWarning, match="moved to"):
+        cf = armory.class_features.sneak_attack
+    assert cf is armory.class_features.rogue.sneak_attack
+
+    assert "precise_strike" not in dir(armory.class_features)
+    with pytest.warns(FutureWarning, match="moved to"):
+        cf = armory.class_features.precise_strike
+    assert cf is armory.class_features.swashbuckler.precise_strike
+
+
+def test_deprecations_weapons():
+    """Functions moved in 0.2.0"""
+    with pytest.raises(AttributeError):
+        _ = armory.polearms  # Not in 0.1.1
+
+    assert "axes" not in dir(armory)
+    with pytest.warns(FutureWarning, match="has been split into"):
+        w = armory.axes.greataxe
+    assert w is armory.pathfinder.melee.greataxe
+
+    with pytest.warns(FutureWarning, match="has been split into"):
+        w = armory.crossbows.crossbow
+    assert w is armory.pathfinder.ranged.crossbow
+
+    with pytest.warns(FutureWarning, match="has been split into"):
+        cs = armory.crossbows.critical_specialization
+    assert cs is armory.critical_specialization.crossbow
+
+    with pytest.warns(FutureWarning, match="has been split into"):
+        cs = armory.darts.critical_specialization
+    assert cs is armory.critical_specialization.dart
+
+    with pytest.warns(FutureWarning, match="has been split into"):
+        cs = armory.knives.critical_specialization
+    assert cs is armory.critical_specialization.knife
+
+    with pytest.warns(FutureWarning, match="has been split into"):
+        cs = armory.picks.critical_specialization
+    assert cs is armory.critical_specialization.pick
