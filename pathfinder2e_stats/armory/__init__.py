@@ -1,3 +1,4 @@
+import warnings
 from types import ModuleType
 from typing import Literal
 
@@ -71,3 +72,42 @@ _setup_mod(critical_specialization, None)
 _setup_mod(cantrips, ":prd:")
 _setup_mod(runes, ":prd:")
 _setup_mod(spells, ":prd:")
+
+
+def __getattr__(name: str) -> ModuleType:
+    """Deprecation cycle from 0.1.1 to 0.2.0"""
+
+    if name not in (
+        "axes",
+        "bows",
+        "crossbows",
+        "darts",
+        "hammers",
+        "knives",
+        "picks",
+        "swords",
+    ):
+        raise AttributeError(f"module {__name__} has no attribute {name}")
+
+    warnings.warn(
+        f"pathfinder2e_stats.armory.{name} has been split into "
+        "pathfinder2e_stats.armory.pathfinder.melee, "
+        "pathfinder2e_stats.armory.pathfinder.ranged, and "
+        "pathfinder2e_stats.armory.critical_specialization.",
+        FutureWarning,
+        stacklevel=2,
+    )
+    mod = ModuleType(name)
+    mod.__dict__.update(pathfinder.melee.__dict__)
+    mod.__dict__.update(pathfinder.ranged.__dict__)
+
+    crit_spec = {
+        "crossbows": critical_specialization.crossbow,
+        "darts": critical_specialization.dart,
+        "knives": critical_specialization.knife,
+        "picks": critical_specialization.pick,
+    }
+    if name in crit_spec:
+        mod.critical_specialization = crit_spec[name]  # type: ignore[attr-defined]
+
+    return mod

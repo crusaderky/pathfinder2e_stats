@@ -43,12 +43,8 @@ v0.2.0 (unreleased)
   - Added progression for the :prd_feats:`Weapon Proficiency <5239>` feat to
     ``tables.PC.weapon_proficiency``
   - Added table ``tables.SIMPLE_PC.class_DC``
-  - Added all current Pathfinder weapons to the :doc:`armory`
-  - Added axe critical specialization effect to the :doc:`armory`
 
-**Breaking changes**
-
-- The :doc:`armory` has been reorganized:
+- The :doc:`armory` has been expanded and reorganized:
 
   - Since weapons are completely distinct between Pathfinder and Starfinder, and even
     when mixing classes etc. one would typically pick one content or the other,
@@ -71,14 +67,16 @@ v0.2.0 (unreleased)
   - Class features have been broken down by class.
     ``armory.class_features.sneak_attack`` has been moved to
     ``armory.class_features.rogue.sneak_attack``, etc.
+  - Added all current Pathfinder and Starfinder weapons
+  - Added axe critical specialization effect
 
-- :doc:`tables` tweaks:
+**Breaking changes**
 
-  - ``tables.EARN_INCOME.income_earned`` has been renamed to
-    ``tables.EARN_INCOME.pathfinder`` to make room for its ``starfinder`` counterpart.
-  - ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
-    variables ``fighter`` and ``gunslinger`` have gained dimension
-    ``category: [martial, advanced]``
+- ``tables.EARN_INCOME.income_earned`` has been renamed to
+  ``tables.EARN_INCOME.pathfinder`` to make room for its ``starfinder`` counterpart.
+- ``tables.PC.weapon_proficiency``, ``tables.SIMPLE_PC.weapon_attack_bonus``:
+  variables ``fighter`` and ``gunslinger`` have gained dimension
+  ``category: [martial, advanced]``
 
 **Bugfixes**
 
