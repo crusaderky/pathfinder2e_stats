@@ -16,7 +16,7 @@ Time required: about an hour.
  6. Push your changes to main:
       git push origin main
       git push origin --tags
- 7. Update the stable branch (used by ReadTheDocs) and switch back to main:
+ 7. Update the stable branch (used by ReadTheDocs and JupyterLite) and switch back to main:
       git checkout stable
       git rebase main
       git push origin stable
