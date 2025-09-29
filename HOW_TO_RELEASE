@@ -43,18 +43,28 @@ Time required: about an hour.
     and switch your new release tag (at the bottom) from "Inactive" to "Active".
     It should now build automatically.
     Make sure that both the new tagged version and 'stable' build successfully.
-14. Update conda-forge.
-14a.  Clone https://github.com/conda-forge/pathfinder2e-stats-feedstock
-14b.  Update the version number and sha256 in meta.yaml.
+
+14. Retest the JupyterLite deployment.
+14a. Go to https://github.com/crusaderky/pathfinder2e_stats/actions/workflows/jupyterlite.yml
+     select the latest run from branch 'stable', and double check that the 'deploy' job
+     ran successfully.
+14b. Go to https://crusaderky.github.io/pathfinder2e_stats/lab/index.html
+14c. Select all files -> right click -> Clear Browser Data
+14d. Double check that all notebooks have been updated, that pathfinder2e_stats.__version__
+     is correct, and that they render correctly.
+
+15. Update conda-forge.
+15a.  Clone https://github.com/conda-forge/pathfinder2e-stats-feedstock
+15b.  Update the version number and sha256 in meta.yaml.
       You can calculate sha256 with
         sha256sum dist/*
-14c.  Double check dependencies in meta.yaml and update them to match pyproject.toml.
-14d.  Submit a pull request.
-14e.  Write a comment in the PR:
+15c.  Double check dependencies in meta.yaml and update them to match pyproject.toml.
+15d.  Submit a pull request.
+15e.  Write a comment in the PR:
         @conda-forge-admin, please rerender
       Wait for the rerender commit (it may take a few minutes).
-14f.  Wait for CI to pass and merge.
-14g.  The next day, test the conda-forge release
+15f.  Wait for CI to pass and merge.
+15g.  The next day, test the conda-forge release
         conda search pathfinder2e-stats
         conda create -n pathfinder2e-stats-test pathfinder2e-stats
         conda activate pathfinder2e-stats-test

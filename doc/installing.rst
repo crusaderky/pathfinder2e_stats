@@ -35,7 +35,7 @@ or `pip <https://pip.pypa.io/>`_:
 .. code-block:: bash
 
     pip install pathfinder2e-stats
- 
+
 
 Required dependencies
 ^^^^^^^^^^^^^^^^^^^^^
