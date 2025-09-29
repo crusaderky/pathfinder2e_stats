@@ -28,7 +28,7 @@ You can do this using either `conda <https://docs.conda.io>`_:
 
 .. code-block:: bash
 
-    conda install pathfinder2e-stats
+    conda install -c conda-forge pathfinder2e-stats
 
 or `pip <https://pip.pypa.io/>`_:
 
