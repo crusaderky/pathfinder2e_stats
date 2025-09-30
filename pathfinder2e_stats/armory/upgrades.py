@@ -1,5 +1,5 @@
 from pathfinder2e_stats.check import DoS
-from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
+from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
 
 def entropic_destabilizer(level: int = 8) -> ExpandedDamage:
@@ -48,3 +48,24 @@ def shock(level: int = 8) -> Damage | ExpandedDamage:
             }
         )
     return Damage("electricity", 1, 6)
+
+
+def auto(level: int = 1) -> DamageList | ExpandedDamage:
+    """Use all available weapon upgrades for energy damage.
+
+    >>> auto(level=20)
+    **Critical success** (1d6)x2 fire plus 2d10 electricity
+    plus (1d6)x2 cold plus (1d6)x2 sonic plus 2d10 persistent fire
+    **Success** 1d6 fire plus 1d6 electricity plus 1d6 cold plus 1d6 sonic
+    """
+    if level < 8:
+        return DamageList()
+    upgrades = flaming(level=level) + shock(level=level)
+    if level >= 12:
+        upgrades += frost()
+    if level >= 19:
+        upgrades += loudener()
+    return upgrades
+
+
+auto._setup_doc = False  # type: ignore[attr-defined]

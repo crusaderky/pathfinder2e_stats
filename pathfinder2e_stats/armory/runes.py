@@ -1,7 +1,7 @@
 import warnings
 
 from pathfinder2e_stats.check import DoS
-from pathfinder2e_stats.damage_spec import Damage, ExpandedDamage
+from pathfinder2e_stats.damage_spec import Damage, DamageList, ExpandedDamage
 
 
 def vitalizing(level: int = 6, *, greater: None = None) -> Damage:
@@ -66,3 +66,24 @@ def shock() -> Damage:
        Doesn't include damage dealt to secondary targets on a critical hit
     """
     return Damage("electricity", 1, 6)
+
+
+def auto(level: int = 1) -> DamageList | ExpandedDamage:
+    """Use all available property runes for energy damage.
+
+    >>> auto(level=20)
+    **Critical success** (1d6)x2 fire plus (1d6)x2 electricity
+    plus (1d6)x2 acid plus 2d10 persistent fire
+    **Success** 1d6 fire plus 1d6 electricity plus 1d6 acid
+    """
+    if level < 8:
+        return DamageList()
+    runes = flaming(level=level)
+    if level >= 10:
+        runes += shock()
+    if level >= 16:
+        runes += corrosive()
+    return runes
+
+
+auto._setup_doc = False  # type: ignore[attr-defined]
