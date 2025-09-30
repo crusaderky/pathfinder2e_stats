@@ -10,10 +10,12 @@ v0.3.0 (unreleased)
 
 - New module ``armory.solarian_crystals``
 - New module ``armory.upgrades`` for Starfinder weapon upgrades
+- New functions :func:`armory.runes.auto` and :func:`armory.upgrades.auto`
+  to automatically add energy damage to high-level weapons
 
 **API changes**
 
-- ``armory.runes.vitalizing`` and ``armory.runes.flaming``:
+- :func:`armory.runes.vitalizing` and :func:`armory.runes.flaming`:
   replaced ``greater: bool`` parameter with ``level: int``
 
 

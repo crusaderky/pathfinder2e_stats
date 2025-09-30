@@ -3,7 +3,7 @@ from types import ModuleType
 
 import pytest
 
-from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage, armory
+from pathfinder2e_stats import Damage, DamageList, DoS, ExpandedDamage, armory, tables
 
 mods = [
     mod
@@ -404,6 +404,32 @@ def test_shock_upgrade():
     )
     assert s(15) == tactical
     assert s(20) == tactical
+
+
+def test_auto_runes():
+    progression = tables.PC.attack_item_bonus.potency_rune
+
+    for level in range(1, 21):
+        dmg = armory.runes.auto(level)
+        if level < 8:
+            assert dmg == DamageList()
+        else:
+            expect = progression.sel(level=level).item()
+            types = {d.type for d in dmg[DoS.success]}
+            assert len(types) == expect, level
+
+
+def test_auto_upgrades():
+    progression = tables.PC.weapon_dice.improvement
+
+    for level in range(1, 21):
+        dmg = armory.upgrades.auto(level)
+        if level < 8:
+            assert dmg == DamageList()
+        else:
+            expect = progression.sel(level=level).item()
+            types = {d.type for d in dmg[DoS.success]}
+            assert len(types) == expect, level
 
 
 def test_deprecations_class_features():
