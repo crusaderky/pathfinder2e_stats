@@ -6,6 +6,16 @@ What's New
 v0.3.0 (unreleased)
 -------------------
 
+**New features**
+
+- New module ``armory.solarian_crystals``
+- New module ``armory.upgrades`` for Starfinder weapon upgrades
+
+**API changes**
+
+- ``armory.runes.vitalizing`` and ``armory.runes.flaming``:
+  replaced ``greater: bool`` parameter with ``level: int``
+
 
 v0.2.0 (2025-09-29)
 -------------------

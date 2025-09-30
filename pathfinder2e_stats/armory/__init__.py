@@ -8,8 +8,10 @@ from pathfinder2e_stats.armory import (
     critical_specialization,
     pathfinder,
     runes,
+    solarian_crystals,
     spells,
     starfinder,
+    upgrades,
 )
 
 __all__ = (
@@ -18,8 +20,10 @@ __all__ = (
     "critical_specialization",
     "pathfinder",
     "runes",
+    "solarian_crystals",
     "spells",
     "starfinder",
+    "upgrades",
 )
 
 
@@ -71,7 +75,9 @@ _setup_mod(starfinder.ranged, ":srd:")
 _setup_mod(critical_specialization, None)
 _setup_mod(cantrips, ":prd:")
 _setup_mod(runes, ":prd:")
+_setup_mod(solarian_crystals, ":srd:")
 _setup_mod(spells, ":prd:")
+_setup_mod(upgrades, ":srd:")
 
 
 def __getattr__(name: str) -> ModuleType:

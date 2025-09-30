@@ -32,7 +32,12 @@ class_feature_mods = [
     armory.class_features.swashbuckler,
 ]
 spell_mods = [armory.cantrips, armory.spells]
-other_mods = [armory.critical_specialization, armory.runes]
+other_mods = [
+    armory.critical_specialization,
+    armory.runes,
+    armory.solarian_crystals,
+    armory.upgrades,
+]
 
 
 def test_mods_inventory():
@@ -376,6 +381,31 @@ def test_finisher():
     assert f(20, dedication=True) == Damage("precision", 1, 6)
 
 
+def test_gluon_crystal():
+    g = armory.solarian_crystals.gluon
+    assert g() == Damage("bleed", 1, 4, persistent=True)
+    assert g(6) == Damage("bleed", 1, 4, persistent=True)
+    assert g(7) == Damage("bleed", 1, 4, persistent=True)
+    assert g(9) == Damage("bleed", 1, 6, persistent=True)
+    assert g(10) == Damage("bleed", 1, 6, persistent=True)
+    assert g(20) == Damage("bleed", 1, 10, persistent=True)
+
+
+def test_shock_upgrade():
+    s = armory.upgrades.shock
+    assert s() == Damage("electricity", 1, 6)
+    assert s(8) == Damage("electricity", 1, 6)
+    assert s(14) == Damage("electricity", 1, 6)
+    tactical = ExpandedDamage(
+        {
+            DoS.critical_success: [Damage("electricity", 2, 10)],
+            DoS.success: [Damage("electricity", 1, 6)],
+        }
+    )
+    assert s(15) == tactical
+    assert s(20) == tactical
+
+
 def test_deprecations_class_features():
     """Functions moved in 0.2.0"""
     with pytest.raises(AttributeError):
@@ -421,3 +451,42 @@ def test_deprecations_weapons():
     with pytest.warns(FutureWarning, match="has been split into"):
         cs = armory.picks.critical_specialization
     assert cs is armory.critical_specialization.pick
+
+
+def test_deprecations_runes():
+    """'greater' parameter deprecated in 0.3.0"""
+    # Keyword
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.vitalizing(greater=False)
+    assert r == armory.runes.vitalizing(level=6)
+
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.vitalizing(greater=True)
+    assert r == armory.runes.vitalizing(level=14)
+
+    # Positional
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.vitalizing(False)
+    assert r == armory.runes.vitalizing(6)
+
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.vitalizing(True)
+    assert r == armory.runes.vitalizing(14)
+
+    # Keyword
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.flaming(greater=False)
+    assert r == armory.runes.flaming(level=8)
+
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.flaming(greater=True)
+    assert r == armory.runes.flaming(level=15)
+
+    # Positional
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.flaming(False)
+    assert r == armory.runes.flaming(8)
+
+    with pytest.warns(FutureWarning, match="deprecated; use 'level' instead."):
+        r = armory.runes.flaming(True)
+    assert r == armory.runes.flaming(15)
