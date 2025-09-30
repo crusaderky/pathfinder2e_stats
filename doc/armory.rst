@@ -51,18 +51,34 @@ effects.
 .. automodule:: pathfinder2e_stats.armory.critical_specialization
    :members:
 
-Weapon property runes
----------------------
+Weapon upgrades
+---------------
+
+Pathfinder weapon property runes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.runes
    :members:
 
+Starfinder weapon upgrades
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.upgrades
+   :members:
+
+Solarian weapon crystals
+^^^^^^^^^^^^^^^^^^^^^^^^
+.. automodule:: pathfinder2e_stats.armory.solarian_crystals
+   :members:
+
+Spells
+------
+
 Cantrips
---------
+^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.cantrips
    :members:
 
 Slot spells
------------
+^^^^^^^^^^^
 .. automodule:: pathfinder2e_stats.armory.spells
    :members:
 
