@@ -168,8 +168,7 @@ module = ["*.tests.*"]
 disallow_untyped_defs = false
 
 [tool.pixi.project]
-# TODO remove rc channel after Python 3.14 final release
-channels = ["https://prefix.dev/conda-forge", "conda-forge/label/python_rc"]
+channels = ["https://prefix.dev/conda-forge"]
 platforms = ["linux-64", "linux-aarch64", "osx-64", "osx-arm64", "win-64"]
 
 [tool.pixi.dependencies]
@@ -242,8 +241,8 @@ jupyterlite-serve = { cmd = "jupyter lite serve --contents notebooks --output-di
 [tool.pixi.feature.py311.dependencies]
 python = "=3.11"
 
-[tool.pixi.feature.py313.dependencies]
-python = "=3.13"
+[tool.pixi.feature.py314.dependencies]
+python = "=3.14"
 
 [tool.pixi.feature.nogil.dependencies]
 python-freethreading = "=3.14"
@@ -284,14 +283,14 @@ twine-check = { cmd = "python -m twine check dist/*" }
 twine-upload = { cmd = "python -m twine upload dist/*" }
 
 [tool.pixi.environments]
-default = { features = ["py313", "smoke", "docs", "tests", "jupyter"], solve-group = "py313" }
+default = { features = ["py314", "smoke", "docs", "tests", "jupyter"], solve-group = "py314" }
 dist = { features = ["dist"], no-default-feature = true }
 lint = { features = ["lint"], no-default-feature = true }
-docs = { features = ["py313", "docs", "jupyter"], solve-group = "py313" }
+docs = { features = ["py314", "docs", "jupyter"], solve-group = "py314" }
 mindeps = { features = ["mindeps", "smoke", "tests"] }
 py311 = { features = ["py311", "smoke", "tests"] }
-py313 = { features = ["py313", "smoke", "tests"], solve-group = "py313" }
+py314 = { features = ["py314", "smoke", "tests"], solve-group = "py314" }
 nogil = { features = ["nogil", "smoke", "tests"], no-default-feature = true }
 upstream = { features = ["upstream", "smoke", "tests"], no-default-feature = true }
 smoke = { features = ["smoke"] }
-jupyterlite = { features = ["py313", "jupyter", "jupyterlite"], solve-group = "py313" }
+jupyterlite = { features = ["py314", "jupyter", "jupyterlite"], solve-group = "py314" }
