@@ -38,8 +38,8 @@ extensions = [
 ]
 
 extlinks = {
-    "issue": ("https://github.com/crusaderky/pathfinder2e_stats/issues/%s", "#"),
-    "pull": ("https://github.com/crusaderky/pathfinder2e_stats/pull/%s", "#"),
+    "issue": ("https://github.com/crusaderky/pathfinder2e_stats/issues/%s", "#%s"),
+    "pull": ("https://github.com/crusaderky/pathfinder2e_stats/pull/%s", "#%s"),
     # Pathfinder: 2e.aonprd
     "prd": ("https://2e.aonprd.com/Search.aspx?q=%s&display=full", "%s"),
     "prd_actions": ("https://2e.aonprd.com/Actions.aspx?ID=%s", None),
