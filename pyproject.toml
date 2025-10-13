@@ -196,6 +196,7 @@ pip = "*"
 sphinx = "*"
 pydata-sphinx-theme = "*"
 myst-nb = "*"
+ipykernel = "<7" # FIXME hangs with myst-nb
 
 [tool.pixi.feature.docs.tasks]
 copy-nbs = "cp notebooks/*.ipynb doc/notebooks/"
