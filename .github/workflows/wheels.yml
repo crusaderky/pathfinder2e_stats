@@ -20,9 +20,9 @@ jobs:
           fetch-depth: 0 # Fetch full git history for hatch-vcs
           fetch-tags: true # Fetch tags for hatch-vcs
 
-      - uses: prefix-dev/setup-pixi@v0.8.10
+      - uses: prefix-dev/setup-pixi@v0
         with:
-          pixi-version: v0.56.0
+          pixi-version: v0.58.0
           cache: true
           environments: dist
 
