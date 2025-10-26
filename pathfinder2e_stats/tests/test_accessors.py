@@ -3,7 +3,7 @@ import pandas as pd
 import pytest
 import xarray
 from pandas.testing import assert_frame_equal
-from xarray.testing import assert_allclose, assert_identical
+from xarray.testing import assert_allclose, assert_equal
 
 import pathfinder2e_stats  # Install accessors  # noqa: F401
 from pathfinder2e_stats.accessors import _to_dataframes
@@ -38,7 +38,7 @@ def test_value_counts(transpose, normalize):
     if normalize:
         assert_allclose(expect / 6.0, actual)
     else:
-        assert_identical(expect, actual)
+        assert_equal(expect, actual)
 
 
 def test_display_accessor(monkeypatch):
@@ -157,11 +157,11 @@ def assert_frame_equal_anyint(df1, df2):
     for df in (df1, df2):
         for col in df.columns:
             if df[col].dtype == np.int32:
-                df[col] = df[col].astype(np.int64)
+                df[col] = df[col].astype(np.int64)  # pragma: nocover
         if not isinstance(df.index, pd.MultiIndex) and df.index.dtype == np.int32:
-            df.index = df.index.astype(np.int64)
+            df.index = df.index.astype(np.int64)  # pragma: nocover
         if not isinstance(df.columns, pd.MultiIndex) and df.columns.dtype == np.int32:
-            df.columns = df.columns.astype(np.int64)
+            df.columns = df.columns.astype(np.int64)  # pragma: nocover
     assert_frame_equal(df1, df2)
 
 

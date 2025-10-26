@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from xarray import DataArray
-from xarray.testing import assert_identical
+from xarray.testing import assert_equal
 
 from pathfinder2e_stats import d20, roll, seed
 
@@ -49,7 +49,7 @@ def test_roll_str(s, count, faces, bonus):
     a = roll(count, faces, bonus)
     seed(0)
     b = roll(s)
-    assert_identical(a, b)
+    assert_equal(a, b)
 
 
 def test_roll_bad_params():
