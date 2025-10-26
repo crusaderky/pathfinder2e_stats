@@ -1,7 +1,5 @@
 """Basic dice rolls"""
 
-from __future__ import annotations
-
 import re
 from collections.abc import Hashable, Mapping
 from typing import cast, overload

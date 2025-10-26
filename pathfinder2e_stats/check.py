@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections.abc import Collection, Hashable, Iterable, Mapping
 from enum import IntEnum
 from typing import TYPE_CHECKING, Any, Literal, TypeVar
