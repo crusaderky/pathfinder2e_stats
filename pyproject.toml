@@ -57,6 +57,10 @@ python_files = ["test_*.py"]
 testpaths = ["pathfinder2e_stats"]
 filterwarnings = ["error"]
 doctest_optionflags = ["NORMALIZE_WHITESPACE"]
+markers = [
+  # Needed when pytest-run-parallel is not installed
+  "parallel_threads: set number of threads in pytest-run-parallel",
+]
 
 [tool.coverage.report]
 show_missing = true
