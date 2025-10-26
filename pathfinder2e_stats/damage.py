@@ -339,10 +339,11 @@ def damage(
     out.update(damages)
 
     if "splash_damage" in out:
-        if "direct_damage" in out:
-            out["direct_damage"] += out["splash_damage"]
-        else:
-            out["direct_damage"] = out["splash_damage"]
+        # splash damage does not affect secondary targets on a miss.
+        # This is modelled by converting it to direct damage.
+        # So, if you have splash_damage, you always also have direct_damage too.
+        assert "direct_damage" in out
+        out["direct_damage"] += out["splash_damage"]
 
     weaknesses = _parse_weaknesses(weaknesses)
     resistances = _parse_weaknesses(resistances)
