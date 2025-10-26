@@ -2,9 +2,6 @@
 
 See api.rst for full documentation.
 """
-
-from __future__ import annotations
-
 from collections.abc import Hashable, Iterator
 from itertools import groupby
 from typing import Literal

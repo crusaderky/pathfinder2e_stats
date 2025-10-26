@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import pytest
 
 from pathfinder2e_stats import config
