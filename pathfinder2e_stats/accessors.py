@@ -41,6 +41,7 @@ def value_counts(
         input_core_dims=[values.dims],
         output_core_dims=[[new_dim]],
     )
+    unique_values.attrs.clear()
     out = xarray.where(values == unique_values, counts, 0).sum("__i")
     out.coords[new_dim] = unique_values
     out.attrs.update(obj.attrs)
