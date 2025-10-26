@@ -3,6 +3,8 @@ from __future__ import annotations
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
+import pytest
+
 from pathfinder2e_stats import get_config, roll, seed, set_config
 
 
@@ -36,6 +38,7 @@ def test_seed_none():
     assert (a != b).any()
 
 
+@pytest.mark.parallel_threads(1)
 def test_seed_multithreading():
     """Test that new threads are seeded to zero by default."""
     seed(1)
@@ -44,6 +47,7 @@ def test_seed_multithreading():
         future.result()
 
 
+@pytest.mark.parallel_threads(1)
 def test_seed_multiprocessing():
     """Test that new processes are seeded to zero by default."""
     seed(1)
@@ -82,6 +86,7 @@ def test_roll_size():
     assert roll(1, 20).shape == (10,)
 
 
+@pytest.mark.parallel_threads(1)
 def test_thread_local_config():
     # Set config in main thread before spawning a new thread
     set_config(roll_size=123)
