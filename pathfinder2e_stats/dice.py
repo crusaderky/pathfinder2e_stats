@@ -1,4 +1,5 @@
 """Basic dice rolls"""
+
 import re
 from collections.abc import Hashable, Mapping
 from typing import cast, overload
