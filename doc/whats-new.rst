@@ -18,6 +18,10 @@ v0.3.0 (unreleased)
 - :func:`armory.runes.vitalizing` and :func:`armory.runes.flaming`:
   replaced ``greater: bool`` parameter with ``level: int``
 
+**Bugfixes**
+
+- The Alchemist gains Master proficiency in weapons at level 15
+
 
 v0.2.0 (2025-09-29)
 -------------------
