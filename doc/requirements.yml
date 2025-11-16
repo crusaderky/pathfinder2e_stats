@@ -10,7 +10,6 @@ dependencies:
 - sphinx *
 - pydata-sphinx-theme *
 - myst-nb *
-- ipykernel <7
 - jupyterlab *
 - matplotlib *
 - numpy *
