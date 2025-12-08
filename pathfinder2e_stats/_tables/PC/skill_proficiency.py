@@ -17,8 +17,8 @@ def postproc(ds: xarray.Dataset) -> xarray.Dataset:
     vars = list(xarray.align(*vars, join="outer", fill_value=0))
     vars[2].loc[{"priority": 1}] = vars[1].sel(priority=1)
 
-    for k in list(ds.data_vars):
-        del ds[k]
+    for hk in list(ds.data_vars):
+        del ds[hk]
     ds["envoy"] = vars[0]
     ds["rogue"] = vars[0]
     ds["others"] = vars[1]

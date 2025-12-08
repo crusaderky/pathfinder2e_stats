@@ -59,7 +59,7 @@ filterwarnings = ["error"]
 doctest_optionflags = ["NORMALIZE_WHITESPACE"]
 markers = [
   # Needed when pytest-run-parallel is not installed
-  "parallel_threads: set number of threads in pytest-run-parallel",
+  "thread_unsafe: always run on a single thread",
 ]
 
 [tool.coverage.report]
