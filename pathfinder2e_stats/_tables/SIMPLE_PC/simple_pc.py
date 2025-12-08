@@ -66,8 +66,8 @@ def _merge_components(components: dict[str, DataArray]) -> Dataset:
     ds = xarray.concat(rows, dim="class").to_array("component").to_dataset("class")
 
     vars = {}
-    for class_name, da in ds.data_vars.items():
-        if class_name == "cleric":
+    for class_name_h, da in ds.data_vars.items():
+        if class_name_h == "cleric":
             assert (da._tmp_doctrine2.values == da.doctrine.values).all()
             da = da.sel(_tmp_doctrine2=da.doctrine)
             del da.coords["_tmp_doctrine2"]
@@ -90,7 +90,7 @@ def _merge_components(components: dict[str, DataArray]) -> Dataset:
             dim="component",
         )
 
-        vars[class_name] = da
+        vars[class_name_h] = da
 
     ds = Dataset(dict(sorted(vars.items())))
 
