@@ -12,6 +12,7 @@ v0.3.0 (unreleased)
 - New module ``armory.upgrades`` for Starfinder weapon upgrades
 - New functions :func:`armory.runes.auto` and :func:`armory.upgrades.auto`
   to automatically add energy damage to high-level weapons
+- Added Starfinder weapons from Guilt of the Grave World
 
 **API changes**
 
