@@ -8,6 +8,7 @@ reality_ripper = _weapon("reality_ripper", "void", 8, deadly=10)
 crossbolter = _weapon("crossbolter", "piercing", 10, critical="crossbow")
 
 # Cryo
+blockthrower = _weapon("blockthrower", "bludgeoning", 10, boost=6, kickback=True)
 zero_pistol = _weapon("zero_pistol", "cold", 6)
 zero_cannon = _weapon("zero_cannon", "cold", 10)
 
@@ -66,6 +67,7 @@ shobhad_longrifle = _weapon(
 
 # Sonic
 boom_pistol = _weapon("boom_pistol", "sonic", 6, boost=8)
+replica_zo_microphone = _weapon("replica_zo_microphone", "sonic", 6)
 screamer = _weapon("screamer", "sonic", 12)
 sonic_rifle = _weapon("sonic_rifle", "sonic", 6, boost=8)
 streetsweeper = _weapon("streetsweeper", "sonic", 10, boost=10)

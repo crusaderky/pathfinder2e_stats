@@ -8,6 +8,7 @@ plasma_doshko = _weapon("plasma_doshko", "fire", 10, critical="plasma")
 # Brawling
 battleglove = _weapon("battleglove", "bludgeoning", 4)
 fist = _weapon("fist", "bludgeoning", 4)
+ivory_chompers = _weapon("ivory_chompers", "piercing", 4)
 
 # Club
 baton = _weapon("baton", "bludgeoning", 6)
@@ -27,6 +28,7 @@ force_needle = _weapon("force needle", "piercing", 4, critical="dart")
 # Flail
 battle_ribbon = _weapon("battle_ribbon", "slashing", 4)
 neural_lash = _weapon("neural_lash", "mental", 8)
+vertebralis_thorn = _weapon("vertebralis_thorn", "slashing", 6)
 
 # Flame
 skyfire_sword = _weapon("skyfire sword", "fire", 8, two_hands=10, critical="flame")
