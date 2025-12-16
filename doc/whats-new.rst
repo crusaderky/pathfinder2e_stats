@@ -22,6 +22,8 @@ v0.3.0 (unreleased)
 **Bugfixes**
 
 - The Alchemist gains Master proficiency in weapons at level 15
+- Downgraded minimum xarray version to 2023.8.0 for
+  `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ compliance
 
 
 v0.2.0 (2025-09-29)

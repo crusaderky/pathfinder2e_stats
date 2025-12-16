@@ -4251,7 +4251,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://prefix.dev/conda-forge/noarch/xarray-2024.10.0-pyhd8ed1ab_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/xarray-2023.8.0-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_6.conda
       linux-aarch64:
       - conda: https://prefix.dev/conda-forge/linux-aarch64/_openmp_mutex-4.5-2_gnu.tar.bz2
@@ -4316,7 +4316,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://prefix.dev/conda-forge/noarch/xarray-2024.10.0-pyhd8ed1ab_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/xarray-2023.8.0-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/conda-forge/linux-aarch64/zstd-1.5.7-h85ac4a6_6.conda
       osx-64:
       - conda: https://prefix.dev/conda-forge/osx-64/_openmp_mutex-4.5-7_kmp_llvm.conda
@@ -4376,7 +4376,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://prefix.dev/conda-forge/noarch/xarray-2024.10.0-pyhd8ed1ab_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/xarray-2023.8.0-pyhd8ed1ab_0.conda
       osx-arm64:
       - conda: https://prefix.dev/conda-forge/osx-arm64/_openmp_mutex-4.5-7_kmp_llvm.conda
       - conda: https://prefix.dev/conda-forge/noarch/asttokens-3.0.1-pyhd8ed1ab_0.conda
@@ -4434,7 +4434,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://prefix.dev/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://prefix.dev/conda-forge/noarch/xarray-2024.10.0-pyhd8ed1ab_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/xarray-2023.8.0-pyhd8ed1ab_0.conda
       win-64:
       - conda: https://prefix.dev/conda-forge/noarch/asttokens-3.0.1-pyhd8ed1ab_0.conda
       - conda: https://prefix.dev/conda-forge/win-64/bzip2-1.0.8-h0ad9c76_8.conda
@@ -4494,7 +4494,7 @@ environments:
       - conda: https://prefix.dev/conda-forge/win-64/vcomp14-14.44.35208-h818238b_32.conda
       - conda: https://prefix.dev/conda-forge/win-64/vs2015_runtime-14.44.35208-h38c0c73_32.conda
       - conda: https://prefix.dev/conda-forge/noarch/wcwidth-0.2.14-pyhd8ed1ab_0.conda
-      - conda: https://prefix.dev/conda-forge/noarch/xarray-2024.10.0-pyhd8ed1ab_0.conda
+      - conda: https://prefix.dev/conda-forge/noarch/xarray-2023.8.0-pyhd8ed1ab_0.conda
   nogil:
     channels:
     - url: https://prefix.dev/conda-forge/
@@ -17180,41 +17180,41 @@ packages:
   - types-requests ; extra == 'types'
   - types-setuptools ; extra == 'types'
   requires_python: '>=3.11'
-- conda: https://prefix.dev/conda-forge/noarch/xarray-2024.10.0-pyhd8ed1ab_0.conda
-  sha256: a35c8291de55f96ecc9121d1ebd4995977ea2f51d9e529e97749abc108afb0e4
-  md5: 53e365732dfa053c4d19fc6b927392c4
+- conda: https://prefix.dev/conda-forge/noarch/xarray-2023.8.0-pyhd8ed1ab_0.conda
+  sha256: f6b4f46ed3b94f5f74823a8341d8aaeb9fe894540715e65bf72fa1f7c72c7e1b
+  md5: a8104cede521616573e228c27f9edc97
   depends:
-  - numpy >=1.24
-  - packaging >=23.1
-  - pandas >=2.1
-  - python >=3.10
+  - numpy >=1.22,<2.0a0
+  - packaging >=21.3
+  - pandas >=1.4
+  - python >=3.9
   constrains:
-  - matplotlib-base >=3.7
-  - netcdf4 >=1.6.0
-  - numba >=0.57
-  - hdf5 >=1.12
-  - sparse >=0.14
-  - cftime >=1.6
-  - zarr >=2.16
-  - flox >=0.7
-  - pint >=0.22
-  - toolz >=0.12
-  - scipy >=1.11
-  - seaborn-base >=0.12
-  - distributed >=2023.9
-  - iris >=3.7
-  - cartopy >=0.22
-  - bottleneck >=1.3
-  - dask-core >=2023.9
-  - h5py >=3.8
-  - h5netcdf >=1.2
+  - dask-core >=2022.7
+  - zarr >=2.12
+  - flox >=0.5
   - nc-time-axis >=1.4
+  - bottleneck >=1.3
+  - cftime >=1.6
+  - matplotlib-base >=3.5
+  - h5py >=3.6
+  - distributed >=2022.7
+  - netcdf4 >=1.6.0
+  - pint >=0.19
+  - hdf5 >=1.12
+  - seaborn-base >=0.11
+  - toolz >=0.12
+  - h5netcdf >=1.0
+  - cartopy >=0.20
+  - scipy >=1.8
+  - iris >=3.2
+  - sparse >=0.13
+  - numba >=0.55
   license: Apache-2.0
   license_family: APACHE
   purls:
   - pkg:pypi/xarray?source=hash-mapping
-  size: 813754
-  timestamp: 1729867978934
+  size: 690486
+  timestamp: 1692570616396
 - conda: https://prefix.dev/conda-forge/noarch/xarray-2025.12.0-pyhcf101f3_0.conda
   sha256: b35f6848f229d65dc6e6d58a232099a5e293405a5e3e369b15110ed255cf9872
   md5: efdb3ef0ff549959650ef070ba2c52d2

@@ -122,6 +122,11 @@ def _to_dataframes(
             elif dims_unique:
                 v = v.transpose(dims_unique[0], "variable")
             df = v.to_pandas()
+
+            # Fix for xarray <2024.10.0
+            if isinstance(df, pd.Series):
+                df.name = k
+
             if not isinstance(df, pd.DataFrame):
                 df = df.to_frame()
                 df.columns.name = "variable"

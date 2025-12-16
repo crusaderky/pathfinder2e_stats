@@ -29,7 +29,7 @@ requires-python = ">=3.11"
 dependencies = [
   "numpy>=1.24",
   "pandas>=2.1",
-  "xarray>=2024.10.0",
+  "xarray>=2023.8.0",
 ]
 dynamic = ["version"]
 
@@ -239,14 +239,14 @@ pytest-run-parallel = "*"
 python = "=3.11"
 numpy = "==1.24.0"
 pandas = "==2.1.0"
-xarray = "==2024.10.0"
+xarray = "==2023.8.0"
 
 [tool.pixi.feature.upstream.dependencies]
 python = "=3.14"
 
 [tool.pixi.feature.upstream.pypi-dependencies]
 numpy = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
-pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple", version = ">=3.0.0.dev0" }
+pandas = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
 xarray = { index = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple" }
 
 [tool.pixi.feature.dist.dependencies]
