@@ -3,6 +3,7 @@
 [![wheels-badge](https://github.com/crusaderky/pathfinder2e_stats/actions/workflows/wheels.yml/badge.svg)](https://github.com/crusaderky/pathfinder2e_stats/actions)
 [![pytest-badge](https://github.com/crusaderky/pathfinder2e_stats/actions/workflows/pytest.yml/badge.svg)](https://github.com/crusaderky/pathfinder2e_stats/actions)
 [![codecov-badge](https://codecov.io/gh/crusaderky/pathfinder2e_stats/branch/main/graph/badge.svg)](https://codecov.io/gh/crusaderky/pathfinder2e_stats/branch/main)
+[![SPEC 0 — Minimum Supported Dependencies](https://img.shields.io/badge/SPEC-0-green?labelColor=%23004811&color=%235CA038)](https://scientific-python.org/specs/spec-0000/)
 
 # pathfinder2e-stats - Statistical tools for Pathfinder and Starfinder
 
