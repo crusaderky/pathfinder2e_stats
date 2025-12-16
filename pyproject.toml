@@ -241,6 +241,10 @@ numpy = "==1.24.0"
 pandas = "==2.1.0"
 xarray = "==2023.8.0"
 
+[tool.pixi.feature.upstream]
+# FIXME no pandas nightly wheels available for several platforms
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
 [tool.pixi.feature.upstream.dependencies]
 python = "=3.14"
 
