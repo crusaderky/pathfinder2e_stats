@@ -50,17 +50,18 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
-[tool.pytest.ini_options]
-addopts = "--strict-markers --strict-config -v -r sxfE --color=yes --durations=10"
-xfail_strict = true
+[tool.pytest]
+minversion = "9.0"
+strict = true
+addopts = ["-v", "-r", "sxfE", "--color=yes", "--durations=10"]
 python_files = ["test_*.py"]
 testpaths = ["pathfinder2e_stats"]
-filterwarnings = ["error"]
-doctest_optionflags = ["NORMALIZE_WHITESPACE"]
 markers = [
   # Needed when pytest-run-parallel is not installed
   "thread_unsafe: always run on a single thread",
 ]
+filterwarnings = ["error"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE"]
 
 [tool.coverage.report]
 show_missing = true

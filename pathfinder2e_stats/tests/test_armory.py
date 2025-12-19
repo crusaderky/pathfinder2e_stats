@@ -83,7 +83,12 @@ def test_dir(mod):
 
 
 @pytest.mark.parametrize(
-    "func", [getattr(mod, name) for mod in weapon_mods for name in mod.__all__]
+    "func",
+    [
+        pytest.param(getattr(mod, name), id=f"{mod.__name__}.{name}")
+        for mod in weapon_mods
+        for name in mod.__all__
+    ],
 )
 def test_weapons(func):
     w = func()
