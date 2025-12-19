@@ -53,6 +53,11 @@ def shock(level: int = 8) -> Damage | ExpandedDamage:
 def auto(level: int = 1) -> DamageList | ExpandedDamage:
     """Use all available weapon upgrades for energy damage.
 
+    .. note::
+
+       This assumes that the commercial-grade weapon has 1 upgrade slot.
+       Not all weapons do.
+
     >>> auto(level=20)
     **Critical success** (1d6)x2 fire plus 2d10 electricity
     plus (1d6)x2 cold plus (1d6)x2 sonic plus 2d10 persistent fire
