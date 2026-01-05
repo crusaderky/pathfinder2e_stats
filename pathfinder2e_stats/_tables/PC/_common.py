@@ -13,7 +13,7 @@ def classes_to_templates() -> dict[str, str | None]:
     - None for classes that are too nuanced and must always be listed
     """
     fname = Path(__file__).parent / "_templates.csv"
-    d = pd.read_csv(fname, index_col=0).template.to_dict()
+    d: dict = pd.read_csv(fname, index_col=0).template.to_dict()
     return {k: None if pd.isna(v) else v for k, v in d.items()}
 
 
@@ -59,7 +59,7 @@ def postproc_classes(
 
     if TMP_PROF_MASTERY_KEY in ds.dims:
         ds[TMP_PROF_MASTERY_KEY] = pd.MultiIndex.from_tuples(
-            [v.split("/") for v in TMP_PROF_MASTERY_DOMAIN],
+            [tuple(v.split("/")) for v in TMP_PROF_MASTERY_DOMAIN],
             names=["category", "mastery"],
         )
         ds = ds.unstack(TMP_PROF_MASTERY_KEY)

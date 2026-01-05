@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Hashable
 from functools import cache
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import pandas as pd
 import xarray
@@ -14,10 +14,15 @@ if TYPE_CHECKING:  # circular import
 
 
 @cache
-def _get_df() -> pd.DataFrame:
+def _get_df(section: str | None = None) -> pd.DataFrame:
     """Load the raw classes DataFrame from the CSV file."""
     fname = Path(__file__).parent / "simple_pc.csv"
-    return pd.read_csv(fname, index_col=[0], header=[0, 1]).fillna("")
+    df = pd.read_csv(fname, index_col=[0], header=[0, 1]).fillna("")
+    if section is not None:
+        # pandas-stubs FIXME:
+        # Select column by level 1 only returns a DataFrame, not a series
+        df = cast(pd.DataFrame, df[section])
+    return df
 
 
 def _class_name(df: pd.DataFrame) -> DataArray:
@@ -102,7 +107,7 @@ def _merge_components(components: dict[str, DataArray]) -> Dataset:
 
 def weapon_bonus(pctables: PCTables) -> Dataset:
     """Total attack bonus to weapon strikes for all classes, with strong assumptions"""
-    df = _get_df()["strike"]
+    df = _get_df("strike")
 
     components = {
         "proficiency": (
@@ -125,7 +130,7 @@ def weapon_bonus(pctables: PCTables) -> Dataset:
 
 def spell_bonus(pctables: PCTables, as_DC: bool) -> Dataset:
     """Total spell attack bonus / spell DC for all classes, with strong assumptions"""
-    df = _get_df()["spell"]
+    df = _get_df("spell")
 
     components = {}
     if as_DC:
@@ -166,7 +171,7 @@ def spell_bonus(pctables: PCTables, as_DC: bool) -> Dataset:
 
 def class_DC(pctables: PCTables) -> Dataset:
     """Total class DC for all classes, with strong assumptions"""
-    df = _get_df()["class"]
+    df = _get_df("class")
 
     components = {
         "base_DC": DataArray(10),

@@ -142,7 +142,7 @@ python_version = "3.11"
 disallow_incomplete_defs = true
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
-ignore_missing_imports = true
+ignore_missing_imports = false
 no_implicit_optional = true
 show_error_codes = true
 warn_redundant_casts = true
@@ -175,7 +175,9 @@ blacken-docs = "*"
 validate-pyproject = "*"
 sphinx-lint = "*"
 # mypy check dependencies
-xarray = "*"
+ipython = "*"
+pandas-stubs = "*"
+pytest = "*"
 
 [tool.pixi.feature.lint.tasks]
 install-git-hooks = { cmd = "lefthook install", description = "Install pre-commit hooks" }
@@ -268,7 +270,7 @@ twine-upload = { cmd = "python -m twine upload dist/*" }
 [tool.pixi.environments]
 default = { features = ["py314", "smoke", "docs", "tests", "jupyter"], solve-group = "py314" }
 dist = { features = ["dist"], no-default-feature = true }
-lint = { features = ["lint"], no-default-feature = true }
+lint = { features = ["lint"] }
 docs = { features = ["py314", "docs", "jupyter"], solve-group = "py314" }
 mindeps = { features = ["mindeps", "smoke", "tests"] }
 py311 = { features = ["py311", "smoke", "tests"] }
