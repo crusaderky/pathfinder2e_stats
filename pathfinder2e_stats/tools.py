@@ -113,16 +113,17 @@ def _parse_independent_dependent_dims(
             )
 
     if isinstance(independent_dims, Mapping):
-        out = dict(independent_dims)
+        out = {}
         for dim, size in independent_dims.items():
             if size is None:
-                out[dim] = ds.sizes[dim]
+                size = ds.sizes[dim]
             elif dim in ds.sizes and ds.sizes[dim] != size:
                 raise ValueError(
                     f"Dimension {dim!r} already exists with size "
                     f"{ds.sizes.get(dim, size)}, but {size=} was specified. "
                     "Set to None to automatically use the existing size."
                 )
+            out[dim] = size
     else:
         out = {dim: ds.sizes[dim] for dim in independent_dims}
 
