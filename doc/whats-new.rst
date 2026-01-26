@@ -13,6 +13,9 @@ v0.3.0 (unreleased)
 - New functions :func:`armory.runes.auto` and :func:`armory.upgrades.auto`
   to automatically add energy damage to high-level weapons
 - Added Starfinder weapons from Guilt of the Grave World
+- Applied Starfinder Player Core errata to the armory
+- Downgraded minimum xarray version to 2023.8.0 for
+  `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ compliance
 
 **API changes**
 
@@ -22,8 +25,6 @@ v0.3.0 (unreleased)
 **Bugfixes**
 
 - The Alchemist gains Master proficiency in weapons at level 15
-- Downgraded minimum xarray version to 2023.8.0 for
-  `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ compliance
 
 
 v0.2.0 (2025-09-29)
