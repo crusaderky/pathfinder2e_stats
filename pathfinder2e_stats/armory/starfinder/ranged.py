@@ -52,15 +52,15 @@ singing_coil = _weapon("singing_coil", "electricity", 8)
 
 # Sniper
 assassin_rifle = _weapon(
-    "assassin_rifle", "piercing", 10, fatal=12, kickback=True, critical="sniper"
-)
+    "assassin_rifle", "piercing", 10, deadly=10, kickback=True, critical="sniper"
+)  # post errata
 coil_rifle = _weapon(
     "coil_rifle", "piercing", 10, boost=10, kickback=True, critical="sniper"
 )
 seeker_rifle = _weapon("seeker_rifle", "piercing", 10, kickback=True, critical="sniper")
 shirren_eye_rifle = _weapon(
-    "shirren_eye_rifle", "piercing", 10, deadly=12, kickback=True, critical="sniper"
-)
+    "shirren_eye_rifle", "piercing", 8, fatal=10, kickback=True, critical="sniper"
+)  # post errata
 shobhad_longrifle = _weapon(
     "shobhad_longrifle", "piercing", 8, fatal=12, kickback=True, critical="sniper"
 )
